@@ -136,15 +136,15 @@ async function syncAirtableRecord(
   if (!tableId || !recordId || !tableId.startsWith("tbl")) return
   try {
     const fieldsToUpdate: Record<string, any> = {}
-    if (status) fieldsToUpdate["Status"] = status
+    if (status) {
+      fieldsToUpdate["Status"] = status === "Completed" ? "Complete" : status
+    }
     if (isoDate) {
       const dateTimeStr = time ? `${isoDate}T${time}:00.000Z` : `${isoDate}T00:00:00.000Z`
       fieldsToUpdate["Date and Time Scheduled"] = dateTimeStr
-      fieldsToUpdate["Date and Time"] = dateTimeStr
-    } else if (status === "Completed") {
+    } else if (status === "Completed" || status === "Complete") {
       // Clear scheduled dates when unscheduled
       fieldsToUpdate["Date and Time Scheduled"] = null
-      fieldsToUpdate["Date and Time"] = null
     }
 
     const patchRes = await fetch(
@@ -160,29 +160,13 @@ async function syncAirtableRecord(
     )
 
     if (!patchRes.ok) {
-      // Fallback: Try with Date and Time Scheduled only, then Status only
-      const fallbackFields: Record<string, any> = { Status: status || "Scheduled" }
-      if (isoDate) {
-        fallbackFields["Date and Time Scheduled"] = time ? `${isoDate}T${time}:00.000Z` : `${isoDate}T00:00:00.000Z`
-      } else if (status === "Completed") {
-        fallbackFields["Date and Time Scheduled"] = null
-      }
+      const errText = await patchRes.text()
+      console.warn(`Primary Airtable patch in schedules failed: ${patchRes.status} ${errText}`)
 
-      const retryRes = await fetch(
-        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ fields: fallbackFields }),
-        }
-      )
-
-      if (!retryRes.ok) {
-        // Ultimate fallback: Status only
-        await fetch(
+      // Fallback 1: If table uses "Completed" instead of "Complete"
+      if (fieldsToUpdate["Status"] === "Complete") {
+        const completedFields = { ...fieldsToUpdate, Status: "Completed" }
+        const completedRes = await fetch(
           `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
           {
             method: "PATCH",
@@ -190,10 +174,44 @@ async function syncAirtableRecord(
               Authorization: `Bearer ${AIRTABLE_TOKEN}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ fields: { Status: status || "Scheduled" } }),
+            body: JSON.stringify({ fields: completedFields }),
           }
         )
+        if (completedRes.ok) return
       }
+
+      // Fallback 2: Legacy 'Date and Time' field
+      if (fieldsToUpdate["Date and Time Scheduled"] !== undefined) {
+        const legacyFields: Record<string, any> = { ...fieldsToUpdate }
+        legacyFields["Date and Time"] = legacyFields["Date and Time Scheduled"]
+        delete legacyFields["Date and Time Scheduled"]
+
+        const retryRes = await fetch(
+          `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ fields: legacyFields }),
+          }
+        )
+        if (retryRes.ok) return
+      }
+
+      // Fallback 2: Status only
+      await fetch(
+        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ fields: { Status: status || "Scheduled" } }),
+        }
+      )
     }
   } catch (err) {
     console.error("Airtable sync error in schedules API:", err)
@@ -201,15 +219,46 @@ async function syncAirtableRecord(
 }
 
 async function pullAirtableSchedules(): Promise<Record<string, ScheduledEntry[]>> {
-  const tablesToScan = [
-    { tableId: process.env.AIRTABLE_TABLE_ID_CHANDELIER_CTA || "tblYHdVq14FjMWg5o", category: "Stories" as const, idea: "CTA Story", fixture: "Chandelier" },
-    { tableId: process.env.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIER_CTA || "tblSpGJLO3faYfIDY", category: "Stories" as const, idea: "CTA Story", fixture: "Cluster Chandelier" },
-    { tableId: process.env.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_CTA || "tblfl7fqFZa2vUieB", category: "Stories" as const, idea: "CTA Story", fixture: "Pendant Light" },
-    { tableId: process.env.AIRTABLE_TABLE_ID_TABLE_LAMPS_CTA || "tblKJeCCp4zQ6g7Em", category: "Stories" as const, idea: "CTA Story", fixture: "Table Lamp" },
-    { tableId: process.env.AIRTABLE_TABLE_ID_FLOOR_LAMP_CTA || "tblPKSYyjgbgMypE2", category: "Stories" as const, idea: "CTA Story", fixture: "Floor Lamp" },
-    { tableId: process.env.AIRTABLE_TABLE_ID_CHANDELIER_DAY_NIGHT_STORY || "tblKkCf88UVQ3Yu07", category: "Stories" as const, idea: "Day & Night", fixture: "Chandelier" },
-    { tableId: process.env.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_2_FEED || "tbltWgQKOYjuHw6tx", category: "Feeds" as const, idea: "Moodboard #2", fixture: "Chandelier" },
+  const tablesToScan: { tableId: string; category: "Feeds" | "Stories" | "Reels"; idea: string; fixture?: string }[] = [
+    // Story CTA tables
+    { tableId: process.env.AIRTABLE_TABLE_ID_CHANDELIER_CTA || "tblYHdVq14FjMWg5o", category: "Stories", idea: "CTA Story", fixture: "Chandelier" },
+    { tableId: process.env.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIER_CTA || "tblSpGJLO3faYfIDY", category: "Stories", idea: "CTA Story", fixture: "Cluster Chandelier" },
+    { tableId: process.env.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_CTA || "tblfl7fqFZa2vUieB", category: "Stories", idea: "CTA Story", fixture: "Pendant Light" },
+    { tableId: process.env.AIRTABLE_TABLE_ID_TABLE_LAMPS_CTA || "tblKJeCCp4zQ6g7Em", category: "Stories", idea: "CTA Story", fixture: "Table Lamp" },
+    { tableId: process.env.AIRTABLE_TABLE_ID_FLOOR_LAMP_CTA || "tblPKSYyjgbgMypE2", category: "Stories", idea: "CTA Story", fixture: "Floor Lamp" },
+    // Story Day & Night
+    { tableId: process.env.AIRTABLE_TABLE_ID_CHANDELIER_DAY_NIGHT_STORY || "tblKkCf88UVQ3Yu07", category: "Stories", idea: "Day & Night", fixture: "Chandelier" },
+    // Feeds Moodboard
+    { tableId: process.env.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_2_FEED || "tbltWgQKOYjuHw6tx", category: "Feeds", idea: "Moodboard #2", fixture: "Chandelier" },
+    // Product Closeup with Description tables
+    { tableId: "tblDD2w4v0Idb4jAZ", category: "Stories", idea: "Product Closeup w/ description", fixture: "Pendant Light" },
+    { tableId: "tblDcT6jovdAbKnfw", category: "Stories", idea: "Product Closeup w/ description", fixture: "Chandelier" },
+    { tableId: "tblPvHyKGByWJCMtY", category: "Stories", idea: "Product Closeup w/ description", fixture: "Cluster Chandelier" },
+    { tableId: "tblnIOQVywHcTgAtv", category: "Stories", idea: "Product Closeup w/ description", fixture: "Linear Chandelier" },
+    { tableId: "tbl5S9JEHSrjrLwxA", category: "Stories", idea: "Product Closeup w/ description", fixture: "Table Lamp" },
+    { tableId: "tblYqudlgjYMNRROM", category: "Stories", idea: "Product Closeup w/ description", fixture: "Floor Lamp" },
+    // Story Moodboard tables
+    { tableId: "tblHQrci8d1K9ws2M", category: "Stories", idea: "Moodboard Styled Photo", fixture: "Chandelier" },
+    { tableId: "tblkm119i48y0M1IQ", category: "Stories", idea: "Moodboard Styled Photo", fixture: "Pendant Light" },
+    { tableId: "tblBaNeiSZeYrUawW", category: "Stories", idea: "Moodboard Styled Photo", fixture: "Floor Lamp" },
   ]
+
+  // Dynamically include any other tableId present in saved local schedules
+  const local = readSchedules()
+  const knownTableIds = new Set(tablesToScan.map((t) => t.tableId))
+  for (const list of Object.values(local)) {
+    for (const item of list) {
+      if (item.tableId && item.tableId.startsWith("tbl") && !knownTableIds.has(item.tableId)) {
+        tablesToScan.push({
+          tableId: item.tableId,
+          category: item.category,
+          idea: item.idea,
+          fixture: item.fixture,
+        })
+        knownTableIds.add(item.tableId)
+      }
+    }
+  }
 
   const out: Record<string, ScheduledEntry[]> = {}
 

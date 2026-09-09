@@ -55,6 +55,10 @@ export type OutputItem = {
   rawStatus: string
   date: string
   time: string
+  generatedDate?: string
+  generatedTime?: string
+  scheduledDate?: string
+  scheduledTime?: string
   mediaType: "image" | "video"
   slides: string[]
   videoUrl?: string
@@ -587,15 +591,27 @@ export async function GET(request: NextRequest) {
           const rawStatus = fields["Status"] || "Completed"
           const status = normalizeStatus(rawStatus)
 
-          // For date/time: only extract if present in fields, otherwise empty string
-          const dateField =
+          // Extract Date and Time Generated (when the asset was created by automation)
+          const genDateField =
+            fields["Date and Time Generated"] ||
+            fields["Date and Time Run (PHT)"] ||
+            fields["Date & Time Run (PHT)"]
+          const { date: generatedDate, time: generatedTime } = genDateField
+            ? formatDateDisplay(genDateField)
+            : { date: "", time: "" }
+
+          // Extract Date and Time Scheduled (when the post is scheduled for)
+          const schedDateField =
             fields["Date and Time Scheduled"] ||
             fields["Date and Time"] ||
             fields["Date & Time"] ||
-            fields["Date and Time Run (PHT)"] ||
-            fields["Date & Time Run (PHT)"] ||
             fields["Date"]
-          const { date, time } = dateField ? formatDateDisplay(dateField) : { date: "", time: "" }
+          const { date: scheduledDate, time: scheduledTime } = schedDateField
+            ? formatDateDisplay(schedDateField)
+            : { date: "", time: "" }
+
+          const date = generatedDate || scheduledDate
+          const time = generatedTime || scheduledTime
 
           const fkId =
             fields["Foreign Key ID"] ||
@@ -629,6 +645,10 @@ export async function GET(request: NextRequest) {
             rawStatus: String(rawStatus),
             date,
             time,
+            generatedDate,
+            generatedTime,
+            scheduledDate,
+            scheduledTime,
             mediaType: isReels && videoUrl ? "video" : "image",
             slides,
             videoUrl,
@@ -707,22 +727,21 @@ export async function PATCH(request: NextRequest) {
 
     const fieldsToUpdate: Record<string, any> = {}
     if (status) {
-      fieldsToUpdate["Status"] = status
+      fieldsToUpdate["Status"] = status === "Completed" ? "Complete" : status
     }
 
     if (date) {
       const dateTimeStr = time ? `${date}T${time}:00.000Z` : `${date}T00:00:00.000Z`
       fieldsToUpdate["Date and Time Scheduled"] = dateTimeStr
-      fieldsToUpdate["Date and Time"] = dateTimeStr
-    } else if (status === "Completed") {
+    } else if (status === "Completed" || status === "Complete") {
       fieldsToUpdate["Date and Time Scheduled"] = null
-      fieldsToUpdate["Date and Time"] = null
     }
 
     let airtableRes: any = null
 
     if (tableId && tableId.startsWith("tbl")) {
       try {
+        // 1. Primary update targeting 'Date and Time Scheduled' with normalized Status
         const patchRes = await fetch(
           `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
           {
@@ -738,30 +757,53 @@ export async function PATCH(request: NextRequest) {
         if (patchRes.ok) {
           airtableRes = await patchRes.json()
         } else {
-          // If Date and Time field failed or not defined in that table schema, try fallback
-          const fallbackFields: Record<string, any> = { Status: status || "Scheduled" }
-          if (date) {
-            fallbackFields["Date and Time Scheduled"] = time ? `${date}T${time}:00.000Z` : `${date}T00:00:00.000Z`
-          } else if (status === "Completed") {
-            fallbackFields["Date and Time Scheduled"] = null
+          const errText = await patchRes.text()
+          console.warn(`Primary Airtable patch to table ${tableId} failed: ${patchRes.status} ${errText}`)
+
+          // 2. Fallback: If table uses "Completed" instead of "Complete"
+          if (fieldsToUpdate["Status"] === "Complete") {
+            const completedFields = { ...fieldsToUpdate, Status: "Completed" }
+            const completedRes = await fetch(
+              `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
+              {
+                method: "PATCH",
+                headers: {
+                  Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ fields: completedFields }),
+              }
+            )
+            if (completedRes.ok) {
+              airtableRes = await completedRes.json()
+            }
           }
 
-          const fallbackRes = await fetch(
-            `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
-            {
-              method: "PATCH",
-              headers: {
-                Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ fields: fallbackFields }),
-            }
-          )
+          // 3. Fallback: If table uses legacy 'Date and Time' field name instead
+          if (!airtableRes && fieldsToUpdate["Date and Time Scheduled"] !== undefined) {
+            const legacyFields: Record<string, any> = { ...fieldsToUpdate }
+            legacyFields["Date and Time"] = legacyFields["Date and Time Scheduled"]
+            delete legacyFields["Date and Time Scheduled"]
 
-          if (fallbackRes.ok) {
-            airtableRes = await fallbackRes.json()
-          } else {
-            // Status only
+            const legacyRes = await fetch(
+              `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
+              {
+                method: "PATCH",
+                headers: {
+                  Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ fields: legacyFields }),
+              }
+            )
+
+            if (legacyRes.ok) {
+              airtableRes = await legacyRes.json()
+            }
+          }
+
+          // 3. Fallback: Status only if date fields are completely missing from schema
+          if (!airtableRes) {
             const statusOnlyRes = await fetch(
               `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
               {

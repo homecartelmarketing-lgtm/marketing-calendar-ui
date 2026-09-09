@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import {
   ArrowLeft,
   ArrowRight,
+  CalendarCheck,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -105,7 +106,7 @@ export function ContentPreviewModal({
       // 1. Update Airtable if record exists
       if (out?.recordId) {
         try {
-          await fetch("/api/content-outputs", {
+          const patchRes = await fetch("/api/content-outputs", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -116,6 +117,9 @@ export function ContentPreviewModal({
               time: item.time,
             }),
           })
+          if (!patchRes.ok) {
+            console.warn("Airtable sync warning:", await patchRes.text())
+          }
         } catch (airtableErr) {
           console.warn("Airtable sync warning:", airtableErr)
         }
@@ -149,7 +153,7 @@ export function ContentPreviewModal({
 
       setStatusByKey((prev) => ({ ...prev, [item.key]: finalStatus }))
       onScheduleSuccess?.(item.key, finalStatus, savedEntry)
-      setSuccessTitle("SUCCESFULLY UPDATED & SCHEDULED!")
+      setSuccessTitle("SUCCESSFULLY UPDATED & SCHEDULED!")
       setShowSuccess(true)
       window.setTimeout(() => {
         setShowSuccess(false)
@@ -157,7 +161,7 @@ export function ContentPreviewModal({
       }, 1600)
     } catch (err) {
       console.error("Error scheduling:", err)
-      setSuccessTitle("SUCCESFULLY UPDATED & SCHEDULED!")
+      setSuccessTitle("SUCCESSFULLY UPDATED & SCHEDULED!")
       setShowSuccess(true)
       window.setTimeout(() => {
         setShowSuccess(false)
@@ -428,9 +432,18 @@ export function ContentPreviewModal({
                 <DetailRow label="Scheduled Time" value={item.time ?? "—"} />
                 <DetailRow
                   label="Date of Generation"
-                  value={out?.date ? out.date.split(" (")[0] : "September 2, 2026"}
+                  value={
+                    out?.generatedDate
+                      ? out.generatedDate.split(" (")[0]
+                      : out?.date
+                      ? out.date.split(" (")[0]
+                      : "—"
+                  }
                 />
-                <DetailRow label="Time of Generation" value={out?.time || "12:00"} />
+                <DetailRow
+                  label="Time of Generation"
+                  value={out?.generatedTime || out?.time || "—"}
+                />
 
                 <div className="flex items-stretch gap-2">
                   <dt className="flex w-40 shrink-0 items-center justify-center rounded-lg bg-white px-2 py-2.5 text-center text-sm font-semibold text-black">
@@ -544,9 +557,10 @@ export function ContentPreviewModal({
                 type="button"
                 disabled={isSubmitting || isPostingMeta}
                 onClick={confirmSchedule}
-                className="rounded-lg bg-green-400 px-8 py-2.5 text-sm font-bold text-black transition-colors hover:bg-green-500 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-lg bg-green-400 px-6 py-2.5 text-sm font-bold text-black shadow-md transition-colors hover:bg-green-500 disabled:opacity-50"
               >
-                {isSubmitting ? "SAVING..." : "CONFIRM SCHEDULE"}
+                <CalendarCheck className="h-4 w-4" />
+                {isSubmitting ? "SAVING TO AIRTABLE..." : "CONFIRM SCHEDULE"}
               </button>
             </div>
           </div>

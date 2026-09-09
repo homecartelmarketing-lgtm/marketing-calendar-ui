@@ -37,48 +37,9 @@ export function CalendarGrid({
           const clickable = isDay && cell.iso !== null
           const iso = cell.iso || ""
           const daySchedules = schedules[iso] || []
-          const hasScheduled = daySchedules.length > 0
-
-          // Prepare flat list of entries for this day to render
-          // (Feeds, Reels, Stories) if scheduled
-          const displayEntries: {
-            type: ContentType
-            idea: string
-            status: string
-          }[] = []
-
-          if (hasScheduled) {
-            // Check all standard entries for this date
-            const entries = cell.entries || []
-            const usedTypes = new Set<ContentType>()
-
-            for (const entry of entries) {
-              const matchedSched = daySchedules.find(
-                (s) =>
-                  s.category === entry.type &&
-                  (s.idea === entry.idea || (entry.idea.trim().toUpperCase() === "NONE" && s.idea))
-              )
-              const status = matchedSched?.status || entry.status || "To Do"
-              const idea = matchedSched?.idea || (entry.idea.trim().toUpperCase() === "NONE" ? "N/A" : entry.idea)
-
-              displayEntries.push({
-                type: entry.type,
-                idea,
-                status,
-              })
-              usedTypes.add(entry.type)
-            }
-
-            // Ensure Feeds and Reels are visible if not in entries
-            if (!usedTypes.has("Feeds")) {
-              const sched = daySchedules.find((s) => s.category === "Feeds")
-              displayEntries.unshift({
-                type: "Feeds",
-                idea: sched?.idea || "N/A",
-                status: sched?.status || "N/A",
-              })
-            }
-          }
+          const scheduledCategories = new Set(daySchedules.map((s) => s.category))
+          // Unscheduled types on this day that should still display their category tag
+          const unscheduledTypes = cell.types.filter((t) => !scheduledCategories.has(t))
 
           return (
             <div
@@ -108,48 +69,42 @@ export function CalendarGrid({
                     {cell.day}
                   </span>
 
-                  {/* Scheduled Mode (Figma Day 3 Pill Badges with Category Dots) */}
-                  {hasScheduled ? (
-                    <div className="mt-1.5 flex flex-col gap-1 sm:mt-2.5 sm:gap-1.5">
-                      {displayEntries.map((item, i) => {
-                        const dotColor = CATEGORY_DOT_STYLES[item.type] || "bg-neutral-400"
-                        const pillStyle =
-                          STATUS_PILL_STYLES[item.status] ||
-                          (item.idea === "N/A"
-                            ? STATUS_PILL_STYLES["N/A"]
-                            : "bg-neutral-100 text-neutral-700")
+                  {/* Day Content Container */}
+                  <div className="mt-1.5 flex flex-col gap-1 sm:mt-2.5 sm:gap-1.5">
+                    {/* 1. Render Active Scheduled Posts (with Category Dot & Status Pill) */}
+                    {daySchedules.map((sched, sIdx) => {
+                      const dotColor = CATEGORY_DOT_STYLES[sched.category] || "bg-neutral-400"
+                      const pillStyle =
+                        STATUS_PILL_STYLES[sched.status] ||
+                        STATUS_PILL_STYLES["Scheduled"] ||
+                        "bg-[#cffafe] text-[#155e75]"
 
-                        return (
-                          <div
-                            key={i}
-                            className={`group relative flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[9px] font-semibold leading-snug sm:rounded-md sm:px-2 sm:py-1 sm:text-[11px] ${pillStyle}`}
-                            title={`${item.type}: ${item.idea} (${item.status})`}
-                          >
-                            {/* Category Dot */}
-                            <span
-                              className={`h-1.5 w-1.5 shrink-0 rounded-full sm:h-2 sm:w-2 ${dotColor}`}
-                            />
-                            {/* Content Title */}
-                            <span className="truncate">{item.idea}</span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    /* Default Mode (Category Tags: Feeds, Reels, Stories) */
-                    cell.types.length > 0 && (
-                      <div className="mt-2 flex flex-col items-start gap-1 sm:mt-5 sm:gap-2">
-                        {cell.types.map((type) => (
+                      return (
+                        <div
+                          key={`sched-${sIdx}`}
+                          className={`group relative flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[9px] font-semibold leading-snug sm:rounded-md sm:px-2 sm:py-1 sm:text-[11px] ${pillStyle}`}
+                          title={`${sched.category}: ${sched.idea} (${sched.status})`}
+                        >
+                          {/* Category Dot */}
                           <span
-                            key={type}
-                            className={`rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight sm:px-2.5 sm:py-1 sm:text-xs ${TYPE_TAG_STYLES[type]}`}
-                          >
-                            {type}
-                          </span>
-                        ))}
-                      </div>
-                    )
-                  )}
+                            className={`h-1.5 w-1.5 shrink-0 rounded-full sm:h-2 sm:w-2 ${dotColor}`}
+                          />
+                          {/* Content Title */}
+                          <span className="truncate">{sched.idea}</span>
+                        </div>
+                      )
+                    })}
+
+                    {/* 2. Render Category Tags for Unscheduled Types so legends never vanish */}
+                    {unscheduledTypes.map((type) => (
+                      <span
+                        key={`tag-${type}`}
+                        className={`w-fit rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight sm:px-2.5 sm:py-1 sm:text-xs ${TYPE_TAG_STYLES[type]}`}
+                      >
+                        {type}
+                      </span>
+                    ))}
+                  </div>
                 </>
               )}
             </div>
