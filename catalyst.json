@@ -1,0 +1,11 @@
+{
+  "appsail": [
+    {
+      "name": "homecartel-marketing-calendar",
+      "source": ".",
+      "build_type": "docker",
+      "dockerfile": "Dockerfile",
+      "memory": 1024
+    }
+  ]
+}

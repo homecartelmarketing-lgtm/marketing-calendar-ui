@@ -1,0 +1,14 @@
+{
+  "name": "homecartel-marketing-calendar",
+  "command": "node server.js",
+  "build_type": "docker",
+  "dockerfile": "Dockerfile",
+  "stack": "node",
+  "env_variables": {
+    "NODE_ENV": "production",
+    "PORT": "3000"
+  },
+  "memory": 1024,
+  "min_instances": 1,
+  "max_instances": 1
+}

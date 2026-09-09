@@ -1,0 +1,21 @@
+# Git & IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Local dependencies & caches
+node_modules/
+.next/
+*.tsbuildinfo
+*.log
+
+# Secrets (configured in Catalyst Console Environment Variables)
+.env
+.env.local
+.env.*.local
+.cloudflare_url.txt
+
+# OS files
+.DS_Store
+Thumbs.db
