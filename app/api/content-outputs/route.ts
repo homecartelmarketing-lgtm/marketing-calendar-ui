@@ -192,6 +192,53 @@ function extractMoodboardStoryImages(fields: Record<string, any>): string[] {
   return slides
 }
 
+function extractProductCloseupDescriptionConverted(fields: Record<string, any>): string[] {
+  for (const [key, val] of Object.entries(fields)) {
+    if (key.trim().toLowerCase() === "product closeup description converted") {
+      if (Array.isArray(val) && val.length > 0) {
+        return val
+          .filter((item: any) => item && typeof item === "object" && item.url)
+          .map((item: any) => item.url as string)
+      }
+    }
+  }
+  return []
+}
+
+function extractDayAndNightFeedImages(fields: Record<string, any>): string[] {
+  const slides: string[] = []
+
+  // Slide 1: Day Image
+  for (const [key, val] of Object.entries(fields)) {
+    if (key.trim().toLowerCase() === "day image") {
+      if (Array.isArray(val) && val.length > 0) {
+        for (const item of val) {
+          if (item && typeof item === "object" && item.url) {
+            slides.push(item.url as string)
+            break
+          }
+        }
+      }
+    }
+  }
+
+  // Slide 2: Night Image
+  for (const [key, val] of Object.entries(fields)) {
+    if (key.trim().toLowerCase() === "night image") {
+      if (Array.isArray(val) && val.length > 0) {
+        for (const item of val) {
+          if (item && typeof item === "object" && item.url) {
+            slides.push(item.url as string)
+            break
+          }
+        }
+      }
+    }
+  }
+
+  return slides
+}
+
 // Map pipeline keys to table IDs retrieved from .env
 function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<string, string>): string[] {
   const cat = category.toLowerCase()
@@ -447,6 +494,15 @@ export async function GET(request: NextRequest) {
     const isReels = category.toLowerCase() === "reels"
     const isCtaStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("cta")
     const isMoodboardStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("moodboard")
+    const isProductDescriptionStory =
+      category.toLowerCase() === "stories" &&
+      (contentType.toLowerCase().includes("description") ||
+        (contentType.toLowerCase().includes("closeup") && !contentType.toLowerCase().includes("spec")))
+    const isDayAndNightFeed =
+      category.toLowerCase() === "feeds" &&
+      (contentType.toLowerCase().includes("day & night") ||
+        contentType.toLowerCase().includes("day and night") ||
+        contentType.toLowerCase().includes("d&n"))
     const aspectRatio = category.toLowerCase() === "feeds" ? "4:5" : "9:16"
     const mediaType = isReels ? "video" : "image"
 
@@ -485,6 +541,14 @@ export async function GET(request: NextRequest) {
           } else if (isMoodboardStory) {
             // Extract Slide 1: Moodboard Converted, Slide 2: Blended Image
             slides = extractMoodboardStoryImages(fields)
+            if (slides.length === 0) continue
+          } else if (isProductDescriptionStory) {
+            // Strictly extract ONLY from "Product Closeup Description Converted" (Zero fallback to Layout drafts)
+            slides = extractProductCloseupDescriptionConverted(fields)
+            if (slides.length === 0) continue
+          } else if (isDayAndNightFeed) {
+            // Strictly extract Slide 1: Day Image, Slide 2: Night Image (Ignore Story and Interior inputs)
+            slides = extractDayAndNightFeedImages(fields)
             if (slides.length === 0) continue
           } else {
             const assets = extractAssetsFromRecord(fields, isReels)

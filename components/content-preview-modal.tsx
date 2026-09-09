@@ -5,14 +5,18 @@ import {
   ArrowLeft,
   ArrowRight,
   CalendarCheck,
+  Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronUp,
+  CloudUpload,
   Link2,
+  Maximize2,
   Pencil,
   Share2,
   Trash2,
+  Upload,
   X,
 } from "lucide-react"
 import { formatLongDate, type ContentType } from "@/lib/content"
@@ -65,13 +69,26 @@ export function ContentPreviewModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isPostingMeta, setIsPostingMeta] = useState(false)
 
+  // Lightbox & Manual upload states
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [manualUploads, setManualUploads] = useState<Record<string, string[]>>({})
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadStatusText, setUploadStatusText] = useState<string | null>(null)
+  const [zohoLinkNotes, setZohoLinkNotes] = useState<Record<string, string>>({})
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose()
+      if (e.key === "Escape") {
+        if (lightboxOpen) {
+          setLightboxOpen(false)
+        } else {
+          onClose()
+        }
+      }
     }
     document.addEventListener("keydown", onKey)
     return () => document.removeEventListener("keydown", onKey)
-  }, [onClose])
+  }, [onClose, lightboxOpen])
 
   // Reset transient sub-states when navigating between items.
   useEffect(() => {
@@ -80,6 +97,8 @@ export function ContentPreviewModal({
     setEditingCaption(false)
     setConfirmDiscard(false)
     setShowSuccess(false)
+    setLightboxOpen(false)
+    setUploadStatusText(null)
   }, [index])
 
   if (!item) return null
@@ -88,13 +107,97 @@ export function ContentPreviewModal({
   const status = statusByKey[item.key] ?? out?.status ?? "Completed"
   const caption = captionByKey[item.key] ?? out?.caption ?? ""
   const slides = out?.slides || []
+  const manualSlides = manualUploads[item.key] || []
+  const currentSlides = slides.length > 0 ? [...slides, ...manualSlides] : manualSlides
   const isVideo = out?.mediaType === "video" && Boolean(out?.videoUrl)
+
+  const isStoriesOrReels = item.type === "Stories" || item.type === "Reels"
+  const isDayAndNight =
+    item.idea.toLowerCase().includes("day & night") ||
+    item.idea.toLowerCase().includes("day and night") ||
+    item.idea.toLowerCase().includes("d&n")
+  const containerAspect = isStoriesOrReels
+    ? "aspect-[9/16] max-w-[280px] sm:max-w-[320px]"
+    : "aspect-[4/5] max-w-sm"
 
   function goPrev() {
     onIndexChange((index - 1 + items.length) % items.length)
   }
   function goNext() {
     onIndexChange((index + 1) % items.length)
+  }
+
+  async function handleManualUpload(file: File) {
+    setIsUploading(true)
+    setUploadStatusText("Uploading to Zoho Drive...")
+    try {
+      const fd = new FormData()
+      fd.append("file", file)
+      fd.append("recordId", out?.recordId || "")
+      fd.append("tableId", out?.tableId || "")
+      fd.append("fixtureType", item.fixture || out?.fixtureType || "Chandelier")
+      fd.append("notes", zohoLinkNotes[item.key] || "")
+      fd.append("imageKind", activeSlide === 0 ? "Day" : "Night")
+
+      const res = await fetch("/api/upload/zoho-drive", {
+        method: "POST",
+        body: fd,
+      })
+
+      const data = await res.json()
+      if (res.ok && data.fileUrl) {
+        setManualUploads((prev) => ({
+          ...prev,
+          [item.key]: [...(prev[item.key] || []), data.fileUrl],
+        }))
+        setUploadStatusText(
+          data.zohoUploaded
+            ? "✓ Uploaded to Zoho WorkDrive!"
+            : "✓ Saved for manual review!"
+        )
+      } else {
+        setUploadStatusText(`Upload error: ${data.message || "Failed"}`)
+      }
+    } catch (err: any) {
+      setUploadStatusText(`Upload failed: ${err?.message || err}`)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  async function confirmStatusChange() {
+    setIsSubmitting(true)
+    try {
+      const finalStatus = status || "Completed"
+
+      if (out?.recordId) {
+        const patchRes = await fetch("/api/content-outputs", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            recordId: out.recordId,
+            tableId: out.tableId,
+            status: finalStatus,
+            notes: zohoLinkNotes[item.key] || undefined,
+          }),
+        })
+        if (!patchRes.ok) {
+          console.warn("Airtable status patch warning:", await patchRes.text())
+        }
+      }
+
+      setStatusByKey((prev) => ({ ...prev, [item.key]: finalStatus }))
+      onScheduleSuccess?.(item.key, finalStatus)
+      setSuccessTitle(`STATUS UPDATED TO "${finalStatus.toUpperCase()}"!`)
+      setShowSuccess(true)
+      window.setTimeout(() => {
+        setShowSuccess(false)
+      }, 1500)
+    } catch (err: any) {
+      alert(`Failed to update status: ${err?.message || err}`)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   async function confirmSchedule() {
@@ -322,27 +425,38 @@ export function ContentPreviewModal({
               <span className="text-lg font-semibold text-white sm:text-2xl">Preview:</span>
             </div>
 
-            <div className="relative mx-auto aspect-[3/4] w-full max-w-sm overflow-hidden rounded-xl border-2 border-neutral-200 bg-neutral-900">
+            <div
+              className={`relative mx-auto ${containerAspect} w-full overflow-hidden rounded-xl border-2 border-neutral-800 bg-neutral-950 flex items-center justify-center group cursor-pointer`}
+              onClick={() => setLightboxOpen(true)}
+            >
               {isVideo ? (
                 <video
                   src={out!.videoUrl}
                   controls
                   className="h-full w-full object-contain"
                 />
-              ) : slides.length > 0 ? (
+              ) : currentSlides.length > 0 ? (
                 <>
                   <img
-                    src={slides[activeSlide]}
+                    src={currentSlides[activeSlide] || currentSlides[0]}
                     alt={`${item.idea} slide ${activeSlide + 1}`}
-                    className="h-full w-full object-cover"
+                    className="max-h-full max-w-full object-contain select-none"
                   />
-                  {slides.length > 1 && (
+                  {/* Click to expand hover overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30 pointer-events-none">
+                    <span className="flex items-center gap-1.5 rounded-full bg-black/80 px-3.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-lg backdrop-blur-sm transition-opacity group-hover:opacity-100 pointer-events-auto">
+                      <Maximize2 className="h-3.5 w-3.5 text-amber-400" />
+                      Click for Full Photo
+                    </span>
+                  </div>
+
+                  {currentSlides.length > 1 && (
                     <>
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation()
-                          setActiveSlide((prev) => (prev > 0 ? prev - 1 : slides.length - 1))
+                          setActiveSlide((prev) => (prev > 0 ? prev - 1 : currentSlides.length - 1))
                         }}
                         className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-1.5 text-white backdrop-blur-sm transition hover:bg-black/90"
                         aria-label="Previous slide"
@@ -353,7 +467,7 @@ export function ContentPreviewModal({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation()
-                          setActiveSlide((prev) => (prev < slides.length - 1 ? prev + 1 : 0))
+                          setActiveSlide((prev) => (prev < currentSlides.length - 1 ? prev + 1 : 0))
                         }}
                         className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-1.5 text-white backdrop-blur-sm transition hover:bg-black/90"
                         aria-label="Next slide"
@@ -361,7 +475,7 @@ export function ContentPreviewModal({
                         <ChevronRight className="h-4 w-4" />
                       </button>
                       <div className="absolute bottom-2.5 right-2.5 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
-                        {activeSlide + 1} / {slides.length}
+                        {activeSlide + 1} / {currentSlides.length}
                       </div>
                     </>
                   )}
@@ -370,11 +484,11 @@ export function ContentPreviewModal({
                 <img
                   src="/placeholder.svg?height=760&width=570"
                   alt={`${item.idea} preview`}
-                  className="h-full w-full object-cover"
+                  className="max-h-full max-w-full object-contain"
                 />
               )}
 
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-center text-white">
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-center text-white">
                 <p className="text-base font-semibold sm:text-lg">
                   {out?.itemNames?.[0] || item.idea}
                 </p>
@@ -383,6 +497,40 @@ export function ContentPreviewModal({
                 </p>
               </div>
             </div>
+
+            {/* Quick Day & Night slide toggle buttons */}
+            {isDayAndNight && currentSlides.length >= 2 && (
+              <div className="mt-2.5 flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setActiveSlide(0)
+                  }}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                    activeSlide === 0
+                      ? "bg-amber-400 text-black shadow-sm"
+                      : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                  }`}
+                >
+                  ☀️ Day Photo
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setActiveSlide(1)
+                  }}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                    activeSlide === 1
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                  }`}
+                >
+                  🌙 Night Photo
+                </button>
+              </div>
+            )}
 
             <div className="mt-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -500,6 +648,67 @@ export function ContentPreviewModal({
               </dl>
             </div>
 
+            {/* "For Manual" Review & Zoho Drive Upload Section */}
+            {status === "For Manual" && (
+              <div className="rounded-2xl border-2 border-amber-500/40 bg-neutral-900 p-3 sm:p-4">
+                <div className="mb-2.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-sm font-bold text-amber-400">
+                    <Upload className="h-4 w-4" />
+                    Manual Review & Replacement Upload
+                  </span>
+                  {uploadStatusText && (
+                    <span className="text-xs font-semibold text-amber-200">{uploadStatusText}</span>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-2.5">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/jpg"
+                      id={`manual-file-upload-${item.key}`}
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        await handleManualUpload(file)
+                      }}
+                    />
+                    <label
+                      htmlFor={`manual-file-upload-${item.key}`}
+                      className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-amber-400/60 bg-amber-950/40 px-3 py-2.5 text-xs font-semibold text-amber-200 transition hover:bg-amber-900/50"
+                    >
+                      <CloudUpload className="h-4 w-4" />
+                      {isUploading ? "Uploading to Zoho WorkDrive..." : "Upload Replacement Photo to Zoho Drive"}
+                    </label>
+                  </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      value={zohoLinkNotes[item.key] || ""}
+                      onChange={(e) =>
+                        setZohoLinkNotes((prev) => ({ ...prev, [item.key]: e.target.value }))
+                      }
+                      placeholder="Zoho Drive folder link or revision notes..."
+                      className="w-full rounded-lg border border-neutral-700 bg-neutral-950 px-3 py-2 text-xs text-white placeholder-neutral-500 outline-none focus:border-amber-400"
+                    />
+                  </div>
+
+                  {manualUploads[item.key] && manualUploads[item.key].length > 0 && (
+                    <div className="flex items-center gap-2 overflow-x-auto py-1">
+                      <span className="text-[11px] font-semibold text-neutral-400">Uploaded:</span>
+                      {manualUploads[item.key].map((u, idx) => (
+                        <div key={idx} className="relative h-12 w-12 shrink-0 overflow-hidden rounded border border-amber-400">
+                          <img src={u} alt="Manual replacement" className="h-full w-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="rounded-2xl bg-black p-3 sm:p-4">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-base font-semibold text-white sm:text-lg">Generated Caption:</span>
@@ -551,15 +760,27 @@ export function ContentPreviewModal({
                 {isPostingMeta ? "PUBLISHING TO IG..." : "POST NOW TO INSTAGRAM"}
               </button>
 
-              <button
-                type="button"
-                disabled={isSubmitting || isPostingMeta}
-                onClick={confirmSchedule}
-                className="flex items-center gap-2 rounded-lg bg-green-400 px-6 py-2.5 text-sm font-bold text-black shadow-md transition-colors hover:bg-green-500 disabled:opacity-50"
-              >
-                <CalendarCheck className="h-4 w-4" />
-                {isSubmitting ? "SAVING TO AIRTABLE..." : "CONFIRM SCHEDULE"}
-              </button>
+              {status === "Scheduled" ? (
+                <button
+                  type="button"
+                  disabled={isSubmitting || isPostingMeta}
+                  onClick={confirmSchedule}
+                  className="flex items-center gap-2 rounded-lg bg-green-400 px-6 py-2.5 text-sm font-bold text-black shadow-md transition-colors hover:bg-green-500 disabled:opacity-50"
+                >
+                  <CalendarCheck className="h-4 w-4" />
+                  {isSubmitting ? "SAVING TO AIRTABLE..." : "CONFIRM SCHEDULE"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={isSubmitting || isPostingMeta}
+                  onClick={confirmStatusChange}
+                  className="flex items-center gap-2 rounded-lg bg-green-400 px-6 py-2.5 text-sm font-bold text-black shadow-md transition-colors hover:bg-green-500 disabled:opacity-50"
+                >
+                  <Check className="h-4 w-4" strokeWidth={2.5} />
+                  {isSubmitting ? "SAVING STATUS..." : "CONFIRM"}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -586,7 +807,7 @@ export function ContentPreviewModal({
                   }}
                   className="rounded-lg bg-green-400 px-6 py-2.5 text-sm font-bold text-black transition-colors hover:bg-green-500"
                 >
-                  CONFIRM
+                  CONFIRM DISCARD
                 </button>
                 <button
                   type="button"
@@ -595,6 +816,71 @@ export function ContentPreviewModal({
                 >
                   CANCEL
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Fullscreen High-Resolution Lightbox Overlay */}
+        {lightboxOpen && currentSlides.length > 0 && (
+          <div
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/95 p-4 backdrop-blur-md"
+            onClick={() => setLightboxOpen(false)}
+          >
+            <div
+              className="relative flex max-h-[96vh] max-w-[96vw] flex-col items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                type="button"
+                onClick={() => setLightboxOpen(false)}
+                aria-label="Close full view"
+                className="absolute -top-12 right-0 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition hover:bg-white hover:text-black"
+              >
+                <X className="h-6 w-6" strokeWidth={2.5} />
+              </button>
+
+              {/* Main full-resolution image */}
+              <div className="relative overflow-hidden rounded-xl bg-neutral-950 shadow-2xl">
+                <img
+                  src={currentSlides[activeSlide] || currentSlides[0]}
+                  alt={`${item.idea} full preview`}
+                  className="max-h-[85vh] max-w-[90vw] object-contain"
+                />
+
+                {/* Left/Right navigation if multiple slides */}
+                {currentSlides.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActiveSlide((prev) => (prev > 0 ? prev - 1 : currentSlides.length - 1))
+                      }
+                      className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white backdrop-blur-md transition hover:bg-black"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="h-6 w-6" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActiveSlide((prev) => (prev < currentSlides.length - 1 ? prev + 1 : 0))
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white backdrop-blur-md transition hover:bg-black"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </button>
+                  </>
+                )}
+
+                {/* Bottom slide pill indicator */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/80 px-4 py-1.5 text-xs font-semibold tracking-wide text-white backdrop-blur-md">
+                  {isDayAndNight
+                    ? activeSlide === 0 ? "☀️ DAY PHOTO (1 / 2)" : "🌙 NIGHT PHOTO (2 / 2)"
+                    : `SLIDE ${activeSlide + 1} OF ${currentSlides.length}`}
+                </div>
               </div>
             </div>
           </div>
