@@ -38,7 +38,7 @@ git add .
 git commit -m "!COMMIT_MSG!"
 if %errorlevel% neq 0 (
     echo.
-    echo [INFO] Walang bagong changes na kailangang i-commit.
+    echo [INFO] No new changes to commit. Everything is up to date.
     echo.
     pause
     exit /b 0
@@ -51,17 +51,17 @@ git push origin main
 if %errorlevel% equ 0 (
     echo.
     echo ==============================================================================
-    echo  SUCCESS! Matagumpay na nai-push sa GitHub!
+    echo  SUCCESS! Successfully pushed to GitHub!
     echo.
     echo  AUTOMATIC DEPLOYMENT IN PROGRESS:
-    echo  Kusa nang nade-detect ng Vercel ang bagong commit at nagbi-build na ito ngayon.
-    echo  Makikita mo ang updates sa iyong live website sa loob ng 30-60 seconds:
+    echo  Vercel has detected the commit and is building the new deployment now.
+    echo  Your updates will be live in 30-60 seconds at:
     echo.
     echo  👉 https://marketing-calendar-ui-delta.vercel.app/
     echo ==============================================================================
 ) else (
     echo.
-    echo [ERROR] May naging problema sa pag-push. Pakisuri ang iyong internet o GitHub login.
+    echo [ERROR] Push failed. Please check your internet connection or GitHub login.
 )
 
 echo.

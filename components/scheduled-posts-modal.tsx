@@ -117,10 +117,10 @@ export function ScheduledPostsModal({
                 <Clock className="h-6 w-6" />
               </div>
               <p className="mt-3 text-sm font-medium text-neutral-300">
-                Walang naka-schedule na posts sa ngayon.
+                No active scheduled posts.
               </p>
               <p className="mt-1 text-xs text-neutral-500">
-                Mag-schedule ng content mula sa Calendar para lumitaw ang mga ito rito.
+                Schedule content from the calendar to view and manage it here.
               </p>
             </div>
           ) : (
