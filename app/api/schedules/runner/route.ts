@@ -86,7 +86,7 @@ async function runScheduledJobs(originUrl: string) {
       // If scheduled time has arrived or already passed
       if (now.getTime() >= scheduledDatePht.getTime()) {
         try {
-          // Find media URL for this item
+          let matchedItem: any = null
           let mediaUrl = ""
           try {
             const outRes = await fetch(
@@ -97,13 +97,30 @@ async function runScheduledJobs(originUrl: string) {
             )
             if (outRes.ok) {
               const outData = await outRes.json()
-              const matchedItem = (outData.items || []).find(
+              matchedItem = (outData.items || []).find(
                 (it: any) => it.foreignKeyId === entry.foreignKeyId
               )
               mediaUrl = matchedItem?.slides?.[0] || matchedItem?.videoUrl || ""
             }
           } catch (fetchErr) {
             console.warn("Could not retrieve mediaUrl from outputs:", fetchErr)
+          }
+
+          // Strict Live Check: If Airtable record is no longer 'Scheduled', abort publishing immediately
+          if (matchedItem && matchedItem.status !== "Scheduled" && matchedItem.rawStatus !== "Scheduled") {
+            entry.status = matchedItem.status || "Completed"
+            entry.updatedAt = new Date().toISOString()
+            hasChanges = true
+            results.push({
+              key: entry.rowKey,
+              isoDate,
+              time: entry.time,
+              category: entry.category,
+              idea: entry.idea,
+              action: "error",
+              details: `Live status in Airtable was changed to '${matchedItem.rawStatus || matchedItem.status}'. Auto-posting canceled.`,
+            })
+            continue
           }
 
           if (!mediaUrl) {
