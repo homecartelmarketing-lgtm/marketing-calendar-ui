@@ -48,6 +48,60 @@ type SelectionState = {
   outputItem?: OutputItem
 }
 
+function normalizeIdea(str?: string | null): string {
+  if (!str) return ""
+  return str.toLowerCase().replace(/story|feed|reel|layout|photo|styled|#|\s+/g, "")
+}
+
+function buildSelectionsFromSchedules(
+  schedules: ScheduledEntry[],
+  currentRows: FlatRow[]
+): Record<string, SelectionState> {
+  const init: Record<string, SelectionState> = {}
+  if (!schedules || schedules.length === 0) return init
+
+  const claimed = new Set<string>()
+
+  for (const r of currentRows) {
+    if (!r.entry) continue
+
+    const matched = schedules.find((s) => {
+      if (claimed.has(s.recordId)) return false
+      if (r.entry?.cid && s.foreignKeyId === r.entry.cid) return true
+      if (s.category === r.type && normalizeIdea(s.idea) === normalizeIdea(r.entry?.idea)) return true
+      if (s.rowKey === r.key || s.recordId === r.key) return true
+      return false
+    })
+
+    if (matched) {
+      claimed.add(matched.recordId)
+      init[r.key] = {
+        fixture: matched.fixture,
+        cid: matched.foreignKeyId,
+        outputItem: {
+          recordId: matched.recordId,
+          tableId: matched.tableId,
+          category: matched.category,
+          contentType: matched.idea,
+          foreignKeyId: matched.foreignKeyId,
+          status: matched.status,
+          rawStatus: matched.status,
+          date: matched.isoDate,
+          time: matched.time || "",
+          mediaType: matched.mediaType || "image",
+          slides: matched.mediaUrl ? [matched.mediaUrl] : [],
+          caption: matched.caption || "",
+          airtableUrl: matched.airtableUrl || "",
+          itemNames: matched.itemNames || [],
+          fixtureType: matched.fixture,
+        },
+      }
+    }
+  }
+
+  return init
+}
+
 export function DayDetailModal({
   iso,
   entries,
@@ -63,35 +117,88 @@ export function DayDetailModal({
   existingSchedules?: ScheduledEntry[]
   onScheduleSaved?: (entry: ScheduledEntry) => void
 }) {
-  const [selections, setSelections] = useState<Record<string, SelectionState>>(() => {
-    const init: Record<string, SelectionState> = {}
-    if (existingSchedules && existingSchedules.length > 0) {
-      for (const s of existingSchedules) {
-        init[s.rowKey] = {
-          fixture: s.fixture,
-          cid: s.foreignKeyId,
-          outputItem: {
-            recordId: s.recordId || "",
-            tableId: s.tableId,
-            category: s.category,
-            contentType: s.idea,
-            foreignKeyId: s.foreignKeyId,
-            status: s.status,
-            rawStatus: s.status,
-            date: s.isoDate,
-            time: s.time || "",
-            mediaType: "image",
-            slides: [],
-            caption: s.caption || "",
-            airtableUrl: s.airtableUrl || "",
-            itemNames: s.itemNames || [],
-            fixtureType: s.fixture,
-          },
-        }
+  // Build one row per entry, grouping by content type. Also dynamically incorporate extra scheduled records.
+  const rows = useMemo<FlatRow[]>(() => {
+    const out: FlatRow[] = []
+    for (const type of CONTENT_TYPES) {
+      const ofType = entries.filter((e) => e.type === type)
+      const schedOfType = (existingSchedules || []).filter((s) => s.category === type)
+
+      const claimedSchedIds = new Set<string>()
+      const rowList: { key: string; entry: ContentEntry }[] = []
+
+      if (ofType.length === 0 && schedOfType.length === 0) {
+        out.push({ key: `${type}-empty`, type, entry: null, isFirstOfType: true, typeRowCount: 1 })
+        continue
       }
+
+      ofType.forEach((entry, i) => {
+        const matched = schedOfType.find((s) => {
+          if (claimedSchedIds.has(s.recordId)) return false
+          if (entry.cid && s.foreignKeyId === entry.cid) return true
+          if (normalizeIdea(s.idea) === normalizeIdea(entry.idea)) return true
+          return false
+        })
+        if (matched) claimedSchedIds.add(matched.recordId)
+
+        rowList.push({
+          key: `${type}-${i}`,
+          entry: {
+            ...entry,
+            status: matched?.status || entry.status,
+            cid: matched?.foreignKeyId || entry.cid,
+            fixture: matched?.fixture || entry.fixture,
+            time: matched?.time || entry.time,
+          },
+        })
+      })
+
+      // Append any extra scheduled items for this category not already represented
+      schedOfType.forEach((sched) => {
+        if (!claimedSchedIds.has(sched.recordId)) {
+          claimedSchedIds.add(sched.recordId)
+          rowList.push({
+            key: `${type}-${sched.recordId}`,
+            entry: {
+              type,
+              idea: sched.idea,
+              time: sched.time,
+              status: sched.status,
+              fixture: sched.fixture,
+              cid: sched.foreignKeyId,
+            },
+          })
+        }
+      })
+
+      rowList.forEach((r, i) => {
+        out.push({
+          key: r.key,
+          type,
+          entry: r.entry,
+          isFirstOfType: i === 0,
+          typeRowCount: rowList.length,
+        })
+      })
     }
-    return init
+    return out
+  }, [entries, existingSchedules])
+
+  const [selections, setSelections] = useState<Record<string, SelectionState>>(() => {
+    return buildSelectionsFromSchedules(existingSchedules, [])
   })
+
+  // Reactive effect: whenever existingSchedules or rows update, re-sync selections
+  useEffect(() => {
+    if (existingSchedules && existingSchedules.length > 0) {
+      const fromSchedules = buildSelectionsFromSchedules(existingSchedules, rows)
+      setSelections((prev) => ({
+        ...prev,
+        ...fromSchedules,
+      }))
+    }
+  }, [existingSchedules, rows])
+
   const [openDropdown, setOpenDropdown] = useState<{ key: string; kind: "fixture" | "cid" } | null>(null)
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
   const [outputsMap, setOutputsMap] = useState<Record<string, OutputItem[]>>({})
@@ -170,29 +277,6 @@ export function DayDetailModal({
     })
   }, [entries, outputsMap, loadingMap])
 
-  // Build one row per entry, grouping by content type. A type with no entry
-  // still renders a single N/A row so all three types are always visible.
-  const rows = useMemo<FlatRow[]>(() => {
-    const out: FlatRow[] = []
-    for (const type of CONTENT_TYPES) {
-      const ofType = entries.filter((e) => e.type === type)
-      if (ofType.length === 0) {
-        out.push({ key: `${type}-empty`, type, entry: null, isFirstOfType: true, typeRowCount: 1 })
-        continue
-      }
-      ofType.forEach((entry, i) => {
-        out.push({
-          key: `${type}-${i}`,
-          type,
-          entry,
-          isFirstOfType: i === 0,
-          typeRowCount: ofType.length,
-        })
-      })
-    }
-    return out
-  }, [entries])
-
   // Ordered list of real (non-N/A) rows that can be previewed, with the
   // fixture/CID selections and full outputItem resolved.
   const previewItems = useMemo<PreviewItem[]>(() => {
@@ -229,7 +313,27 @@ export function DayDetailModal({
         ...prev,
         [key]: {
           ...existing,
-          outputItem: existing.outputItem
+          fixture: fullEntry?.fixture || existing.fixture,
+          cid: fullEntry?.foreignKeyId || existing.cid,
+          outputItem: fullEntry
+            ? {
+                recordId: fullEntry.recordId,
+                tableId: fullEntry.tableId,
+                category: fullEntry.category,
+                contentType: fullEntry.idea,
+                foreignKeyId: fullEntry.foreignKeyId,
+                status: fullEntry.status,
+                rawStatus: fullEntry.status,
+                date: fullEntry.isoDate,
+                time: fullEntry.time || "",
+                mediaType: fullEntry.mediaType || "image",
+                slides: fullEntry.mediaUrl ? [fullEntry.mediaUrl] : (existing.outputItem?.slides || []),
+                caption: fullEntry.caption || existing.outputItem?.caption || "",
+                airtableUrl: fullEntry.airtableUrl || existing.outputItem?.airtableUrl || "",
+                itemNames: fullEntry.itemNames || existing.outputItem?.itemNames || [],
+                fixtureType: fullEntry.fixture || existing.outputItem?.fixtureType,
+              }
+            : existing.outputItem
             ? { ...existing.outputItem, status: status as any }
             : undefined,
         },
@@ -507,6 +611,21 @@ function ContentRow({
     }
   }
 
+  // Generate Fixture dropdown options with real counts of available items
+  const fixtureOptions: DropdownOption[] = FIXTURES.map((f) => {
+    const count = items.filter(
+      (it) =>
+        matchesFixture(it.fixtureType, f.name) &&
+        (it.status === "Completed" || it.foreignKeyId === cid)
+    ).length
+    return {
+      label: count > 0 ? `${f.name} (${count})` : `${f.name} (0)`,
+      value: f.name,
+      className: count > 0 ? f.className : "text-neutral-400 opacity-50",
+      disabled: count === 0 && !isLoading,
+    }
+  })
+
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-[2fr_1fr_1.3fr_1.3fr]">
       <button
@@ -525,7 +644,7 @@ function ContentRow({
       <Dropdown
         placeholder="Fixture"
         value={fixture}
-        options={FIXTURES.map((f) => ({ label: f.name, className: f.className }))}
+        options={fixtureOptions}
         isOpen={openDropdown?.key === row.key && openDropdown.kind === "fixture"}
         onToggle={(open) => setOpenDropdown(open ? { key: row.key, kind: "fixture" } : null)}
         onPick={(v) => {

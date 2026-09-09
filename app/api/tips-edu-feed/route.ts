@@ -2,9 +2,7 @@ import { NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
 
-const AIRTABLE_TOKEN =
-  process.env.AIRTABLE_TOKEN ||
-  "pat6TrWWL12GbH46s.32f28bcfd2bd7081ccccfc0955118a7329dde2a75b3aed70c2ab0d8c3c918484"
+const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || ""
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || "appDM0jUDsaiThtR3"
 const MARKETING_AUTOMATION_DIR =
   process.env.MARKETING_AUTOMATION_DIR || "C:\\Users\\User\\marketing-automation"

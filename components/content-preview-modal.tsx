@@ -146,10 +146,13 @@ export function ContentPreviewModal({
         }),
       })
 
-      if (schedRes.ok) {
-        const schedData = await schedRes.json()
-        savedEntry = schedData.entry
+      if (!schedRes.ok) {
+        const errData = await schedRes.json().catch(() => ({}))
+        throw new Error(errData.error || errData.message || "Failed to save schedule to Airtable")
       }
+
+      const schedData = await schedRes.json()
+      savedEntry = schedData.entry
 
       setStatusByKey((prev) => ({ ...prev, [item.key]: finalStatus }))
       onScheduleSuccess?.(item.key, finalStatus, savedEntry)
@@ -159,14 +162,9 @@ export function ContentPreviewModal({
         setShowSuccess(false)
         onClose()
       }, 1600)
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error scheduling:", err)
-      setSuccessTitle("SUCCESSFULLY UPDATED & SCHEDULED!")
-      setShowSuccess(true)
-      window.setTimeout(() => {
-        setShowSuccess(false)
-        onClose()
-      }, 1600)
+      alert(`Scheduling Failed: ${err?.message || "Please verify your Airtable connection and permissions."}`)
     } finally {
       setIsSubmitting(false)
     }

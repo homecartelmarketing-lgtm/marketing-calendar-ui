@@ -1,45 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import fs from "fs"
-import path from "path"
 import { publishToInstagram } from "@/lib/meta-api"
-import type { ScheduledEntry } from "@/app/api/schedules/route"
+import { pullAirtableSchedules, ScheduledEntry } from "@/app/api/schedules/route"
+import { AIRTABLE_BASE_ID, AIRTABLE_TOKEN } from "@/lib/tables-config"
 
-const DEFAULT_SCHEDULES_FILE = path.join(process.cwd(), "data", "schedules.json")
-
-function getSchedulesFilePath(): string {
-  if (process.env.VERCEL === "1") {
-    return path.join("/tmp", "schedules.json")
-  }
-  return DEFAULT_SCHEDULES_FILE
-}
-
-function readSchedules(): Record<string, ScheduledEntry[]> {
-  const filePath = getSchedulesFilePath()
-  try {
-    if (fs.existsSync(filePath)) {
-      return JSON.parse(fs.readFileSync(filePath, "utf-8"))
-    }
-    if (fs.existsSync(DEFAULT_SCHEDULES_FILE)) {
-      return JSON.parse(fs.readFileSync(DEFAULT_SCHEDULES_FILE, "utf-8"))
-    }
-    return {}
-  } catch {
-    return {}
-  }
-}
-
-function writeSchedules(data: Record<string, ScheduledEntry[]>) {
-  const filePath = getSchedulesFilePath()
-  try {
-    const dir = path.dirname(filePath)
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true })
-    }
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8")
-  } catch (err) {
-    console.warn("Could not write schedules during runner execution:", err)
-  }
-}
+export const dynamic = "force-dynamic"
+export const maxDuration = 300
 
 function isAuthorized(request: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET
@@ -58,8 +23,27 @@ function isAuthorized(request: NextRequest): boolean {
   return false
 }
 
+async function markAirtableRecordPosted(tableId: string, recordId: string) {
+  try {
+    await fetch(
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fields: { Status: "Posted" } }),
+      }
+    )
+  } catch (err) {
+    console.warn(`Could not mark Airtable record ${recordId} as Posted:`, err)
+  }
+}
+
 async function runScheduledJobs(originUrl: string) {
-  const schedules = readSchedules()
+  // 1. Fetch live schedules directly from Airtable (Single Source of Truth)
+  const schedules = await pullAirtableSchedules()
   const now = new Date()
   const results: {
     key: string
@@ -71,8 +55,6 @@ async function runScheduledJobs(originUrl: string) {
     timeDiffMinutes?: number
     details?: any
   }[] = []
-
-  let hasChanges = false
 
   for (const [isoDate, entries] of Object.entries(schedules)) {
     for (const entry of entries) {
@@ -86,41 +68,27 @@ async function runScheduledJobs(originUrl: string) {
       // If scheduled time has arrived or already passed
       if (now.getTime() >= scheduledDatePht.getTime()) {
         try {
-          let matchedItem: any = null
-          let mediaUrl = ""
-          try {
-            const outRes = await fetch(
-              new URL(
-                `/api/content-outputs?category=${encodeURIComponent(entry.category)}&type=${encodeURIComponent(entry.idea)}`,
-                originUrl
-              ).toString()
-            )
-            if (outRes.ok) {
-              const outData = await outRes.json()
-              matchedItem = (outData.items || []).find(
-                (it: any) => it.foreignKeyId === entry.foreignKeyId
-              )
-              mediaUrl = matchedItem?.slides?.[0] || matchedItem?.videoUrl || ""
-            }
-          } catch (fetchErr) {
-            console.warn("Could not retrieve mediaUrl from outputs:", fetchErr)
-          }
+          let mediaUrl = entry.mediaUrl || ""
 
-          // Strict Live Check: If Airtable record is no longer 'Scheduled', abort publishing immediately
-          if (matchedItem && matchedItem.status !== "Scheduled" && matchedItem.rawStatus !== "Scheduled") {
-            entry.status = matchedItem.status || "Completed"
-            entry.updatedAt = new Date().toISOString()
-            hasChanges = true
-            results.push({
-              key: entry.rowKey,
-              isoDate,
-              time: entry.time,
-              category: entry.category,
-              idea: entry.idea,
-              action: "error",
-              details: `Live status in Airtable was changed to '${matchedItem.rawStatus || matchedItem.status}'. Auto-posting canceled.`,
-            })
-            continue
+          // Fallback: If mediaUrl wasn't directly found in record, query content-outputs
+          if (!mediaUrl) {
+            try {
+              const outRes = await fetch(
+                new URL(
+                  `/api/content-outputs?category=${encodeURIComponent(entry.category)}&type=${encodeURIComponent(entry.idea)}`,
+                  originUrl
+                ).toString()
+              )
+              if (outRes.ok) {
+                const outData = await outRes.json()
+                const matchedItem = (outData.items || []).find(
+                  (it: any) => it.recordId === entry.recordId || it.foreignKeyId === entry.foreignKeyId
+                )
+                mediaUrl = matchedItem?.slides?.[0] || matchedItem?.videoUrl || ""
+              }
+            } catch (fetchErr) {
+              console.warn("Could not retrieve mediaUrl from outputs fallback:", fetchErr)
+            }
           }
 
           if (!mediaUrl) {
@@ -140,35 +108,14 @@ async function runScheduledJobs(originUrl: string) {
           const publishRes = await publishToInstagram({
             category: entry.category,
             mediaUrl,
-            mediaType: entry.category === "Reels" ? "video" : "image",
+            mediaType: entry.category === "Reels" ? "video" : (entry.mediaType || "image"),
             caption: entry.caption,
           })
 
           if (publishRes.success) {
-            entry.status = "Posted"
-            entry.updatedAt = new Date().toISOString()
-            hasChanges = true
-
-            // Patch Airtable status
+            // Flip Airtable status to 'Posted'
             if (entry.tableId && entry.recordId) {
-              try {
-                await fetch(
-                  new URL("/api/content-outputs", originUrl).toString(),
-                  {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      recordId: entry.recordId,
-                      tableId: entry.tableId,
-                      status: "Posted",
-                      date: entry.isoDate,
-                      time: entry.time,
-                    }),
-                  }
-                )
-              } catch (patchErr) {
-                console.warn("Airtable patch error during runner:", patchErr)
-              }
+              await markAirtableRecordPosted(entry.tableId, entry.recordId)
             }
 
             results.push({
@@ -217,13 +164,18 @@ async function runScheduledJobs(originUrl: string) {
     }
   }
 
-  if (hasChanges) {
-    writeSchedules(schedules)
-  }
-
   return {
     success: true,
-    serverTimePht: new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().replace("Z", "+08:00"),
+    serverTimePht: new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Manila",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }).format(now),
     processedCount: results.length,
     results,
   }

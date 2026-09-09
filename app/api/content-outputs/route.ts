@@ -39,9 +39,7 @@ function loadAutomationEnv(): Record<string, string> {
 
 const autoEnv = loadAutomationEnv()
 const AIRTABLE_TOKEN =
-  process.env.AIRTABLE_TOKEN ||
-  autoEnv.AIRTABLE_TOKEN ||
-  "pat6TrWWL12GbH46s.32f28bcfd2bd7081ccccfc0955118a7329dde2a75b3aed70c2ab0d8c3c918484"
+  process.env.AIRTABLE_TOKEN || autoEnv.AIRTABLE_TOKEN || ""
 const AIRTABLE_BASE_ID =
   process.env.AIRTABLE_BASE_ID || autoEnv.AIRTABLE_BASE_ID || "appDM0jUDsaiThtR3"
 
@@ -251,6 +249,7 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
       )
     } else if (t.includes("showcase")) {
       ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_PRODUCT_SHOWCASE_TABLE_LAMP || "tbln0MNBaVVrZ0wrF",
         autoEnv.AIRTABLE_TABLE_ID_PRODUCT_SHOWCASE_CHANDELIER,
         autoEnv.AIRTABLE_TABLE_ID_PRODUCT_SHOWCASE_PENDANT_LIGHTS
       )
@@ -426,6 +425,14 @@ function getTableTargetsForPipeline(category: string, type: string, autoEnv: Rec
     ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
   }
 
+  if (cat === "feeds" && t.includes("showcase")) {
+    return [
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_PRODUCT_SHOWCASE_TABLE_LAMP || "tbln0MNBaVVrZ0wrF", fixtureType: "Table Lamp" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_PRODUCT_SHOWCASE_CHANDELIER || "", fixtureType: "Chandelier" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_PRODUCT_SHOWCASE_PENDANT_LIGHTS || "", fixtureType: "Pendant Light" },
+    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
+  }
+
   if (cat === "feeds" && t.includes("tips")) {
     return [
       { tableId: "tblQ65S51Dmauwx4c", fixtureType: "Chandelier" },
@@ -506,7 +513,9 @@ function extractAssetsFromRecord(fields: Record<string, any>, isVideoPreferred: 
       kLower.includes("final stamped output") ||
       kLower.includes("style reel slideshow") ||
       kLower.includes("slide show before") ||
-      kLower.includes("day and night reel with")
+      kLower.includes("day and night reel with") ||
+      kLower.includes("product showcase") ||
+      kLower.includes("showcase feed")
 
     const targetList = isPrimaryOutput ? primarySlides : secondarySlides
     for (const item of val) {

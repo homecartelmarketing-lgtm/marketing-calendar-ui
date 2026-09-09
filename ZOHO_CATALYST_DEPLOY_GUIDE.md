@@ -78,13 +78,13 @@ Catalyst will:
 
 | Variable Name | Value | Purpose |
 |---|---|---|
-| `AIRTABLE_TOKEN` | `pat6TrWWL12...` | Airtable API access |
+| `AIRTABLE_TOKEN` | `your_airtable_token_here` | Airtable API access |
 | `AIRTABLE_BASE_ID` | `appDM0jUDsaiThtR3` | Home Cartel base ID |
-| `META_ACCESS_TOKEN` | `EAGJnxFYVdH...` | Meta Page Access Token |
-| `META_PAGE_ID` | `1761624157420596` | Home Cartel FB Page ID |
-| `META_IG_ACCOUNT_ID` | `17841404109072695` | Instagram Business Account ID |
+| `META_ACCESS_TOKEN` | `your_meta_page_access_token_here` | Meta Page Access Token |
+| `META_PAGE_ID` | `your_fb_page_id` | Home Cartel FB Page ID |
+| `META_IG_ACCOUNT_ID` | `your_ig_account_id` | Instagram Business Account ID |
 | `META_API_VERSION` | `v19.0` | Meta Graph API version |
-| `CRON_SECRET` | `hc_cron_2026_marketing_secret` | Secret key protecting the runner |
+| `CRON_SECRET` | `your_cron_secret_here` | Secret key protecting the runner |
 
 *Click **Save** and **Redeploy** to apply the environment variables.*
 

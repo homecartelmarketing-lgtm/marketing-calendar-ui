@@ -144,7 +144,9 @@ export function ContentCalendar() {
     const isoDate = entry.isoDate
     setSchedules((prev) => {
       const dateEntries = prev[isoDate] || []
-      const existingIdx = dateEntries.findIndex((e) => e.rowKey === entry.rowKey)
+      const existingIdx = dateEntries.findIndex(
+        (e) => e.rowKey === entry.rowKey || (e.recordId && e.recordId === entry.recordId)
+      )
       const updated = [...dateEntries]
       if (existingIdx >= 0) {
         updated[existingIdx] = entry
