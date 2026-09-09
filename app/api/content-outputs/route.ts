@@ -1,0 +1,773 @@
+import { NextRequest, NextResponse } from "next/server"
+import fs from "fs"
+import path from "path"
+
+const MARKETING_AUTOMATION_DIR =
+  process.env.MARKETING_AUTOMATION_DIR || "C:\\Users\\User\\marketing-automation"
+
+// Load env vars dynamically from C:\Users\User\marketing-automation\.env and merge with process.env
+function loadAutomationEnv(): Record<string, string> {
+  const out: Record<string, string> = {}
+  const envPath = path.join(MARKETING_AUTOMATION_DIR, ".env")
+  if (fs.existsSync(envPath)) {
+    try {
+      const content = fs.readFileSync(envPath, "utf-8")
+      for (const line of content.split("\n")) {
+        const trimmed = line.trim()
+        if (!trimmed || trimmed.startsWith("#")) continue
+        const idx = trimmed.indexOf("=")
+        if (idx > 0) {
+          const key = trimmed.slice(0, idx).trim()
+          const val = trimmed.slice(idx + 1).trim().replace(/^["']|["']$/g, "")
+          out[key] = val
+        }
+      }
+    } catch (e) {
+      console.error("Error reading automation .env:", e)
+    }
+  }
+
+  // Cloud/Vercel priority: overlay any environment variables set in process.env
+  for (const [key, val] of Object.entries(process.env)) {
+    if (val !== undefined) {
+      out[key] = val
+    }
+  }
+
+  return out
+}
+
+const autoEnv = loadAutomationEnv()
+const AIRTABLE_TOKEN =
+  process.env.AIRTABLE_TOKEN ||
+  autoEnv.AIRTABLE_TOKEN ||
+  "pat6TrWWL12GbH46s.32f28bcfd2bd7081ccccfc0955118a7329dde2a75b3aed70c2ab0d8c3c918484"
+const AIRTABLE_BASE_ID =
+  process.env.AIRTABLE_BASE_ID || autoEnv.AIRTABLE_BASE_ID || "appDM0jUDsaiThtR3"
+
+export type OutputItem = {
+  recordId: string
+  tableId?: string
+  category: string
+  contentType: string
+  foreignKeyId: string
+  status: "Completed" | "Scheduled" | "Posted" | "For Manual" | "Discard"
+  rawStatus: string
+  date: string
+  time: string
+  mediaType: "image" | "video"
+  slides: string[]
+  videoUrl?: string
+  duration?: string
+  caption: string
+  airtableUrl: string
+  itemNames: string[]
+  fixtureType?: string
+}
+
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
+export type TableTarget = {
+  tableId: string
+  fixtureType?: string
+}
+
+export function getCtaStoryTargets(env: Record<string, string>): TableTarget[] {
+  return [
+    {
+      tableId: env.AIRTABLE_TABLE_ID_CHANDELIER_CTA || "tblYHdVq14FjMWg5o",
+      fixtureType: "Chandelier",
+    },
+    {
+      tableId: env.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIER_CTA || "tblSpGJLO3faYfIDY",
+      fixtureType: "Cluster Chandelier",
+    },
+    {
+      tableId: env.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_CTA || "tblfl7fqFZa2vUieB",
+      fixtureType: "Pendant Light",
+    },
+    {
+      tableId: env.AIRTABLE_TABLE_ID_TABLE_LAMPS_CTA || "tblKJeCCp4zQ6g7Em",
+      fixtureType: "Table Lamp",
+    },
+    {
+      tableId: env.AIRTABLE_TABLE_ID_FLOOR_LAMP_CTA || "tblPKSYyjgbgMypE2",
+      fixtureType: "Floor Lamp",
+    },
+  ]
+}
+
+export function getMoodboardStoryTargets(env: Record<string, string>): TableTarget[] {
+  return [
+    {
+      tableId: env.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_STORY || "tblHQrci8d1K9ws2M",
+      fixtureType: "Chandelier",
+    },
+    {
+      tableId: env.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_STORY || "tblkm119i48y0M1IQ",
+      fixtureType: "Pendant Light",
+    },
+    {
+      tableId: env.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_STORY || "tblBaNeiSZeYrUawW",
+      fixtureType: "Floor Lamp",
+    },
+  ]
+}
+
+function normalizeStatus(
+  raw?: string | null
+): "Completed" | "Scheduled" | "Posted" | "For Manual" | "Discard" {
+  if (!raw) return "Completed"
+  const s = raw.trim().toLowerCase()
+  if (s.includes("post")) return "Posted"
+  if (s.includes("sched")) return "Scheduled"
+  if (s.includes("complete") || s.includes("done")) return "Completed"
+  if (s.includes("manual") || s.includes("revision") || s === "fm") return "For Manual"
+  if (s.includes("discard")) return "Discard"
+  return "Completed"
+}
+
+function extractCaption(fields: Record<string, any>): string {
+  for (const [key, val] of Object.entries(fields)) {
+    const lower = key.trim().toLowerCase()
+    if (
+      lower === "generated caption" ||
+      lower === "caption generated" ||
+      lower === "caption" ||
+      lower === "post caption" ||
+      lower === "final caption" ||
+      lower === "copy"
+    ) {
+      if (typeof val === "string" && val.trim()) {
+        return val.trim()
+      }
+    }
+  }
+  return ""
+}
+
+function formatDateDisplay(isoDateString?: string): { date: string; time: string } {
+  if (!isoDateString || !String(isoDateString).trim()) {
+    return { date: "", time: "" }
+  }
+
+  const d = new Date(isoDateString)
+  if (isNaN(d.getTime())) {
+    return { date: "", time: "" }
+  }
+
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ]
+
+  const monthName = months[d.getMonth()]
+  const dayNum = d.getDate()
+  const yearNum = d.getFullYear()
+  const dayName = days[d.getDay()]
+
+  const hours = String(d.getHours()).padStart(2, "0")
+  const mins = String(d.getMinutes()).padStart(2, "0")
+
+  return {
+    date: `${monthName} ${dayNum}, ${yearNum} (${dayName})`,
+    time: `${hours}:${mins}`,
+  }
+}
+
+function extractCtaConvertedImages(fields: Record<string, any>): string[] {
+  for (const [key, val] of Object.entries(fields)) {
+    if (key.trim().toLowerCase() === "cta converted image") {
+      if (Array.isArray(val) && val.length > 0) {
+        return val
+          .filter((item: any) => item && typeof item === "object" && item.url)
+          .map((item: any) => item.url as string)
+      }
+    }
+  }
+  return []
+}
+
+function extractMoodboardStoryImages(fields: Record<string, any>): string[] {
+  const slides: string[] = []
+
+  // Slide 1: Moodboard Converted
+  for (const [key, val] of Object.entries(fields)) {
+    if (key.trim().toLowerCase() === "moodboard converted") {
+      if (Array.isArray(val) && val.length > 0) {
+        for (const item of val) {
+          if (item && typeof item === "object" && item.url) {
+            slides.push(item.url as string)
+          }
+        }
+      }
+    }
+  }
+
+  // Slide 2: Blended Image
+  for (const [key, val] of Object.entries(fields)) {
+    if (key.trim().toLowerCase() === "blended image") {
+      if (Array.isArray(val) && val.length > 0) {
+        for (const item of val) {
+          if (item && typeof item === "object" && item.url) {
+            slides.push(item.url as string)
+          }
+        }
+      }
+    }
+  }
+
+  return slides
+}
+
+// Map pipeline keys to table IDs retrieved from .env
+function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<string, string>): string[] {
+  const cat = category.toLowerCase()
+  const t = type.toLowerCase()
+  const ids: (string | undefined)[] = []
+
+  if (cat === "feeds") {
+    if (t.includes("tips")) {
+      ids.push("tblIhCP3Gjg09QFCK", "tblQ65S51Dmauwx4c", "tblQuhvktqYB59Ofw", "tblwY6eGQCD5bJeF1")
+    } else if (t.includes("moodboard #2") || t.includes("moodboard 2") || t.includes("moodboard")) {
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_2_FEED,
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_2_FEED,
+        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_2_FEED,
+        autoEnv.AIRTABLE_TABLE_ID_WALL_LIGHTS_MOODBOARD_2_FEED
+      )
+    } else if (t.includes("day & night") || t.includes("day and night") || t.includes("d&n") || t.includes("day (") || t.includes("night (")) {
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_AND_NIGHT_4_5,
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_NIGHT_FEED,
+        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_DAY_NIGHT_FEED,
+        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_DAY_NIGHT_FEED
+      )
+    } else if (t.includes("showcase")) {
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_PRODUCT_SHOWCASE_CHANDELIER,
+        autoEnv.AIRTABLE_TABLE_ID_PRODUCT_SHOWCASE_PENDANT_LIGHTS
+      )
+    } else if (t.includes("moodboard #2") || t.includes("moodboard 2")) {
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_2_FEED,
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_2_FEED,
+        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_2_FEED,
+        autoEnv.AIRTABLE_TABLE_ID_WALL_LIGHTS_MOODBOARD_2_FEED
+      )
+    } else if (t.includes("moodboard #1") || t.includes("moodboard 1") || t.includes("moodboard")) {
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_1_FEED,
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_1_FEED,
+        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_1_FEED,
+        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_MOODBOARD_1_FEED
+      )
+    } else if (t.includes("collection category")) {
+      ids.push(autoEnv.AIRTABLE_TABLE_ID_COLLECTION_CATEGORY_FEED)
+    } else if (t.includes("1 product 3 styles") || t.includes("1 product three styles")) {
+      ids.push(autoEnv.AIRTABLE_TABLE_ID_1_PRODUCT_3_STYLES_FEED)
+    } else if (t.includes("tips")) {
+      ids.push("tblQ65S51Dmauwx4c", "tblIhCP3Gjg09QFCK", "tblQuhvktqYB59Ofw", "tblwY6eGQCD5bJeF1")
+    }
+  } else if (cat === "stories") {
+    if (t.includes("cta")) {
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_CTA || "tblYHdVq14FjMWg5o",
+        autoEnv.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIER_CTA || "tblSpGJLO3faYfIDY",
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_CTA || "tblfl7fqFZa2vUieB",
+        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_CTA || "tblKJeCCp4zQ6g7Em",
+        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMP_CTA || "tblPKSYyjgbgMypE2"
+      )
+    } else if (t.includes("tips")) {
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_TIPS_EDU_STORY,
+        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_TIPS_EDU_STORY,
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIERS_TIPS_EDU_STORY,
+        autoEnv.AIRTABLE_TABLE_ID_CEILING_MOUNTED_TIPS_EDU_STORY,
+        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_TIPS_EDU_STORY,
+        autoEnv.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIERS_TIPS_EDU_STORY
+      )
+    } else if (t.includes("myth")) {
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_CHANDELIER,
+        autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_FLOOR_LAMPS,
+        autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_PENDANT_LIGHTS
+      )
+    } else if (t.includes("style this")) {
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_STYLE_THIS_CHANDELIER,
+        autoEnv.AIRTABLE_TABLE_ID_STYLE_THIS_FLOOR_LAMPS
+      )
+    } else if (t.includes("day & night") || t.includes("day and night") || t.includes("d&n") || t.includes("day (") || t.includes("night (")) {
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_NIGHT_STORY,
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_NIGHT_STORY,
+        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_DAY_NIGHT_STORY,
+        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_DAY_NIGHT_STORY,
+        autoEnv.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIER_DAY_NIGHT_STORY
+      )
+    } else if (t.includes("moodboard")) {
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_STORY,
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_STORY
+      )
+    } else if (t.includes("specification") || t.includes("specs")) {
+      ids.push("tblEGTB6BodRVDqBV")
+    } else if (t.includes("description") || t.includes("closeup")) {
+      ids.push("tblDcT6jovdAbKnfw", "tblDD2w4v0Idb4jAZ", "tblPvHyKGByWJCMtY", "tblnIOQVywHcTgAtv", "tbl5S9JEHSrjrLwxA", "tblYqudlgjYMNRROM")
+    } else if (t.includes("this or that")) {
+      ids.push("tblo42IkuhYLIQBzk", "tblS1VHp41RDfxztD", "tblaoqj8VPVHFmVQn", "tblYAhjKckXtjUayx", "tblm1Ty2QkAlUcHJt", "tblZw6jvSa27oZDiN")
+    }
+  } else if (cat === "reels") {
+    if (t.includes("day & night") || t.includes("day and night") || t.includes("d&n") || t.includes("day (") || t.includes("night (")) {
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_AND_NIGHT_REEL,
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_AND_NIGHT_REEL,
+        autoEnv.AIRTABLE_TABLE_ID_FLOORLAMP_DAY_AND_NIGHT_REEL
+      )
+    } else if (t.includes("before") && t.includes("after")) {
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_BEFORE_AFTER_CHANDELIER,
+        autoEnv.AIRTABLE_TABLE_ID_BEFORE_AFTER_PENDANT_LIGHTS
+      )
+    } else if (t.includes("moodboard")) {
+      ids.push(autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MODERN_MOODBOARDREEL)
+    } else if (t.includes("style") || t.includes("3 styles")) {
+      ids.push(autoEnv.AIRTABLE_TABLE_ID_STYLE_REEL_SLIDESHOW)
+    } else if (t.includes("closeup")) {
+      ids.push("tblqBZ946hVdOpmDV")
+    }
+  }
+
+  // Filter out undefined and empty string IDs
+  return ids.filter((x): x is string => Boolean(x && x.startsWith("tbl")))
+}
+
+function getTableTargetsForPipeline(category: string, type: string, autoEnv: Record<string, string>): TableTarget[] {
+  const cat = category.toLowerCase()
+  const t = type.toLowerCase()
+
+  if (cat === "stories" && t.includes("cta")) {
+    return getCtaStoryTargets(autoEnv).filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
+  }
+
+  if (cat === "stories" && t.includes("moodboard")) {
+    return getMoodboardStoryTargets(autoEnv).filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
+  }
+
+  if (cat === "stories" && (t.includes("day & night") || t.includes("day and night") || t.includes("d&n") || t.includes("day (") || t.includes("night ("))) {
+    return [
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_NIGHT_STORY, fixtureType: "Chandelier" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_NIGHT_STORY, fixtureType: "Pendant Light" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_DAY_NIGHT_STORY, fixtureType: "Floor Lamp" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_DAY_NIGHT_STORY, fixtureType: "Table Lamp" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIER_DAY_NIGHT_STORY, fixtureType: "Cluster Chandelier" },
+    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
+  }
+
+  if (cat === "stories" && t.includes("tips")) {
+    return [
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_CHANDELIERS_TIPS_EDU_STORY, fixtureType: "Chandelier" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIERS_TIPS_EDU_STORY, fixtureType: "Cluster Chandelier" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_TIPS_EDU_STORY, fixtureType: "Pendant Light" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_TIPS_EDU_STORY, fixtureType: "Table Lamp" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_TIPS_EDU_STORY, fixtureType: "Floor Lamp" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_CEILING_MOUNTED_TIPS_EDU_STORY, fixtureType: "Ceiling Mounted" },
+    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
+  }
+
+  if (cat === "stories" && (t.includes("description") || t.includes("closeup"))) {
+    return [
+      { tableId: "tblDcT6jovdAbKnfw", fixtureType: "Chandelier" },
+      { tableId: "tblDD2w4v0Idb4jAZ", fixtureType: "Pendant Light" },
+      { tableId: "tblPvHyKGByWJCMtY", fixtureType: "Floor Lamp" },
+      { tableId: "tblnIOQVywHcTgAtv", fixtureType: "Cluster Chandelier" },
+      { tableId: "tbl5S9JEHSrjrLwxA", fixtureType: "Table Lamp" },
+      { tableId: "tblYqudlgjYMNRROM", fixtureType: "Wall Light" },
+    ]
+  }
+
+  if (cat === "stories" && t.includes("myth")) {
+    return [
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_CHANDELIER, fixtureType: "Chandelier" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_PENDANT_LIGHTS, fixtureType: "Pendant Light" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_FLOOR_LAMPS, fixtureType: "Floor Lamp" },
+    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
+  }
+
+  if (cat === "stories" && t.includes("style this")) {
+    return [
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_STYLE_THIS_CHANDELIER, fixtureType: "Chandelier" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_STYLE_THIS_FLOOR_LAMPS, fixtureType: "Floor Lamp" },
+    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
+  }
+
+  if (cat === "feeds" && (t.includes("day & night") || t.includes("day and night") || t.includes("d&n") || t.includes("day (") || t.includes("night ("))) {
+    return [
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_AND_NIGHT_4_5, fixtureType: "Chandelier" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_NIGHT_FEED, fixtureType: "Pendant Light" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_DAY_NIGHT_FEED, fixtureType: "Floor Lamp" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_DAY_NIGHT_FEED, fixtureType: "Table Lamp" },
+    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
+  }
+
+  if (cat === "feeds" && (t.includes("moodboard #2") || t.includes("moodboard 2") || t.includes("moodboard"))) {
+    return [
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_2_FEED, fixtureType: "Chandelier" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_2_FEED, fixtureType: "Pendant Light" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_2_FEED, fixtureType: "Floor Lamp" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_WALL_LIGHTS_MOODBOARD_2_FEED, fixtureType: "Wall Light" },
+    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
+  }
+
+  if (cat === "feeds" && t.includes("tips")) {
+    return [
+      { tableId: "tblQ65S51Dmauwx4c", fixtureType: "Chandelier" },
+      { tableId: "tblIhCP3Gjg09QFCK", fixtureType: "Pendant Light" },
+      { tableId: "tblQuhvktqYB59Ofw", fixtureType: "Floor Lamp" },
+      { tableId: "tblwY6eGQCD5bJeF1", fixtureType: "Cluster Chandelier" },
+    ]
+  }
+
+  if (cat === "reels" && (t.includes("day & night") || t.includes("day and night") || t.includes("d&n") || t.includes("day (") || t.includes("night ("))) {
+    return [
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_AND_NIGHT_REEL, fixtureType: "Chandelier" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_AND_NIGHT_REEL, fixtureType: "Pendant Light" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_FLOORLAMP_DAY_AND_NIGHT_REEL, fixtureType: "Floor Lamp" },
+    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
+  }
+
+  if (cat === "reels" && (t.includes("before") && t.includes("after"))) {
+    return [
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_BEFORE_AFTER_CHANDELIER, fixtureType: "Chandelier" },
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_BEFORE_AFTER_PENDANT_LIGHTS, fixtureType: "Pendant Light" },
+    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
+  }
+
+  if (cat === "reels" && t.includes("moodboard")) {
+    return [
+      { tableId: autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MODERN_MOODBOARDREEL, fixtureType: "Chandelier" },
+    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
+  }
+
+  const ids = getTableIdsForPipeline(category, type, autoEnv)
+  return ids.map((tableId) => ({ tableId }))
+}
+
+// Smart asset extractor across any Airtable table schema
+function extractAssetsFromRecord(fields: Record<string, any>, isVideoPreferred: boolean): {
+  slides: string[]
+  videoUrl?: string
+} {
+  const IGNORED_INPUTS = new Set([
+    "furniture item", "furniture items", "interior", "interiors",
+    "logo", "arrow", "arrow2", "fact emoticon", "myth emoticon",
+    "music generated", "outro", "overlay logo", "double tap converted"
+  ])
+
+  let videoUrl: string | undefined = undefined
+  const primarySlides: string[] = []
+  const secondarySlides: string[] = []
+
+  for (const [key, val] of Object.entries(fields)) {
+    const kLower = key.trim().toLowerCase()
+    if (!Array.isArray(val) || val.length === 0 || typeof val[0] !== "object" || !val[0]?.url) {
+      continue
+    }
+
+    if (IGNORED_INPUTS.has(kLower)) continue
+
+    // 1. Check for Video
+    for (const item of val) {
+      const isVid =
+        item?.type?.startsWith("video/") ||
+        item?.filename?.toLowerCase().endsWith(".mp4") ||
+        kLower.includes("reel") ||
+        kLower.includes("video")
+
+      if (isVid && item?.url) {
+        videoUrl = item.url
+        if (isVideoPreferred) break
+      }
+    }
+
+    // 2. Check for Slides (Final outputs get primary priority)
+    const isPrimaryOutput =
+      kLower.startsWith("story -") ||
+      kLower.startsWith("reel -") ||
+      kLower.includes("converted") ||
+      kLower.includes("tips and edu feeds") ||
+      kLower.includes("final stamped output") ||
+      kLower.includes("style reel slideshow") ||
+      kLower.includes("slide show before") ||
+      kLower.includes("day and night reel with")
+
+    const targetList = isPrimaryOutput ? primarySlides : secondarySlides
+    for (const item of val) {
+      const isImg =
+        item?.type?.startsWith("image/") ||
+        item?.filename?.match(/\.(jpg|jpeg|png|webp)/i) ||
+        !item?.filename?.toLowerCase().endsWith(".mp4")
+
+      if (isImg && item?.url) {
+        targetList.push(item.url)
+      }
+    }
+  }
+
+  const slides = primarySlides.length > 0 ? primarySlides : secondarySlides
+  return { slides, videoUrl }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const category = (searchParams.get("category") || "Feeds").trim() as "Feeds" | "Stories" | "Reels"
+    const contentType = (searchParams.get("type") || "Tips & Educational").trim()
+
+    const isReels = category.toLowerCase() === "reels"
+    const isCtaStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("cta")
+    const isMoodboardStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("moodboard")
+    const aspectRatio = category.toLowerCase() === "feeds" ? "4:5" : "9:16"
+    const mediaType = isReels ? "video" : "image"
+
+    const autoEnv = loadAutomationEnv()
+    const AIRTABLE_TOKEN =
+      process.env.AIRTABLE_TOKEN ||
+      autoEnv.AIRTABLE_TOKEN ||
+      "pat6TrWWL12GbH46s.32f28bcfd2bd7081ccccfc0955118a7329dde2a75b3aed70c2ab0d8c3c918484"
+    const AIRTABLE_BASE_ID =
+      process.env.AIRTABLE_BASE_ID || autoEnv.AIRTABLE_BASE_ID || "appDM0jUDsaiThtR3"
+
+    const tableTargets = getTableTargetsForPipeline(category, contentType, autoEnv)
+    const allItems: OutputItem[] = []
+
+    for (const target of tableTargets) {
+      const { tableId, fixtureType } = target
+      try {
+        const res = await fetch(
+          `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}?pageSize=100`,
+          {
+            headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
+            next: { revalidate: 5 },
+          }
+        )
+
+        if (!res.ok) continue
+
+        const data = await res.json()
+        const records = data.records || []
+
+        for (const rec of records) {
+          const fields = rec.fields || {}
+
+          let slides: string[] = []
+          let videoUrl: string | undefined = undefined
+
+          if (isCtaStory) {
+            // Strictly extract ONLY from "CTA Converted Image"
+            slides = extractCtaConvertedImages(fields)
+            if (slides.length === 0) {
+              // Exclude records that have no CTA Converted Image attachment
+              continue
+            }
+          } else if (isMoodboardStory) {
+            // Extract Slide 1: Moodboard Converted, Slide 2: Blended Image
+            slides = extractMoodboardStoryImages(fields)
+            if (slides.length === 0) continue
+          } else {
+            const assets = extractAssetsFromRecord(fields, isReels)
+            slides = assets.slides
+            videoUrl = assets.videoUrl
+            if (slides.length === 0 && !videoUrl) continue
+          }
+
+          const rawStatus = fields["Status"] || "Completed"
+          const status = normalizeStatus(rawStatus)
+
+          // For date/time: only extract if present in fields, otherwise empty string
+          const dateField =
+            fields["Date and Time"] ||
+            fields["Date & Time"] ||
+            fields["Date and Time Run (PHT)"] ||
+            fields["Date & Time Run (PHT)"] ||
+            fields["Date"]
+          const { date, time } = dateField ? formatDateDisplay(dateField) : { date: "", time: "" }
+
+          const fkId =
+            fields["Foreign Key ID"] ||
+            fields["CID"] ||
+            (fields["ID"]
+              ? `${isMoodboardStory ? "MB-STORY" : "CTA-STORY"}-${fixtureType ? fixtureType.slice(0, 2).toUpperCase() : "ST"}-${fields["ID"]}`
+              : rec.id)
+
+          const itemNames: string[] = []
+          for (let i = 1; i <= 4; i++) {
+            const key = i === 1 ? "Item Name" : `Item Name${i}`
+            if (fields[key]) itemNames.push(String(fields[key]))
+          }
+
+          const caption = extractCaption(fields)
+
+          const fixture =
+            fixtureType ||
+            fields["Fixture"] ||
+            fields["Category"] ||
+            fields["Fixture Type"] ||
+            undefined
+
+          allItems.push({
+            recordId: rec.id,
+            tableId,
+            category,
+            contentType,
+            foreignKeyId: fkId,
+            status,
+            rawStatus: String(rawStatus),
+            date,
+            time,
+            mediaType: isReels && videoUrl ? "video" : "image",
+            slides,
+            videoUrl,
+            duration: isReels ? "15s" : undefined,
+            caption,
+            airtableUrl: `https://airtable.com/${AIRTABLE_BASE_ID}/${tableId}/${rec.id}`,
+            itemNames,
+            fixtureType: fixture,
+          })
+        }
+      } catch (err) {
+        console.error(`Error querying table ${tableId}:`, err)
+      }
+    }
+
+    // Also fallback to local MP4s in output/videos/ if category is Reels
+    if (isReels && allItems.length === 0) {
+      const videosDir = path.join(MARKETING_AUTOMATION_DIR, "output", "videos")
+      if (fs.existsSync(videosDir)) {
+        try {
+          const videoFiles = fs.readdirSync(videosDir).filter((f) => f.endsWith(".mp4"))
+          for (const vf of videoFiles) {
+            allItems.push({
+              recordId: vf.replace(/\.mp4$/, ""),
+              category,
+              contentType,
+              foreignKeyId: `REEL-${vf.slice(0, 16)}`,
+              status: "Completed",
+              rawStatus: "Completed",
+              date: "August 31, 2026 (Monday)",
+              time: "13:00",
+              mediaType: "video",
+              slides: [],
+              videoUrl: `/api/media/videos/${vf}`,
+              duration: "12s",
+              caption: "",
+              airtableUrl: `https://airtable.com/${AIRTABLE_BASE_ID}`,
+              itemNames: [],
+            })
+          }
+        } catch (e) {}
+      }
+    }
+
+    return NextResponse.json({
+      status: "success",
+      category,
+      type: contentType,
+      aspectRatio,
+      mediaType,
+      total: allItems.length,
+      items: allItems,
+    }, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+      }
+    })
+  } catch (error: any) {
+    return NextResponse.json(
+      { status: "error", error: error?.message || "Failed to fetch content outputs" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { recordId, tableId, status, date, time } = body
+
+    if (!recordId) {
+      return NextResponse.json({ status: "error", message: "recordId is required" }, { status: 400 })
+    }
+
+    const fieldsToUpdate: Record<string, any> = {}
+    if (status) {
+      fieldsToUpdate["Status"] = status
+    }
+
+    if (date) {
+      const dateTimeStr = time ? `${date}T${time}:00.000Z` : `${date}T00:00:00.000Z`
+      fieldsToUpdate["Date and Time"] = dateTimeStr
+    }
+
+    let airtableRes: any = null
+
+    if (tableId && tableId.startsWith("tbl")) {
+      try {
+        const patchRes = await fetch(
+          `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ fields: fieldsToUpdate }),
+          }
+        )
+
+        if (patchRes.ok) {
+          airtableRes = await patchRes.json()
+        } else {
+          // If Date and Time field failed or not defined in that table schema, try fallback with Status only
+          const errText = await patchRes.text()
+          console.warn("Primary PATCH failed, trying Status-only update:", errText)
+
+          const statusOnlyRes = await fetch(
+            `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
+            {
+              method: "PATCH",
+              headers: {
+                Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ fields: { Status: status || "Scheduled" } }),
+            }
+          )
+          if (statusOnlyRes.ok) {
+            airtableRes = await statusOnlyRes.json()
+          }
+        }
+      } catch (patchErr) {
+        console.error("Error updating Airtable record:", patchErr)
+      }
+    }
+
+    return NextResponse.json({
+      status: "success",
+      recordId,
+      tableId,
+      updated: fieldsToUpdate,
+      airtableResponse: airtableRes,
+    })
+  } catch (error: any) {
+    return NextResponse.json(
+      { status: "error", error: error?.message || "Failed to update record" },
+      { status: 500 }
+    )
+  }
+}

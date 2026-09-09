@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Next.js build output
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+
+# Environment variables & secrets (CRITICAL: Do NOT commit!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.local
+.cloudflare_url.txt
+
+# Local data cache
+data/schedules.json
+
+# Logs & Debugging
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Vercel & IDE
+.vercel
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
