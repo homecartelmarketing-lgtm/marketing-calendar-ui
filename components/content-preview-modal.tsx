@@ -168,6 +168,55 @@ export function ContentPreviewModal({
     }
   }
 
+  async function cancelSchedule() {
+    if (!confirm("Are you sure you want to cancel and remove this schedule?")) return
+    setIsSubmitting(true)
+    try {
+      // 1. Reset Airtable record back to "Completed" and clear Date and Time Scheduled
+      if (out?.recordId && out?.tableId) {
+        try {
+          await fetch("/api/content-outputs", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              recordId: out.recordId,
+              tableId: out.tableId,
+              status: "Completed",
+            }),
+          })
+        } catch (airtableErr) {
+          console.warn("Airtable unschedule sync warning:", airtableErr)
+        }
+      }
+
+      // 2. Delete schedule entry from API
+      const params = new URLSearchParams()
+      if (iso) params.set("isoDate", iso)
+      if (item.key) params.set("rowKey", item.key)
+      if (out?.tableId) params.set("tableId", out.tableId)
+      if (out?.recordId) params.set("recordId", out.recordId)
+      if (item.cid || out?.foreignKeyId) params.set("foreignKeyId", item.cid || out?.foreignKeyId || "")
+
+      await fetch(`/api/schedules?${params.toString()}`, {
+        method: "DELETE",
+      })
+
+      setStatusByKey((prev) => ({ ...prev, [item.key]: "Completed" }))
+      onScheduleSuccess?.(item.key, "Completed", undefined)
+      setSuccessTitle("SCHEDULE CANCELLED & RESTORED TO COMPLETED!")
+      setShowSuccess(true)
+      window.setTimeout(() => {
+        setShowSuccess(false)
+        onClose()
+      }, 1600)
+    } catch (err) {
+      console.error("Error cancelling schedule:", err)
+      alert("Failed to cancel schedule. Please check your connection.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   async function postNowToMeta() {
     setIsPostingMeta(true)
     try {
@@ -469,6 +518,18 @@ export function ContentPreviewModal({
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-3">
+              {(status === "Scheduled" || out?.status === "Scheduled") && (
+                <button
+                  type="button"
+                  disabled={isSubmitting || isPostingMeta}
+                  onClick={cancelSchedule}
+                  className="flex items-center gap-2 rounded-lg bg-red-500 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-red-600 disabled:opacity-50"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {isSubmitting ? "REMOVING..." : "CANCEL SCHEDULE"}
+                </button>
+              )}
+
               <button
                 type="button"
                 disabled={isSubmitting || isPostingMeta}

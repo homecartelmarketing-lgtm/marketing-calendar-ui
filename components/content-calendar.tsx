@@ -1,11 +1,12 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { Calendar, ChevronLeft, ChevronRight, Clock } from "lucide-react"
 import { CalendarNav } from "@/components/calendar-nav"
 import { CalendarGrid } from "@/components/calendar-grid"
 import { CalendarLegend } from "@/components/calendar-legend"
 import { DayDetailModal } from "@/components/day-detail-modal"
+import { ScheduledPostsModal } from "@/components/scheduled-posts-modal"
 import { UniversalContentGallery } from "@/components/universal-content-gallery"
 import { type ActiveContent } from "@/components/calendar-nav"
 import { MONTH_NAMES } from "@/lib/calendar-data"
@@ -19,6 +20,7 @@ export function ContentCalendar() {
   // September 2026 (month index 8) to match the reference.
   const [current, setCurrent] = useState({ year: 2026, month: 8 })
   const [selectedIso, setSelectedIso] = useState<string | null>(null)
+  const [showScheduledModal, setShowScheduledModal] = useState(false)
 
   // Imported content merged over the built-in workbook data, keyed by ISO date.
   const [overrides, setOverrides] = useState<Record<string, ContentEntry[]>>({})
@@ -70,6 +72,16 @@ export function ContentCalendar() {
   }, [])
 
   const dayMap = useMemo(() => ({ ...CONTENT_DAYS, ...overrides }), [overrides])
+
+  const activeScheduledCount = useMemo(() => {
+    let count = 0
+    for (const entries of Object.values(schedules)) {
+      for (const e of entries) {
+        if (e.status === "Scheduled") count++
+      }
+    }
+    return count
+  }, [schedules])
 
   const cells = useMemo(
     () => buildMonthCells(current.year, current.month, dayMap),
@@ -126,23 +138,27 @@ export function ContentCalendar() {
     }
   }
 
-  const handleScheduleSaved = (entry: ScheduledEntry) => {
-    // 1. Update local schedules state immediately
+  const selectedEntries = selectedIso ? dayMap[selectedIso] ?? [] : []
+
+  function handleScheduleSaved(entry: ScheduledEntry) {
+    const isoDate = entry.isoDate
     setSchedules((prev) => {
-      const existing = prev[entry.isoDate] || []
-      const nextEntries = [
-        ...existing.filter((e) => e.rowKey !== entry.rowKey && e.idea !== entry.idea),
-        entry,
-      ]
-      return { ...prev, [entry.isoDate]: nextEntries }
+      const dateEntries = prev[isoDate] || []
+      const existingIdx = dateEntries.findIndex((e) => e.rowKey === entry.rowKey)
+      const updated = [...dateEntries]
+      if (existingIdx >= 0) {
+        updated[existingIdx] = entry
+      } else {
+        updated.push(entry)
+      }
+      return { ...prev, [isoDate]: updated }
     })
 
-    // 2. Lock this Foreign Key ID so other dates disable it
     if (entry.foreignKeyId) {
       setLockedForeignKeys((prev) => ({
         ...prev,
         [entry.foreignKeyId]: {
-          isoDate: entry.isoDate,
+          isoDate,
           category: entry.category,
           idea: entry.idea,
           fixture: entry.fixture,
@@ -152,10 +168,8 @@ export function ContentCalendar() {
     }
   }
 
-  const selectedEntries = selectedIso ? dayMap[selectedIso] ?? [] : []
-
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black text-white">
       <CalendarNav
         onImportFile={handleImportFile}
         importStatus={importStatus}
@@ -177,8 +191,21 @@ export function ContentCalendar() {
           <div className="mx-auto max-w-[1600px] px-3 pb-16 sm:px-8">
             {/* Header: Month Navigator in center + Figma Legend aligned to right */}
             <div className="relative flex flex-col items-center justify-between gap-4 py-6 md:flex-row sm:py-8">
-              {/* Left spacer for visual balance on wide desktop */}
-              <div className="hidden lg:block lg:w-48" />
+              {/* Scheduled Posts Quick Access Button */}
+              <div className="flex items-center justify-start lg:w-48">
+                <button
+                  type="button"
+                  onClick={() => setShowScheduledModal(true)}
+                  className="flex items-center gap-2 rounded-full border border-blue-500/40 bg-blue-500/10 px-3 py-1.5 text-xs font-bold text-blue-400 hover:bg-blue-500/20 hover:border-blue-400 transition-all shadow-sm"
+                  title="View all active scheduled posts"
+                >
+                  <Clock className="h-3.5 w-3.5" />
+                  Scheduled
+                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-500 px-1 text-[10px] font-extrabold text-white">
+                    {activeScheduledCount}
+                  </span>
+                </button>
+              </div>
 
               {/* Month Switcher */}
               <div className="flex items-center gap-3 sm:gap-6">
@@ -230,6 +257,32 @@ export function ContentCalendar() {
               existingSchedules={schedules[selectedIso] || []}
               onScheduleSaved={handleScheduleSaved}
               onClose={() => setSelectedIso(null)}
+            />
+          )}
+
+          {showScheduledModal && (
+            <ScheduledPostsModal
+              schedules={schedules}
+              onClose={() => setShowScheduledModal(false)}
+              onScheduleCancelled={(isoDate, rowKey, foreignKeyId) => {
+                setSchedules((prev) => {
+                  const updated = { ...prev }
+                  if (updated[isoDate]) {
+                    updated[isoDate] = updated[isoDate].filter(
+                      (e) => e.rowKey !== rowKey && (!foreignKeyId || e.foreignKeyId !== foreignKeyId)
+                    )
+                  }
+                  return updated
+                })
+                if (foreignKeyId) {
+                  setLockedForeignKeys((prev) => {
+                    const updated = { ...prev }
+                    delete updated[foreignKeyId]
+                    return updated
+                  })
+                }
+              }}
+              onJumpToDate={(iso) => setSelectedIso(iso)}
             />
           )}
         </>

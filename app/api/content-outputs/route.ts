@@ -589,6 +589,7 @@ export async function GET(request: NextRequest) {
 
           // For date/time: only extract if present in fields, otherwise empty string
           const dateField =
+            fields["Date and Time Scheduled"] ||
             fields["Date and Time"] ||
             fields["Date & Time"] ||
             fields["Date and Time Run (PHT)"] ||
@@ -711,7 +712,11 @@ export async function PATCH(request: NextRequest) {
 
     if (date) {
       const dateTimeStr = time ? `${date}T${time}:00.000Z` : `${date}T00:00:00.000Z`
+      fieldsToUpdate["Date and Time Scheduled"] = dateTimeStr
       fieldsToUpdate["Date and Time"] = dateTimeStr
+    } else if (status === "Completed") {
+      fieldsToUpdate["Date and Time Scheduled"] = null
+      fieldsToUpdate["Date and Time"] = null
     }
 
     let airtableRes: any = null
@@ -733,11 +738,15 @@ export async function PATCH(request: NextRequest) {
         if (patchRes.ok) {
           airtableRes = await patchRes.json()
         } else {
-          // If Date and Time field failed or not defined in that table schema, try fallback with Status only
-          const errText = await patchRes.text()
-          console.warn("Primary PATCH failed, trying Status-only update:", errText)
+          // If Date and Time field failed or not defined in that table schema, try fallback
+          const fallbackFields: Record<string, any> = { Status: status || "Scheduled" }
+          if (date) {
+            fallbackFields["Date and Time Scheduled"] = time ? `${date}T${time}:00.000Z` : `${date}T00:00:00.000Z`
+          } else if (status === "Completed") {
+            fallbackFields["Date and Time Scheduled"] = null
+          }
 
-          const statusOnlyRes = await fetch(
+          const fallbackRes = await fetch(
             `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
             {
               method: "PATCH",
@@ -745,11 +754,28 @@ export async function PATCH(request: NextRequest) {
                 Authorization: `Bearer ${AIRTABLE_TOKEN}`,
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ fields: { Status: status || "Scheduled" } }),
+              body: JSON.stringify({ fields: fallbackFields }),
             }
           )
-          if (statusOnlyRes.ok) {
-            airtableRes = await statusOnlyRes.json()
+
+          if (fallbackRes.ok) {
+            airtableRes = await fallbackRes.json()
+          } else {
+            // Status only
+            const statusOnlyRes = await fetch(
+              `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
+              {
+                method: "PATCH",
+                headers: {
+                  Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ fields: { Status: status || "Scheduled" } }),
+              }
+            )
+            if (statusOnlyRes.ok) {
+              airtableRes = await statusOnlyRes.json()
+            }
           }
         }
       } catch (patchErr) {

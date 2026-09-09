@@ -139,7 +139,12 @@ async function syncAirtableRecord(
     if (status) fieldsToUpdate["Status"] = status
     if (isoDate) {
       const dateTimeStr = time ? `${isoDate}T${time}:00.000Z` : `${isoDate}T00:00:00.000Z`
+      fieldsToUpdate["Date and Time Scheduled"] = dateTimeStr
       fieldsToUpdate["Date and Time"] = dateTimeStr
+    } else if (status === "Completed") {
+      // Clear scheduled dates when unscheduled
+      fieldsToUpdate["Date and Time Scheduled"] = null
+      fieldsToUpdate["Date and Time"] = null
     }
 
     const patchRes = await fetch(
@@ -155,8 +160,15 @@ async function syncAirtableRecord(
     )
 
     if (!patchRes.ok) {
-      // Fallback: Status only
-      await fetch(
+      // Fallback: Try with Date and Time Scheduled only, then Status only
+      const fallbackFields: Record<string, any> = { Status: status || "Scheduled" }
+      if (isoDate) {
+        fallbackFields["Date and Time Scheduled"] = time ? `${isoDate}T${time}:00.000Z` : `${isoDate}T00:00:00.000Z`
+      } else if (status === "Completed") {
+        fallbackFields["Date and Time Scheduled"] = null
+      }
+
+      const retryRes = await fetch(
         `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
         {
           method: "PATCH",
@@ -164,22 +176,130 @@ async function syncAirtableRecord(
             Authorization: `Bearer ${AIRTABLE_TOKEN}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ fields: { Status: status || "Scheduled" } }),
+          body: JSON.stringify({ fields: fallbackFields }),
         }
       )
+
+      if (!retryRes.ok) {
+        // Ultimate fallback: Status only
+        await fetch(
+          `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ fields: { Status: status || "Scheduled" } }),
+          }
+        )
+      }
     }
   } catch (err) {
     console.error("Airtable sync error in schedules API:", err)
   }
 }
 
+async function pullAirtableSchedules(): Promise<Record<string, ScheduledEntry[]>> {
+  const tablesToScan = [
+    { tableId: process.env.AIRTABLE_TABLE_ID_CHANDELIER_CTA || "tblYHdVq14FjMWg5o", category: "Stories" as const, idea: "CTA Story", fixture: "Chandelier" },
+    { tableId: process.env.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIER_CTA || "tblSpGJLO3faYfIDY", category: "Stories" as const, idea: "CTA Story", fixture: "Cluster Chandelier" },
+    { tableId: process.env.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_CTA || "tblfl7fqFZa2vUieB", category: "Stories" as const, idea: "CTA Story", fixture: "Pendant Light" },
+    { tableId: process.env.AIRTABLE_TABLE_ID_TABLE_LAMPS_CTA || "tblKJeCCp4zQ6g7Em", category: "Stories" as const, idea: "CTA Story", fixture: "Table Lamp" },
+    { tableId: process.env.AIRTABLE_TABLE_ID_FLOOR_LAMP_CTA || "tblPKSYyjgbgMypE2", category: "Stories" as const, idea: "CTA Story", fixture: "Floor Lamp" },
+    { tableId: process.env.AIRTABLE_TABLE_ID_CHANDELIER_DAY_NIGHT_STORY || "tblKkCf88UVQ3Yu07", category: "Stories" as const, idea: "Day & Night", fixture: "Chandelier" },
+    { tableId: process.env.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_2_FEED || "tbltWgQKOYjuHw6tx", category: "Feeds" as const, idea: "Moodboard #2", fixture: "Chandelier" },
+  ]
+
+  const out: Record<string, ScheduledEntry[]> = {}
+
+  await Promise.all(
+    tablesToScan.map(async (cfg) => {
+      try {
+        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${cfg.tableId}?filterByFormula=${encodeURIComponent("Status='Scheduled'")}`
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
+          next: { revalidate: 5 },
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        for (const r of data.records || []) {
+          const fields = r.fields || {}
+          const dateVal = fields["Date and Time Scheduled"] || fields["Date and Time"] || fields["Date & Time"] || fields["Date"]
+          if (!dateVal) continue
+
+          const d = new Date(dateVal)
+          if (isNaN(d.getTime())) continue
+
+          const isoDate = dateVal.slice(0, 10)
+          const hours = String(d.getHours()).padStart(2, "0")
+          const mins = String(d.getMinutes()).padStart(2, "0")
+          const time = `${hours}:${mins}`
+
+          const fkId =
+            fields["Foreign Key ID"] ||
+            fields["CID"] ||
+            (fields["ID"] ? `CID-${fields["ID"]}` : r.id)
+
+          const entry: ScheduledEntry = {
+            recordId: r.id,
+            tableId: cfg.tableId,
+            isoDate,
+            rowKey: `${cfg.category}-${cfg.idea}-${isoDate}`,
+            category: cfg.category,
+            idea: cfg.idea,
+            time,
+            fixture: cfg.fixture,
+            foreignKeyId: fkId,
+            status: "Scheduled",
+            caption: fields["Generated Caption"] || fields["Caption"] || "",
+            airtableUrl: `https://airtable.com/${AIRTABLE_BASE_ID}/${cfg.tableId}/${r.id}`,
+            updatedAt: new Date().toISOString(),
+          }
+
+          if (!out[isoDate]) out[isoDate] = []
+          // Avoid duplicate foreign keys on same date
+          if (!out[isoDate].some((e) => e.foreignKeyId === fkId)) {
+            out[isoDate].push(entry)
+          }
+        }
+      } catch (err) {
+        console.warn(`Error pulling schedules from table ${cfg.tableId}:`, err)
+      }
+    })
+  )
+
+  return out
+}
+
 export async function GET() {
-  const schedules = readSchedules()
-  const lockedForeignKeys = getLockedForeignKeys(schedules)
+  const localSchedules = readSchedules()
+  const airtableSchedules = await pullAirtableSchedules()
+
+  // Merge: start with local cache, overlay Airtable live schedules
+  const mergedSchedules: Record<string, ScheduledEntry[]> = { ...localSchedules }
+  for (const [isoDate, entries] of Object.entries(airtableSchedules)) {
+    if (!mergedSchedules[isoDate]) {
+      mergedSchedules[isoDate] = entries
+    } else {
+      for (const e of entries) {
+        const idx = mergedSchedules[isoDate].findIndex(
+          (existing) => existing.foreignKeyId === e.foreignKeyId || existing.rowKey === e.rowKey
+        )
+        if (idx >= 0) {
+          mergedSchedules[isoDate][idx] = e
+        } else {
+          mergedSchedules[isoDate].push(e)
+        }
+      }
+    }
+  }
+
+  const lockedForeignKeys = getLockedForeignKeys(mergedSchedules)
 
   return NextResponse.json({
     success: true,
-    schedules,
+    schedules: mergedSchedules,
     lockedForeignKeys,
   })
 }
@@ -250,29 +370,39 @@ export async function DELETE(request: NextRequest) {
     const rowKey = searchParams.get("rowKey")
     const tableId = searchParams.get("tableId")
     const recordId = searchParams.get("recordId")
+    const foreignKeyId = searchParams.get("foreignKeyId")
 
-    if (!isoDate) {
-      return NextResponse.json(
-        { success: false, message: "isoDate is required" },
-        { status: 400 }
-      )
-    }
-
-    // Reset Airtable status if provided
+    // Reset Airtable status and clear scheduled date if tableId & recordId provided
     if (tableId && recordId) {
       await syncAirtableRecord(tableId, recordId, "Completed", undefined, undefined)
     }
 
     const schedules = readSchedules()
-    if (schedules[isoDate]) {
-      if (rowKey) {
-        schedules[isoDate] = schedules[isoDate].filter((e) => e.rowKey !== rowKey)
+
+    if (isoDate && schedules[isoDate]) {
+      if (rowKey || recordId || foreignKeyId) {
+        schedules[isoDate] = schedules[isoDate].filter(
+          (e) =>
+            (!rowKey || e.rowKey !== rowKey) &&
+            (!recordId || e.recordId !== recordId) &&
+            (!foreignKeyId || e.foreignKeyId !== foreignKeyId)
+        )
       } else {
         delete schedules[isoDate]
       }
-      writeSchedules(schedules)
+    } else {
+      // If no isoDate passed, remove from any date where recordId/rowKey/foreignKey matches
+      for (const [date, entries] of Object.entries(schedules)) {
+        schedules[date] = entries.filter(
+          (e) =>
+            (!rowKey || e.rowKey !== rowKey) &&
+            (!recordId || e.recordId !== recordId) &&
+            (!foreignKeyId || e.foreignKeyId !== foreignKeyId)
+        )
+      }
     }
 
+    writeSchedules(schedules)
     const lockedForeignKeys = getLockedForeignKeys(schedules)
 
     return NextResponse.json({
