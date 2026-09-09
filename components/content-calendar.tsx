@@ -52,20 +52,9 @@ export function ContentCalendar() {
     }
     loadSchedules()
 
-    // Periodic schedule runner check every 60 seconds
-    const interval = setInterval(async () => {
-      try {
-        const runnerRes = await fetch("/api/schedules/runner")
-        if (runnerRes.ok) {
-          const runnerData = await runnerRes.json()
-          const published = (runnerData.results || []).filter((r: any) => r.action === "published")
-          if (published.length > 0) {
-            loadSchedules()
-          }
-        }
-      } catch {
-        // Silent background catch
-      }
+    // Periodic UI refresh every 60 seconds (reads schedules only, never triggers publishing runner)
+    const interval = setInterval(() => {
+      loadSchedules()
     }, 60000)
 
     return () => clearInterval(interval)

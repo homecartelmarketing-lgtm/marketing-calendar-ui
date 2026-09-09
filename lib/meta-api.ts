@@ -46,17 +46,23 @@ export async function publishToInstagram(
   const config = getMetaConfig()
 
   if (!config.accessToken || !config.instagramAccountId) {
-    // Graceful fallback when user has not yet configured Meta API credentials
+    if (process.env.SIMULATE === "1") {
+      return {
+        success: true,
+        id: `simulated_meta_${Date.now()}`,
+        isSimulated: true,
+      }
+    }
     return {
-      success: true,
-      id: `simulated_meta_${Date.now()}`,
-      isSimulated: true,
-      error: "Meta credentials not yet configured. Simulated success.",
+      success: false,
+      error: "Meta API credentials (META_ACCESS_TOKEN and META_IG_ACCOUNT_ID) are not configured.",
     }
   }
 
   try {
-    const baseUrl = `https://graph.facebook.com/${config.apiVersion}/${config.instagramAccountId}`
+    const apiVersion = config.apiVersion || "v19.0"
+    const graphRoot = `https://graph.facebook.com/${apiVersion}`
+    const baseUrl = `${graphRoot}/${config.instagramAccountId}`
 
     // 1. Create Media Container
     const containerParams: Record<string, string> = {
@@ -107,7 +113,46 @@ export async function publishToInstagram(
 
     const creationId = createData.id
 
-    // 2. Publish Media Container
+    // 2. For video content (Reels & video Feeds), poll status until container is FINISHED
+    const isVideo = payload.mediaType === "video" || payload.category === "Reels"
+    if (isVideo) {
+      const MAX_WAIT_MS = 120000 // up to 2 minutes
+      const POLL_INTERVAL_MS = 5000
+      const startTime = Date.now()
+      let isFinished = false
+
+      while (Date.now() - startTime < MAX_WAIT_MS) {
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
+        try {
+          const statusRes = await fetch(
+            `${graphRoot}/${creationId}?fields=status_code&access_token=${config.accessToken}`
+          )
+          if (statusRes.ok) {
+            const statusData = await statusRes.json()
+            if (statusData.status_code === "FINISHED") {
+              isFinished = true
+              break
+            } else if (statusData.status_code === "ERROR" || statusData.status_code === "EXPIRED") {
+              return {
+                success: false,
+                error: `Video container processing failed with status: ${statusData.status_code}`,
+              }
+            }
+          }
+        } catch {
+          // Retry on intermittent network glitch while polling
+        }
+      }
+
+      if (!isFinished) {
+        return {
+          success: false,
+          error: "Video container processing timed out on Meta servers before publishing",
+        }
+      }
+    }
+
+    // 3. Publish Media Container
     const publishRes = await fetch(`${baseUrl}/media_publish`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

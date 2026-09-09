@@ -19,9 +19,6 @@ dist/
 *.local
 .cloudflare_url.txt
 
-# Local data cache
-data/schedules.json
-
 # Logs & Debugging
 npm-debug.log*
 yarn-debug.log*

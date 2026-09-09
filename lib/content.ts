@@ -59,7 +59,7 @@ export function isRealIdea(idea: string): boolean {
   return idea.trim().toUpperCase() !== "NONE"
 }
 
-export const CATEGORY_DOT_STYLES: Record<ContentType, string> = {
+export const CATEGORY_DOT_STYLES: Record<string, string> = {
   Feeds: "bg-[#eab308]",
   Reels: "bg-[#06b6d4]",
   Stories: "bg-[#10b981]",

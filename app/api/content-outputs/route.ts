@@ -1,48 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
-import { getAllConfiguredTables } from "@/lib/tables-config"
+import {
+  AIRTABLE_TOKEN,
+  AIRTABLE_BASE_ID,
+  autoEnv,
+  getAllConfiguredTables,
+} from "@/lib/tables-config"
 
 const MARKETING_AUTOMATION_DIR =
   process.env.MARKETING_AUTOMATION_DIR || "C:\\Users\\User\\marketing-automation"
-
-// Load env vars dynamically from C:\Users\User\marketing-automation\.env and merge with process.env
-function loadAutomationEnv(): Record<string, string> {
-  const out: Record<string, string> = {}
-  const envPath = path.join(MARKETING_AUTOMATION_DIR, ".env")
-  if (fs.existsSync(envPath)) {
-    try {
-      const content = fs.readFileSync(envPath, "utf-8")
-      for (const line of content.split("\n")) {
-        const trimmed = line.trim()
-        if (!trimmed || trimmed.startsWith("#")) continue
-        const idx = trimmed.indexOf("=")
-        if (idx > 0) {
-          const key = trimmed.slice(0, idx).trim()
-          const val = trimmed.slice(idx + 1).trim().replace(/^["']|["']$/g, "")
-          out[key] = val
-        }
-      }
-    } catch (e) {
-      console.error("Error reading automation .env:", e)
-    }
-  }
-
-  // Cloud/Vercel priority: overlay any environment variables set in process.env
-  for (const [key, val] of Object.entries(process.env)) {
-    if (val !== undefined) {
-      out[key] = val
-    }
-  }
-
-  return out
-}
-
-const autoEnv = loadAutomationEnv()
-const AIRTABLE_TOKEN =
-  process.env.AIRTABLE_TOKEN || autoEnv.AIRTABLE_TOKEN || ""
-const AIRTABLE_BASE_ID =
-  process.env.AIRTABLE_BASE_ID || autoEnv.AIRTABLE_BASE_ID || "appDM0jUDsaiThtR3"
 
 export type OutputItem = {
   recordId: string
@@ -388,7 +355,9 @@ function getTableTargetsForPipeline(category: string, type: string, autoEnv: Rec
     return matchIdeaTarget(type, t.idea)
   })
 
-  if (matched.length > 0) return matched
+  if (matched.length > 0) {
+    return matched.map((t) => ({ tableId: t.tableId, fixtureType: t.fixtureType }))
+  }
 
   // Fallback to getTableIdsForPipeline if anything missed
   const ids = getTableIdsForPipeline(category, type, autoEnv)
@@ -480,14 +449,6 @@ export async function GET(request: NextRequest) {
     const isMoodboardStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("moodboard")
     const aspectRatio = category.toLowerCase() === "feeds" ? "4:5" : "9:16"
     const mediaType = isReels ? "video" : "image"
-
-    const autoEnv = loadAutomationEnv()
-    const AIRTABLE_TOKEN =
-      process.env.AIRTABLE_TOKEN ||
-      autoEnv.AIRTABLE_TOKEN ||
-      "pat6TrWWL12GbH46s.32f28bcfd2bd7081ccccfc0955118a7329dde2a75b3aed70c2ab0d8c3c918484"
-    const AIRTABLE_BASE_ID =
-      process.env.AIRTABLE_BASE_ID || autoEnv.AIRTABLE_BASE_ID || "appDM0jUDsaiThtR3"
 
     const tableTargets = getTableTargetsForPipeline(category, contentType, autoEnv)
     const allItems: OutputItem[] = []
@@ -613,7 +574,7 @@ export async function GET(request: NextRequest) {
       const videosDir = path.join(MARKETING_AUTOMATION_DIR, "output", "videos")
       if (fs.existsSync(videosDir)) {
         try {
-          const videoFiles = fs.readdirSync(videosDir).filter((f) => f.endsWith(".mp4"))
+          const videoFiles = fs.readdirSync(videosDir).filter((f: string) => f.endsWith(".mp4"))
           for (const vf of videoFiles) {
             allItems.push({
               recordId: vf.replace(/\.mp4$/, ""),
@@ -675,8 +636,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (date) {
-      const dateTimeStr = time ? `${date}T${time}:00.000Z` : `${date}T00:00:00.000Z`
-      fieldsToUpdate["Date and Time Scheduled"] = dateTimeStr
+      const timePart = (time || "00:00").padStart(5, "0")
+      fieldsToUpdate["Date and Time Scheduled"] = `${date}T${timePart}:00+08:00`
     } else if (status === "Completed" || status === "Complete") {
       fieldsToUpdate["Date and Time Scheduled"] = null
     }

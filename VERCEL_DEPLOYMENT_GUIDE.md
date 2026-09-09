@@ -46,7 +46,7 @@ Before clicking Deploy, expand **Environment Variables** and add the following k
 | `META_PAGE_ID` | Facebook Page ID | `1761624157420596` |
 | `META_IG_ACCOUNT_ID` | Instagram Business Account ID | `17841404109072695` |
 | `META_API_VERSION` | Graph API version | `v19.0` |
-| `CRON_SECRET` | Secret token protecting the runner | e.g. `hc_cron_2026_marketing_secret` |
+| `CRON_SECRET` | Secret token protecting the runner | Generate a secure random token (e.g. 32 chars) |
 
 *(Optional: Add specific table ID overrides if custom tables are configured in `.env.local`)*
 
