@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
+import { getAllConfiguredTables } from "@/lib/tables-config"
 
 const MARKETING_AUTOMATION_DIR =
   process.env.MARKETING_AUTOMATION_DIR || "C:\\Users\\User\\marketing-automation"
@@ -348,121 +349,48 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
   return ids.filter((x): x is string => Boolean(x && x.startsWith("tbl")))
 }
 
+function normalizeIdeaForMatching(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]/g, "")
+}
+
+function matchIdeaTarget(requestIdea: string, targetIdea: string): boolean {
+  const req = normalizeIdeaForMatching(requestIdea)
+  const tgt = normalizeIdeaForMatching(targetIdea)
+  if (req === tgt) return true
+
+  // Specific numeric / subtype exclusions
+  if (req.includes("1") && tgt.includes("2")) return false
+  if (req.includes("2") && tgt.includes("1")) return false
+  if (req.includes("desc") && tgt.includes("spec")) return false
+  if (req.includes("spec") && tgt.includes("desc")) return false
+
+  // Canonical semantic matching
+  if (req.includes("cta") && tgt.includes("cta")) return true
+  if (req.includes("moodboard") && req.includes("story") && tgt.includes("moodboard") && tgt.includes("story")) return true
+  if (req.includes("myth") && tgt.includes("myth")) return true
+  if (req.includes("style") && tgt.includes("style")) return true
+  if (req.includes("that") && tgt.includes("that")) return true
+  if (req.includes("close") && tgt.includes("close")) return true
+  if (req.includes("tips") && tgt.includes("tips")) return true
+  if (req.includes("before") && tgt.includes("before")) return true
+  if (req.includes("day") && tgt.includes("day")) return true
+  if (req.includes("1prod") && tgt.includes("1prod")) return true
+  if (req.includes("showcase") && tgt.includes("showcase")) return true
+  if (req.includes("collection") && tgt.includes("collection")) return true
+
+  return req.includes(tgt) || tgt.includes(req)
+}
+
 function getTableTargetsForPipeline(category: string, type: string, autoEnv: Record<string, string>): TableTarget[] {
-  const cat = category.toLowerCase()
-  const t = type.toLowerCase()
+  const all = getAllConfiguredTables()
+  const matched = all.filter((t) => {
+    if (t.category.toLowerCase() !== category.toLowerCase()) return false
+    return matchIdeaTarget(type, t.idea)
+  })
 
-  if (cat === "stories" && t.includes("cta")) {
-    return getCtaStoryTargets(autoEnv).filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
-  }
+  if (matched.length > 0) return matched
 
-  if (cat === "stories" && t.includes("moodboard")) {
-    return getMoodboardStoryTargets(autoEnv).filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
-  }
-
-  if (cat === "stories" && (t.includes("day & night") || t.includes("day and night") || t.includes("d&n") || t.includes("day (") || t.includes("night ("))) {
-    return [
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_NIGHT_STORY, fixtureType: "Chandelier" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_NIGHT_STORY, fixtureType: "Pendant Light" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_DAY_NIGHT_STORY, fixtureType: "Floor Lamp" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_DAY_NIGHT_STORY, fixtureType: "Table Lamp" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIER_DAY_NIGHT_STORY, fixtureType: "Cluster Chandelier" },
-    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
-  }
-
-  if (cat === "stories" && t.includes("tips")) {
-    return [
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_CHANDELIERS_TIPS_EDU_STORY, fixtureType: "Chandelier" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIERS_TIPS_EDU_STORY, fixtureType: "Cluster Chandelier" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_TIPS_EDU_STORY, fixtureType: "Pendant Light" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_TIPS_EDU_STORY, fixtureType: "Table Lamp" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_TIPS_EDU_STORY, fixtureType: "Floor Lamp" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_CEILING_MOUNTED_TIPS_EDU_STORY, fixtureType: "Ceiling Mounted" },
-    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
-  }
-
-  if (cat === "stories" && (t.includes("description") || t.includes("closeup"))) {
-    return [
-      { tableId: "tblDcT6jovdAbKnfw", fixtureType: "Chandelier" },
-      { tableId: "tblDD2w4v0Idb4jAZ", fixtureType: "Pendant Light" },
-      { tableId: "tblPvHyKGByWJCMtY", fixtureType: "Floor Lamp" },
-      { tableId: "tblnIOQVywHcTgAtv", fixtureType: "Cluster Chandelier" },
-      { tableId: "tbl5S9JEHSrjrLwxA", fixtureType: "Table Lamp" },
-      { tableId: "tblYqudlgjYMNRROM", fixtureType: "Wall Light" },
-    ]
-  }
-
-  if (cat === "stories" && t.includes("myth")) {
-    return [
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_CHANDELIER, fixtureType: "Chandelier" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_PENDANT_LIGHTS, fixtureType: "Pendant Light" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_FLOOR_LAMPS, fixtureType: "Floor Lamp" },
-    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
-  }
-
-  if (cat === "stories" && t.includes("style this")) {
-    return [
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_STYLE_THIS_CHANDELIER, fixtureType: "Chandelier" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_STYLE_THIS_FLOOR_LAMPS, fixtureType: "Floor Lamp" },
-    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
-  }
-
-  if (cat === "feeds" && (t.includes("day & night") || t.includes("day and night") || t.includes("d&n") || t.includes("day (") || t.includes("night ("))) {
-    return [
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_AND_NIGHT_4_5, fixtureType: "Chandelier" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_NIGHT_FEED, fixtureType: "Pendant Light" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_DAY_NIGHT_FEED, fixtureType: "Floor Lamp" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_DAY_NIGHT_FEED, fixtureType: "Table Lamp" },
-    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
-  }
-
-  if (cat === "feeds" && (t.includes("moodboard #2") || t.includes("moodboard 2") || t.includes("moodboard"))) {
-    return [
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_2_FEED, fixtureType: "Chandelier" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_2_FEED, fixtureType: "Pendant Light" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_2_FEED, fixtureType: "Floor Lamp" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_WALL_LIGHTS_MOODBOARD_2_FEED, fixtureType: "Wall Light" },
-    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
-  }
-
-  if (cat === "feeds" && t.includes("showcase")) {
-    return [
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_PRODUCT_SHOWCASE_TABLE_LAMP || "tbln0MNBaVVrZ0wrF", fixtureType: "Table Lamp" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_PRODUCT_SHOWCASE_CHANDELIER || "", fixtureType: "Chandelier" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_PRODUCT_SHOWCASE_PENDANT_LIGHTS || "", fixtureType: "Pendant Light" },
-    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
-  }
-
-  if (cat === "feeds" && t.includes("tips")) {
-    return [
-      { tableId: "tblQ65S51Dmauwx4c", fixtureType: "Chandelier" },
-      { tableId: "tblIhCP3Gjg09QFCK", fixtureType: "Pendant Light" },
-      { tableId: "tblQuhvktqYB59Ofw", fixtureType: "Floor Lamp" },
-      { tableId: "tblwY6eGQCD5bJeF1", fixtureType: "Cluster Chandelier" },
-    ]
-  }
-
-  if (cat === "reels" && (t.includes("day & night") || t.includes("day and night") || t.includes("d&n") || t.includes("day (") || t.includes("night ("))) {
-    return [
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_AND_NIGHT_REEL, fixtureType: "Chandelier" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_AND_NIGHT_REEL, fixtureType: "Pendant Light" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_FLOORLAMP_DAY_AND_NIGHT_REEL, fixtureType: "Floor Lamp" },
-    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
-  }
-
-  if (cat === "reels" && (t.includes("before") && t.includes("after"))) {
-    return [
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_BEFORE_AFTER_CHANDELIER, fixtureType: "Chandelier" },
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_BEFORE_AFTER_PENDANT_LIGHTS, fixtureType: "Pendant Light" },
-    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
-  }
-
-  if (cat === "reels" && t.includes("moodboard")) {
-    return [
-      { tableId: autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MODERN_MOODBOARDREEL, fixtureType: "Chandelier" },
-    ].filter((x) => Boolean(x.tableId && x.tableId.startsWith("tbl")))
-  }
-
+  // Fallback to getTableIdsForPipeline if anything missed
   const ids = getTableIdsForPipeline(category, type, autoEnv)
   return ids.map((tableId) => ({ tableId }))
 }
@@ -509,13 +437,20 @@ function extractAssetsFromRecord(fields: Record<string, any>, isVideoPreferred: 
       kLower.startsWith("story -") ||
       kLower.startsWith("reel -") ||
       kLower.includes("converted") ||
-      kLower.includes("tips and edu feeds") ||
+      kLower.includes("tips and edu") ||
       kLower.includes("final stamped output") ||
       kLower.includes("style reel slideshow") ||
       kLower.includes("slide show before") ||
-      kLower.includes("day and night reel with") ||
+      kLower.includes("day and night reel") ||
       kLower.includes("product showcase") ||
-      kLower.includes("showcase feed")
+      kLower.includes("showcase feed") ||
+      kLower.includes("moodboard") ||
+      kLower.includes("1 product") ||
+      kLower.includes("collection") ||
+      kLower.includes("closeup") ||
+      kLower.includes("this or that") ||
+      kLower.includes("myth") ||
+      kLower.includes("style this")
 
     const targetList = isPrimaryOutput ? primarySlides : secondarySlides
     for (const item of val) {
