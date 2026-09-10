@@ -23,6 +23,7 @@ export interface PostContentPayload {
   category: "Feeds" | "Stories" | "Reels"
   caption?: string
   mediaUrl: string
+  mediaUrls?: string[]
   mediaType: "image" | "video"
   scheduledPublishTime?: number // Unix timestamp
 }
@@ -39,6 +40,7 @@ export interface MetaPublishResponse {
  * Follows the 2-step container creation and media publish flow:
  * 1. POST /{ig-user-id}/media (create container)
  * 2. POST /{ig-user-id}/media_publish (publish container)
+ * Supports multi-slide Stories (sequential) and multi-image Feeds (CAROUSEL).
  */
 export async function publishToInstagram(
   payload: PostContentPayload
@@ -64,7 +66,162 @@ export async function publishToInstagram(
     const graphRoot = `https://graph.facebook.com/${apiVersion}`
     const baseUrl = `${graphRoot}/${config.instagramAccountId}`
 
-    // 1. Create Media Container
+    // 1. Handle Multi-slide Instagram Stories (Publish each slide in sequence: slide 1, slide 2, slide 3, slide 4)
+    if (payload.category === "Stories" && payload.mediaUrls && payload.mediaUrls.length > 1) {
+      const publishedIds: string[] = []
+      for (const slideUrl of payload.mediaUrls) {
+        const isVid = slideUrl.toLowerCase().includes(".mp4")
+        const slideParams: Record<string, string> = {
+          access_token: config.accessToken,
+          media_type: "STORIES",
+          ...(isVid ? { video_url: slideUrl } : { image_url: slideUrl }),
+        }
+
+        const createRes = await fetch(`${baseUrl}/media`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(slideParams),
+        })
+        const createData = await createRes.json()
+        if (!createRes.ok || !createData.id) {
+          return {
+            success: false,
+            error: createData.error?.message || "Failed to create Story slide container",
+          }
+        }
+
+        const creationId = createData.id
+
+        if (isVid) {
+          const MAX_WAIT_MS = 120000
+          const POLL_INTERVAL_MS = 5000
+          const startTime = Date.now()
+          let isFinished = false
+
+          while (Date.now() - startTime < MAX_WAIT_MS) {
+            await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
+            try {
+              const statusRes = await fetch(
+                `${graphRoot}/${creationId}?fields=status_code&access_token=${config.accessToken}`
+              )
+              if (statusRes.ok) {
+                const statusData = await statusRes.json()
+                if (statusData.status_code === "FINISHED") {
+                  isFinished = true
+                  break
+                } else if (statusData.status_code === "ERROR" || statusData.status_code === "EXPIRED") {
+                  return {
+                    success: false,
+                    error: `Video container processing failed: ${statusData.status_code}`,
+                  }
+                }
+              }
+            } catch {}
+          }
+          if (!isFinished) {
+            return {
+              success: false,
+              error: "Story video processing timed out before publishing",
+            }
+          }
+        }
+
+        const publishRes = await fetch(`${baseUrl}/media_publish`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            creation_id: creationId,
+            access_token: config.accessToken,
+          }),
+        })
+        const publishData = await publishRes.json()
+        if (!publishRes.ok || !publishData.id) {
+          return {
+            success: false,
+            error: publishData.error?.message || "Failed to publish Story slide container",
+          }
+        }
+        publishedIds.push(publishData.id)
+      }
+
+      return {
+        success: true,
+        id: publishedIds.join(","),
+      }
+    }
+
+    // 2. Handle Multi-slide Instagram Feeds (CAROUSEL container)
+    if (payload.category === "Feeds" && payload.mediaUrls && payload.mediaUrls.length > 1) {
+      const childIds: string[] = []
+      for (const itemUrl of payload.mediaUrls) {
+        const isVid = itemUrl.toLowerCase().includes(".mp4")
+        const itemParams: Record<string, string | boolean> = {
+          access_token: config.accessToken,
+          is_carousel_item: true,
+          ...(isVid ? { video_url: itemUrl, media_type: "VIDEO" } : { image_url: itemUrl }),
+        }
+        const itemRes = await fetch(`${baseUrl}/media`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(itemParams),
+        })
+        const itemData = await itemRes.json()
+        if (!itemRes.ok || !itemData.id) {
+          return {
+            success: false,
+            error: itemData.error?.message || "Failed to create carousel item container",
+          }
+        }
+        childIds.push(itemData.id)
+      }
+
+      const carouselParams: Record<string, any> = {
+        access_token: config.accessToken,
+        media_type: "CAROUSEL",
+        children: childIds.join(","),
+      }
+      if (payload.caption) carouselParams["caption"] = payload.caption
+      if (payload.scheduledPublishTime) {
+        carouselParams["published"] = "false"
+        carouselParams["scheduled_publish_time"] = String(payload.scheduledPublishTime)
+      }
+
+      const createRes = await fetch(`${baseUrl}/media`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(carouselParams),
+      })
+      const createData = await createRes.json()
+      if (!createRes.ok || !createData.id) {
+        return {
+          success: false,
+          error: createData.error?.message || "Failed to create carousel container",
+        }
+      }
+
+      const publishRes = await fetch(`${baseUrl}/media_publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          creation_id: createData.id,
+          access_token: config.accessToken,
+        }),
+      })
+      const publishData = await publishRes.json()
+      if (!publishRes.ok || !publishData.id) {
+        return {
+          success: false,
+          error: publishData.error?.message || "Failed to publish carousel container",
+        }
+      }
+
+      return {
+        success: true,
+        id: publishData.id,
+      }
+    }
+
+    // 3. Single Media Container (Stories, Reels, or single Feed)
     const containerParams: Record<string, string> = {
       access_token: config.accessToken,
     }

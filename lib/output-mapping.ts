@@ -1,29 +1,44 @@
-export function getFinalOutputField(category: string, contentType: string): string | null {
+export function getFinalOutputCandidates(category: string, contentType: string): string[] {
   const cat = category.toLowerCase().trim()
   const type = contentType.toLowerCase().trim()
 
   if (cat === "stories") {
-    if (type.includes("collection")) return "Collection Category Converted"
-    if (type.includes("myth") || type.includes("fact")) return "STORY - Myth & Fact (4)"
-    if (type.includes("description") || (type.includes("closeup") && !type.includes("spec"))) return "Product Closeup Description Converted"
-    if (type.includes("tips")) return "Tips and Edu Story Converted"
-    if (type.includes("day") && type.includes("night")) return "STORY - Day & Night (2)"
-    if (type.includes("moodboard")) return "Moodboard Converted"
-    if (type.includes("spec")) return "PCS Story"
-    if (type.includes("style this")) return "STORY - Style This? (4)"
-    if (type.includes("this or that")) return "This or That Converted"
-    if (type.includes("cta")) return "CTA Converted Image"
+    if (type.includes("collection")) return ["Collection Category Converted", "STORY - Collection Category (1)"]
+    if (type.includes("myth") || type.includes("fact")) return ["STORY - Myth & Fact (4)"]
+    if (type.includes("description") || (type.includes("closeup") && !type.includes("spec"))) return ["Product Closeup Description Converted"]
+    if (type.includes("tips")) return ["Tips and Edu Story Converted", "Tips and Edu Stories"]
+    if (type.includes("day") && type.includes("night")) return ["STORY - Day & Night (2)"]
+    if (type.includes("moodboard")) return ["Moodboard Converted", "Blended Image"]
+    if (type.includes("spec")) return ["PCS Story"]
+    if (type.includes("style this")) return ["STORY - Style This? (4)"]
+    if (type.includes("this or that")) return ["This or That Converted", "STORY - This or That (1)"]
+    if (type.includes("cta")) return ["CTA Converted Image"]
   }
 
   if (cat === "feeds") {
-    if (type.includes("day") && type.includes("night")) return "FEED - Day & Night (2)"
-    if (type.includes("product showcase") || type.includes("showcase feed")) return "FEED - Product Showcase Feed"
-    if (type.includes("tips")) return "Tips and Edu Blended Attach Item Name"
+    if (type.includes("tips")) return ["Tips and Edu Blended Attach Item Name", "Tips and Edu Feeds"]
+    if (type.includes("day") && type.includes("night")) return ["FEED - Day & Night (2)", "Day Image"]
+    if (type.includes("collection")) return ["FEED - Collection Category (4)", "Styled Photo - Collection Category"]
+    if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["FEED - 1 Product, 3 Styles (3)"]
+    if (type.includes("moodboard #2") || type.includes("moodboard 2") || type.includes("revised moodboard")) return ["FEED - Revised Moodboard (3)"]
+    if (type.includes("moodboard #1") || type.includes("moodboard 1") || type.includes("moodboard")) return ["FEED - Moodboard #1 Feed (3)", "Converted Moodboard"]
+    if (type.includes("product showcase") || type.includes("showcase")) return ["FEED - Product Showcase Feed"]
+    if (type.includes("closeup") || type.includes("carousel")) return ["FEED - Carousel Product Closeup (3)"]
   }
 
   if (cat === "reels") {
-    if (type.includes("day") && type.includes("night")) return "REEL - Day & Night"
+    if (type.includes("day") && type.includes("night")) return ["Day and Night Reel with Music and Outro", "REEL - Day & Night"]
+    if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["REEL - 1 Product, 3 Styles"]
+    if (type.includes("before") && type.includes("after")) return ["REEL - Before & After", "Slide Show Before and After"]
+    if (type.includes("moodboard")) return ["REEL - Moodboard Reel", "Converted Moodboard Reel"]
+    if (type.includes("style")) return ["REEL - Style Reel Slideshow", "Style Reel Slideshow"]
+    if (type.includes("closeup")) return ["REEL - Product Closeup", "Product Closeup Reel"]
   }
 
-  return null
+  return []
+}
+
+export function getFinalOutputField(category: string, contentType: string): string | null {
+  const candidates = getFinalOutputCandidates(category, contentType)
+  return candidates.length > 0 ? candidates[0] : null
 }

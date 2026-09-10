@@ -246,6 +246,9 @@ export function ContentPreviewModal({
           caption: caption,
           airtableUrl: out?.airtableUrl,
           itemNames: out?.itemNames,
+          mediaUrl: currentSlides[0] || slides[0] || out?.videoUrl,
+          slides: currentSlides.length > 0 ? currentSlides : slides,
+          mediaType: isVideo ? "video" : "image",
         }),
       })
 
@@ -337,6 +340,7 @@ export function ContentPreviewModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mediaUrl,
+          mediaUrls: currentSlides.length > 0 ? currentSlides : (mediaUrl ? [mediaUrl] : []),
           mediaType: isVideo ? "video" : "image",
           caption: caption,
           category: item.type,
@@ -370,6 +374,9 @@ export function ContentPreviewModal({
             caption: caption,
             airtableUrl: out?.airtableUrl,
             itemNames: out?.itemNames,
+            mediaUrl,
+            slides: currentSlides.length > 0 ? currentSlides : (mediaUrl ? [mediaUrl] : []),
+            mediaType: isVideo ? "video" : "image",
           }),
         })
 

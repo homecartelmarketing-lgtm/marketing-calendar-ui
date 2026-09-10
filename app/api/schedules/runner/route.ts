@@ -133,6 +133,7 @@ async function runScheduledJobs(originUrl: string) {
           const publishRes = await publishToInstagram({
             category: entry.category,
             mediaUrl,
+            mediaUrls: entry.slides && entry.slides.length > 0 ? entry.slides : [mediaUrl],
             mediaType: entry.category === "Reels" ? "video" : (entry.mediaType || "image"),
             caption: entry.caption,
           })

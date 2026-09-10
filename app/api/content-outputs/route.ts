@@ -7,6 +7,7 @@ import {
   autoEnv,
   getAllConfiguredTables,
 } from "@/lib/tables-config"
+import { getFinalOutputCandidates } from "@/lib/output-mapping"
 
 const MARKETING_AUTOMATION_DIR =
   process.env.MARKETING_AUTOMATION_DIR || "C:\\Users\\User\\marketing-automation"
@@ -598,9 +599,20 @@ export async function GET(request: NextRequest) {
             slides = extractExactFieldImages(fields, "Tips and Edu Story Converted")
             if (slides.length === 0) continue
           } else {
-            const assets = extractAssetsFromRecord(fields, isReels)
-            slides = assets.slides
-            videoUrl = assets.videoUrl
+            const candidates = getFinalOutputCandidates(category, contentType)
+            for (const cand of candidates) {
+              const exactImgs = extractExactFieldImages(fields, cand)
+              if (exactImgs.length > 0) {
+                slides = exactImgs
+                break
+              }
+            }
+
+            if (slides.length === 0) {
+              const assets = extractAssetsFromRecord(fields, isReels)
+              slides = assets.slides
+              videoUrl = assets.videoUrl
+            }
             if (slides.length === 0 && !videoUrl) continue
           }
 

@@ -4,7 +4,7 @@ import {
   getAllConfiguredTables,
   TableTarget,
 } from "@/lib/tables-config"
-import { getFinalOutputField } from "@/lib/output-mapping"
+import { getFinalOutputField, getFinalOutputCandidates } from "@/lib/output-mapping"
 
 export type ScheduledEntry = {
   recordId: string
@@ -21,6 +21,7 @@ export type ScheduledEntry = {
   airtableUrl?: string
   itemNames?: string[]
   mediaUrl?: string
+  slides?: string[]
   mediaType?: "image" | "video"
   updatedAt: string
 }
@@ -61,32 +62,74 @@ export function parsePhtDateAndTime(dateVal: string): { isoDate: string; time: s
   }
 }
 
-// Extract first media URL (image or video) from Airtable record fields
+// Extract media URL and all slides from Airtable record fields
 export function extractMediaFromRecord(
   fields: Record<string, any>,
   category: string,
   idea?: string
-): { mediaUrl: string; mediaType: "image" | "video" } {
+): { mediaUrl: string; mediaType: "image" | "video"; slides: string[] } {
   let videoUrl = ""
   let imageUrl = ""
+  let extractedSlides: string[] = []
 
-  // 1. First, check if we have an explicitly mapped exact field for this workflow
+  // 1. First, check if we have explicitly mapped exact candidates for this workflow
   if (idea) {
-    const exactField = getFinalOutputField(category, idea);
-    if (exactField) {
-      const attachField = fields[exactField] || fields[exactField.toLowerCase()] || fields[exactField.toUpperCase()];
-      if (Array.isArray(attachField) && attachField.length > 0 && attachField[0].url) {
-        const isVid = attachField[0].type?.startsWith("video/") || attachField[0].filename?.toLowerCase().endsWith(".mp4");
-        return { mediaUrl: attachField[0].url, mediaType: isVid ? "video" : "image" }
+    const candidates = getFinalOutputCandidates(category, idea)
+    for (const cand of candidates) {
+      const candLower = cand.trim().toLowerCase()
+      for (const [key, val] of Object.entries(fields)) {
+        if (key.trim().toLowerCase() === candLower && Array.isArray(val) && val.length > 0) {
+          const validItems = val.filter((item: any) => item && typeof item === "object" && item.url)
+          if (validItems.length > 0) {
+            const urls = validItems.map((item: any) => item.url as string)
+            const isVid =
+              validItems[0].type?.startsWith("video/") ||
+              validItems[0].filename?.toLowerCase().endsWith(".mp4") ||
+              key.toLowerCase().includes("video") ||
+              key.toLowerCase().includes("reel")
+            return {
+              mediaUrl: urls[0],
+              mediaType: isVid ? "video" : "image",
+              slides: urls,
+            }
+          }
+        }
       }
     }
   }
 
-  // 2. Specific extraction rules for legacy/other ideas not covered by mapping
-  if (idea && idea.toLowerCase().includes("tips") && category.toLowerCase() === "feeds") {
-    const attachField = fields["Tips and Edu Blended Attach Item Name"] || fields["tips and edu blended attach item name"];
-    if (Array.isArray(attachField) && attachField.length > 0 && attachField[0].url) {
-      return { mediaUrl: attachField[0].url, mediaType: "image" }
+  // 2. Specific extraction rules for multi-slide formats
+  if (idea && idea.toLowerCase().includes("moodboard") && category.toLowerCase() === "stories") {
+    const mbSlides: string[] = []
+    for (const [k, val] of Object.entries(fields)) {
+      const kl = k.trim().toLowerCase()
+      if (kl === "moodboard converted" || kl === "blended image") {
+        if (Array.isArray(val)) {
+          for (const it of val) {
+            if (it?.url) mbSlides.push(it.url)
+          }
+        }
+      }
+    }
+    if (mbSlides.length > 0) {
+      return { mediaUrl: mbSlides[0], mediaType: "image", slides: mbSlides }
+    }
+  }
+
+  if (idea && (idea.toLowerCase().includes("day & night") || idea.toLowerCase().includes("day and night")) && category.toLowerCase() === "feeds") {
+    const dnSlides: string[] = []
+    for (const [k, val] of Object.entries(fields)) {
+      const kl = k.trim().toLowerCase()
+      if (kl === "day image" || kl === "night image" || kl === "feed - day & night (2)") {
+        if (Array.isArray(val)) {
+          for (const it of val) {
+            if (it?.url) dnSlides.push(it.url)
+          }
+        }
+      }
+    }
+    if (dnSlides.length > 0) {
+      return { mediaUrl: dnSlides[0], mediaType: "image", slides: dnSlides }
     }
   }
 
@@ -104,20 +147,21 @@ export function extractMediaFromRecord(
 
         if (isVid && !videoUrl) {
           videoUrl = item.url
-        } else if (!isVid && !imageUrl) {
-          imageUrl = item.url
+        } else if (!isVid) {
+          if (!imageUrl) imageUrl = item.url
+          extractedSlides.push(item.url)
         }
       }
     }
   }
 
   if (category === "Reels" && videoUrl) {
-    return { mediaUrl: videoUrl, mediaType: "video" }
+    return { mediaUrl: videoUrl, mediaType: "video", slides: [videoUrl] }
   }
   if (videoUrl) {
-    return { mediaUrl: videoUrl, mediaType: "video" }
+    return { mediaUrl: videoUrl, mediaType: "video", slides: [videoUrl] }
   }
-  return { mediaUrl: imageUrl, mediaType: "image" }
+  return { mediaUrl: imageUrl, mediaType: "image", slides: extractedSlides.length > 0 ? extractedSlides : (imageUrl ? [imageUrl] : []) }
 }
 
 // Build map of locked foreign keys across all dates:
@@ -212,7 +256,7 @@ export async function pullAirtableSchedulesWithDiagnostics(): Promise<{
               if (fields[key]) itemNames.push(String(fields[key]))
             }
 
-            const { mediaUrl, mediaType } = extractMediaFromRecord(fields, cfg.category, cfg.idea)
+            const { mediaUrl, mediaType, slides } = extractMediaFromRecord(fields, cfg.category, cfg.idea)
 
             const rawStatus = fields["Status"] || "Scheduled"
             const status: ScheduledEntry["status"] =
@@ -233,6 +277,7 @@ export async function pullAirtableSchedulesWithDiagnostics(): Promise<{
               airtableUrl: `https://airtable.com/${AIRTABLE_BASE_ID}/${cfg.tableId}/${r.id}`,
               itemNames: itemNames.length > 0 ? itemNames : undefined,
               mediaUrl: mediaUrl || undefined,
+              slides: slides && slides.length > 0 ? slides : (mediaUrl ? [mediaUrl] : undefined),
               mediaType,
               updatedAt: new Date().toISOString(),
             }

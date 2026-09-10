@@ -6,6 +6,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       mediaUrl,
+      mediaUrls,
       mediaType,
       caption,
       category,
@@ -15,17 +16,20 @@ export async function POST(request: NextRequest) {
       time,
     } = body
 
-    if (!mediaUrl) {
+    if (!mediaUrl && (!mediaUrls || mediaUrls.length === 0)) {
       return NextResponse.json(
         { success: false, message: "Media URL is required to publish to Meta" },
         { status: 400 }
       )
     }
 
+    const effectiveMediaUrl = mediaUrl || (mediaUrls && mediaUrls[0])
+
     // Call Instagram publishing via Meta API
     const publishResult = await publishToInstagram({
       category: category || "Stories",
-      mediaUrl,
+      mediaUrl: effectiveMediaUrl,
+      mediaUrls: Array.isArray(mediaUrls) && mediaUrls.length > 0 ? mediaUrls : [effectiveMediaUrl],
       mediaType: mediaType === "video" ? "video" : "image",
       caption,
     })
