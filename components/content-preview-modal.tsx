@@ -41,6 +41,53 @@ const TYPE_LABELS: Record<ContentType, string> = {
 
 const STATUS_OPTIONS = ["Posted", "Scheduled", "Completed", "Discard", "For Manual"]
 
+const STATUS_STYLES: Record<
+  string,
+  {
+    bg: string
+    border: string
+    text: string
+    dot: string
+    hoverBg: string
+  }
+> = {
+  Posted: {
+    bg: "bg-emerald-50",
+    border: "border-emerald-400",
+    text: "text-emerald-800",
+    dot: "bg-emerald-600",
+    hoverBg: "hover:bg-emerald-100/70",
+  },
+  Scheduled: {
+    bg: "bg-sky-50",
+    border: "border-sky-400",
+    text: "text-sky-800",
+    dot: "bg-sky-600",
+    hoverBg: "hover:bg-sky-100/70",
+  },
+  Completed: {
+    bg: "bg-amber-50",
+    border: "border-amber-400",
+    text: "text-amber-800",
+    dot: "bg-amber-600",
+    hoverBg: "hover:bg-amber-100/70",
+  },
+  "For Manual": {
+    bg: "bg-purple-50",
+    border: "border-purple-400",
+    text: "text-purple-800",
+    dot: "bg-purple-600",
+    hoverBg: "hover:bg-purple-100/70",
+  },
+  Discard: {
+    bg: "bg-rose-50",
+    border: "border-rose-400",
+    text: "text-rose-800",
+    dot: "bg-rose-600",
+    hoverBg: "hover:bg-rose-100/70",
+  },
+}
+
 export function ContentPreviewModal({
   iso,
   items,
@@ -603,36 +650,85 @@ export function ContentPreviewModal({
                     Status
                   </dt>
                   <dd className="relative min-w-0 flex-1">
-                    <button
-                      type="button"
-                      onClick={() => setStatusOpen((o) => !o)}
-                      aria-expanded={statusOpen}
-                      className="flex w-full items-center justify-between rounded-lg border-2 border-neutral-300 bg-neutral-100 px-3 py-2.5 text-sm font-medium text-neutral-600"
-                    >
-                      <span className="truncate">{status}</span>
-                      {statusOpen ? (
-                        <ChevronUp className="h-4 w-4 shrink-0" strokeWidth={2.5} />
-                      ) : (
-                        <ChevronDown className="h-4 w-4 shrink-0" strokeWidth={2.5} />
-                      )}
-                    </button>
-                    {statusOpen && (
-                      <div className="absolute left-0 right-0 top-[calc(100%+0.25rem)] z-10 overflow-hidden rounded-lg border-2 border-neutral-200 bg-white py-1 shadow-xl">
-                        {STATUS_OPTIONS.map((opt) => (
+                    {(() => {
+                      const currentStyle = STATUS_STYLES[status] || {
+                        bg: "bg-neutral-100",
+                        border: "border-neutral-300",
+                        text: "text-neutral-700",
+                        dot: "bg-neutral-400",
+                        hoverBg: "hover:bg-neutral-100",
+                      }
+                      return (
+                        <>
                           <button
-                            key={opt}
                             type="button"
-                            onClick={() => {
-                              setStatusByKey((prev) => ({ ...prev, [item.key]: opt }))
-                              setStatusOpen(false)
-                            }}
-                            className="block w-full px-3 py-2 text-center text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100"
+                            onClick={() => setStatusOpen((o) => !o)}
+                            aria-expanded={statusOpen}
+                            className={`flex w-full items-center justify-between rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-all shadow-sm ${currentStyle.bg} ${currentStyle.border} ${currentStyle.text}`}
                           >
-                            {opt}
+                            <span className="flex items-center gap-2 truncate">
+                              <span
+                                className={`h-2.5 w-2.5 shrink-0 rounded-full ${currentStyle.dot} shadow-sm`}
+                              />
+                              <span className="truncate">{status}</span>
+                            </span>
+                            {statusOpen ? (
+                              <ChevronUp
+                                className="h-4 w-4 shrink-0 opacity-70"
+                                strokeWidth={2.5}
+                              />
+                            ) : (
+                              <ChevronDown
+                                className="h-4 w-4 shrink-0 opacity-70"
+                                strokeWidth={2.5}
+                              />
+                            )}
                           </button>
-                        ))}
-                      </div>
-                    )}
+                          {statusOpen && (
+                            <div className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-30 overflow-hidden rounded-xl border-2 border-neutral-200 bg-white p-1.5 shadow-2xl backdrop-blur-sm">
+                              <div className="flex flex-col gap-1">
+                                {STATUS_OPTIONS.map((opt) => {
+                                  const optStyle =
+                                    STATUS_STYLES[opt] || currentStyle
+                                  const isSelected = opt === status
+                                  return (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      onClick={() => {
+                                        setStatusByKey((prev) => ({
+                                          ...prev,
+                                          [item.key]: opt,
+                                        }))
+                                        setStatusOpen(false)
+                                      }}
+                                      className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-xs sm:text-sm font-semibold transition-all ${
+                                        isSelected
+                                          ? `${optStyle.bg} ${optStyle.border} ${optStyle.text} ring-2 ring-neutral-400/30`
+                                          : `border-transparent bg-transparent ${optStyle.text} ${optStyle.hoverBg}`
+                                      }`}
+                                    >
+                                      <span className="flex items-center gap-2">
+                                        <span
+                                          className={`h-2.5 w-2.5 shrink-0 rounded-full ${optStyle.dot}`}
+                                        />
+                                        <span>{opt}</span>
+                                      </span>
+                                      {isSelected && (
+                                        <Check
+                                          className="h-4 w-4 shrink-0 opacity-80"
+                                          strokeWidth={2.5}
+                                        />
+                                      )}
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )
+                    })()}
                   </dd>
                   <button
                     type="button"
