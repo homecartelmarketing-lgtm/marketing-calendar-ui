@@ -252,6 +252,19 @@ function extractTipsAndEduFeedImages(fields: Record<string, any>): string[] {
   return []
 }
 
+function extractExactFieldImages(fields: Record<string, any>, exactFieldName: string): string[] {
+  for (const [key, val] of Object.entries(fields)) {
+    if (key.trim().toLowerCase() === exactFieldName.toLowerCase()) {
+      if (Array.isArray(val) && val.length > 0) {
+        return val
+          .filter((item: any) => item && typeof item === "object" && item.url)
+          .map((item: any) => item.url as string)
+      }
+    }
+  }
+  return []
+}
+
 // Map pipeline keys to table IDs retrieved from .env
 function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<string, string>): string[] {
   const cat = category.toLowerCase()
@@ -519,6 +532,12 @@ export async function GET(request: NextRequest) {
     const isTipsAndEduFeed =
       category.toLowerCase() === "feeds" &&
       contentType.toLowerCase().includes("tips")
+    
+    // Explicit requested story categories
+    const isCollectionCategoryStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("collection")
+    const isMythAndFactStory = category.toLowerCase() === "stories" && (contentType.toLowerCase().includes("myth") || contentType.toLowerCase().includes("fact"))
+    const isTipsAndEduStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("tips")
+
     const aspectRatio = category.toLowerCase() === "feeds" ? "4:5" : "9:16"
     const mediaType = isReels ? "video" : "image"
 
@@ -568,6 +587,15 @@ export async function GET(request: NextRequest) {
             if (slides.length === 0) continue
           } else if (isTipsAndEduFeed) {
             slides = extractTipsAndEduFeedImages(fields)
+            if (slides.length === 0) continue
+          } else if (isCollectionCategoryStory) {
+            slides = extractExactFieldImages(fields, "Collection Category Converted")
+            if (slides.length === 0) continue
+          } else if (isMythAndFactStory) {
+            slides = extractExactFieldImages(fields, "STORY - Myth & Fact (4)")
+            if (slides.length === 0) continue
+          } else if (isTipsAndEduStory) {
+            slides = extractExactFieldImages(fields, "Tips and Edu Story Converted")
             if (slides.length === 0) continue
           } else {
             const assets = extractAssetsFromRecord(fields, isReels)

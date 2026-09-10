@@ -52,10 +52,10 @@ export function ContentCalendar() {
     }
     loadSchedules()
 
-    // Periodic UI refresh every 60 seconds (reads schedules only, never triggers publishing runner)
+    // Periodic UI refresh every 10 seconds (Auto Sync)
     const interval = setInterval(() => {
       loadSchedules()
-    }, 60000)
+    }, 10000)
 
     return () => clearInterval(interval)
   }, [])

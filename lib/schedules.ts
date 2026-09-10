@@ -4,6 +4,7 @@ import {
   getAllConfiguredTables,
   TableTarget,
 } from "@/lib/tables-config"
+import { getFinalOutputField } from "@/lib/output-mapping"
 
 export type ScheduledEntry = {
   recordId: string
@@ -69,14 +70,27 @@ export function extractMediaFromRecord(
   let videoUrl = ""
   let imageUrl = ""
 
-  // Specific extraction rules for certain ideas
-  if (idea && idea.toLowerCase().includes("tips")) {
+  // 1. First, check if we have an explicitly mapped exact field for this workflow
+  if (idea) {
+    const exactField = getFinalOutputField(category, idea);
+    if (exactField) {
+      const attachField = fields[exactField] || fields[exactField.toLowerCase()] || fields[exactField.toUpperCase()];
+      if (Array.isArray(attachField) && attachField.length > 0 && attachField[0].url) {
+        const isVid = attachField[0].type?.startsWith("video/") || attachField[0].filename?.toLowerCase().endsWith(".mp4");
+        return { mediaUrl: attachField[0].url, mediaType: isVid ? "video" : "image" }
+      }
+    }
+  }
+
+  // 2. Specific extraction rules for legacy/other ideas not covered by mapping
+  if (idea && idea.toLowerCase().includes("tips") && category.toLowerCase() === "feeds") {
     const attachField = fields["Tips and Edu Blended Attach Item Name"] || fields["tips and edu blended attach item name"];
     if (Array.isArray(attachField) && attachField.length > 0 && attachField[0].url) {
       return { mediaUrl: attachField[0].url, mediaType: "image" }
     }
   }
 
+  // 3. Fallback to generic wildcard search across all fields
   for (const [key, val] of Object.entries(fields)) {
     if (!Array.isArray(val) || val.length === 0) continue
 
