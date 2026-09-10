@@ -63,10 +63,19 @@ export function parsePhtDateAndTime(dateVal: string): { isoDate: string; time: s
 // Extract first media URL (image or video) from Airtable record fields
 export function extractMediaFromRecord(
   fields: Record<string, any>,
-  category: string
+  category: string,
+  idea?: string
 ): { mediaUrl: string; mediaType: "image" | "video" } {
   let videoUrl = ""
   let imageUrl = ""
+
+  // Specific extraction rules for certain ideas
+  if (idea && idea.toLowerCase().includes("tips")) {
+    const attachField = fields["Tips and Edu Blended Attach Item Name"] || fields["tips and edu blended attach item name"];
+    if (Array.isArray(attachField) && attachField.length > 0 && attachField[0].url) {
+      return { mediaUrl: attachField[0].url, mediaType: "image" }
+    }
+  }
 
   for (const [key, val] of Object.entries(fields)) {
     if (!Array.isArray(val) || val.length === 0) continue
@@ -189,7 +198,7 @@ export async function pullAirtableSchedulesWithDiagnostics(): Promise<{
               if (fields[key]) itemNames.push(String(fields[key]))
             }
 
-            const { mediaUrl, mediaType } = extractMediaFromRecord(fields, cfg.category)
+            const { mediaUrl, mediaType } = extractMediaFromRecord(fields, cfg.category, cfg.idea)
 
             const rawStatus = fields["Status"] || "Scheduled"
             const status: ScheduledEntry["status"] =
