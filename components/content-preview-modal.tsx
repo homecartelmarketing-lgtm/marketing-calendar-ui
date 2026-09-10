@@ -544,8 +544,13 @@ export function ContentPreviewModal({
 
               <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-center text-white">
                 <p className="text-base font-semibold sm:text-lg">
-                  {out?.itemNames?.[0] || item.idea}
+                  {item.idea}
                 </p>
+                {out?.itemNames?.[0] && (
+                  <p className="mt-0.5 text-xs font-medium text-white/80">
+                    {out.itemNames[0]}
+                  </p>
+                )}
                 <p className="mt-1 text-[11px] leading-tight opacity-90">
                   Follow @HomeCartel for more home inspiration
                 </p>
@@ -626,7 +631,10 @@ export function ContentPreviewModal({
                   value={item.cid ?? out?.foreignKeyId ?? "XXXX-XXXX-XX-01"}
                   muted
                 />
-                <DetailRow label="Content Name" value={out?.itemNames?.[0] || item.idea} />
+                <DetailRow label="Content Name" value={item.idea} />
+                {out?.itemNames && out.itemNames.length > 0 && (
+                  <DetailRow label="Item Name" value={out.itemNames.join(", ")} />
+                )}
                 <DetailRow label="Content Type" value={TYPE_LABELS[item.type]} />
                 <DetailRow label="Scheduled Date" value={formatLongDate(iso)} />
                 <DetailRow label="Scheduled Time" value={item.time ?? "—"} />
