@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
+  Film,
   Link2,
   Maximize2,
   Pencil,
@@ -150,7 +151,8 @@ export function ContentPreviewModal({
   const caption = captionByKey[item.key] ?? out?.caption ?? ""
   const slides = out?.slides || []
   const currentSlides = slides
-  const isVideo = out?.mediaType === "video" && Boolean(out?.videoUrl)
+  const isReels = item.type === "Reels" || out?.category?.toLowerCase() === "reels"
+  const isVideo = (out?.mediaType === "video" || isReels) && Boolean(out?.videoUrl)
 
   const isStoriesOrReels = item.type === "Stories" || item.type === "Reels"
   const isDayAndNight =
@@ -496,15 +498,52 @@ export function ContentPreviewModal({
             </div>
 
             <div
-              className={`relative mx-auto ${containerAspect} w-full overflow-hidden rounded-xl border-2 border-neutral-800 bg-neutral-950 flex items-center justify-center group cursor-pointer`}
-              onClick={() => setLightboxOpen(true)}
+              className={`relative mx-auto ${containerAspect} w-full overflow-hidden rounded-xl border-2 border-neutral-800 bg-neutral-950 flex items-center justify-center group ${
+                !isVideo && currentSlides.length > 0 ? "cursor-pointer" : ""
+              }`}
+              onClick={() => {
+                if (!isVideo && currentSlides.length > 0) {
+                  setLightboxOpen(true)
+                }
+              }}
             >
               {isVideo ? (
-                <video
-                  src={out!.videoUrl}
-                  controls
-                  className="h-full w-full object-contain"
-                />
+                <div
+                  className="relative h-full w-full flex items-center justify-center bg-black select-none"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <video
+                    src={out!.videoUrl}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    className="h-full w-full object-contain"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  {/* Full view button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setLightboxOpen(true)
+                    }}
+                    className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-black/75 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md opacity-80 hover:opacity-100 transition shadow-md"
+                    title="Fullscreen view"
+                  >
+                    <Maximize2 className="h-3.5 w-3.5 text-amber-400" />
+                    <span>Full View</span>
+                  </button>
+                </div>
+              ) : isReels ? (
+                <div className="flex flex-col items-center justify-center p-6 text-center text-neutral-400">
+                  <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 shadow-inner">
+                    <Film className="h-7 w-7 text-neutral-400" />
+                  </div>
+                  <p className="text-sm font-bold text-neutral-200">No Video Generated Yet</p>
+                  <p className="mt-1 text-xs text-neutral-500 max-w-[220px]">
+                    This reel has not been rendered by marketing automation yet.
+                  </p>
+                </div>
               ) : currentSlides.length > 0 ? (
                 <>
                   <img
@@ -558,19 +597,22 @@ export function ContentPreviewModal({
                 />
               )}
 
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-center text-white">
-                <p className="text-base font-semibold sm:text-lg">
-                  {item.idea}
-                </p>
-                {out?.itemNames?.[0] && (
-                  <p className="mt-0.5 text-xs font-medium text-white/80">
-                    {out.itemNames[0]}
+              {/* Branding overlay only for static slides, never obscuring video controls */}
+              {!isVideo && currentSlides.length > 0 && (
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-center text-white">
+                  <p className="text-base font-semibold sm:text-lg">
+                    {item.idea}
                   </p>
-                )}
-                <p className="mt-1 text-[11px] leading-tight opacity-90">
-                  Follow @HomeCartel for more home inspiration
-                </p>
-              </div>
+                  {out?.itemNames?.[0] && (
+                    <p className="mt-0.5 text-xs font-medium text-white/80">
+                      {out.itemNames[0]}
+                    </p>
+                  )}
+                  <p className="mt-1 text-[11px] leading-tight opacity-90">
+                    Follow @HomeCartel for more home inspiration
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Quick Day & Night slide toggle buttons */}
@@ -906,7 +948,7 @@ export function ContentPreviewModal({
         )}
 
         {/* Fullscreen High-Resolution Lightbox Overlay */}
-        {lightboxOpen && currentSlides.length > 0 && (
+        {lightboxOpen && (isVideo || currentSlides.length > 0) && (
           <div
             className="fixed inset-0 z-[80] flex items-center justify-center bg-black/95 p-4 backdrop-blur-md"
             onClick={() => setLightboxOpen(false)}
@@ -925,47 +967,59 @@ export function ContentPreviewModal({
                 <X className="h-6 w-6" strokeWidth={2.5} />
               </button>
 
-              {/* Main full-resolution image */}
-              <div className="relative overflow-hidden rounded-xl bg-neutral-950 shadow-2xl">
-                <img
-                  src={currentSlides[activeSlide] || currentSlides[0]}
-                  alt={`${item.idea} full preview`}
-                  className="max-h-[85vh] max-w-[90vw] object-contain"
-                />
-
-                {/* Left/Right navigation if multiple slides */}
-                {currentSlides.length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActiveSlide((prev) => (prev > 0 ? prev - 1 : currentSlides.length - 1))
-                      }
-                      className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white backdrop-blur-md transition hover:bg-black"
-                      aria-label="Previous image"
-                    >
-                      <ChevronLeft className="h-6 w-6" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActiveSlide((prev) => (prev < currentSlides.length - 1 ? prev + 1 : 0))
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white backdrop-blur-md transition hover:bg-black"
-                      aria-label="Next image"
-                    >
-                      <ChevronRight className="h-6 w-6" />
-                    </button>
-                  </>
-                )}
-
-                {/* Bottom slide pill indicator */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/80 px-4 py-1.5 text-xs font-semibold tracking-wide text-white backdrop-blur-md">
-                  {isDayAndNight
-                    ? activeSlide === 0 ? "☀️ DAY PHOTO (1 / 2)" : "🌙 NIGHT PHOTO (2 / 2)"
-                    : `SLIDE ${activeSlide + 1} OF ${currentSlides.length}`}
+              {/* Main media container: Video or Image */}
+              {isVideo ? (
+                <div className="relative overflow-hidden rounded-xl bg-neutral-950 shadow-2xl">
+                  <video
+                    src={out!.videoUrl}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="max-h-[85vh] max-w-[90vw] object-contain rounded-xl"
+                  />
                 </div>
-              </div>
+              ) : (
+                <div className="relative overflow-hidden rounded-xl bg-neutral-950 shadow-2xl">
+                  <img
+                    src={currentSlides[activeSlide] || currentSlides[0]}
+                    alt={`${item.idea} full preview`}
+                    className="max-h-[85vh] max-w-[90vw] object-contain"
+                  />
+
+                  {/* Left/Right navigation if multiple slides */}
+                  {currentSlides.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setActiveSlide((prev) => (prev > 0 ? prev - 1 : currentSlides.length - 1))
+                        }
+                        className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white backdrop-blur-md transition hover:bg-black"
+                        aria-label="Previous image"
+                      >
+                        <ChevronLeft className="h-6 w-6" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setActiveSlide((prev) => (prev < currentSlides.length - 1 ? prev + 1 : 0))
+                        }
+                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white backdrop-blur-md transition hover:bg-black"
+                        aria-label="Next image"
+                      >
+                        <ChevronRight className="h-6 w-6" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Bottom slide pill indicator */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/80 px-4 py-1.5 text-xs font-semibold tracking-wide text-white backdrop-blur-md">
+                    {isDayAndNight
+                      ? activeSlide === 0 ? "☀️ DAY PHOTO (1 / 2)" : "🌙 NIGHT PHOTO (2 / 2)"
+                      : `SLIDE ${activeSlide + 1} OF ${currentSlides.length}`}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

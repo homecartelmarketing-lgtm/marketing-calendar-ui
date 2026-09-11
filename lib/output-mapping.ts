@@ -28,11 +28,11 @@ export function getFinalOutputCandidates(category: string, contentType: string):
 
   if (cat === "reels") {
     if (type.includes("day") && type.includes("night")) return ["Day and Night Reel with Music and Outro", "REEL - Day & Night"]
-    if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["REEL - 1 Product, 3 Styles"]
-    if (type.includes("before") && type.includes("after")) return ["REEL - Before & After", "Slide Show Before and After"]
+    if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["Converted Reel", "REEL - 1 Product, 3 Styles"]
+    if (type.includes("before") && type.includes("after")) return ["Slide Show Before and After Reel", "REEL - Before & After", "Slide Show Before and After"]
     if (type.includes("moodboard")) return ["REEL - Moodboard Reel", "Converted Moodboard Reel"]
-    if (type.includes("style")) return ["REEL - Style Reel Slideshow", "Style Reel Slideshow"]
-    if (type.includes("closeup")) return ["REEL - Product Closeup", "Product Closeup Reel"]
+    if (type.includes("style")) return ["Style Reel Slideshow", "REEL - Style Reel Slideshow"]
+    if (type.includes("closeup")) return ["Final Video", "REEL - Product Closeup", "Product Closeup Reel"]
   }
 
   return []

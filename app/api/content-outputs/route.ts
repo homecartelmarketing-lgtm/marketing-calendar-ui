@@ -439,6 +439,29 @@ function getTableTargetsForPipeline(category: string, type: string, autoEnv: Rec
   return ids.map((tableId) => ({ tableId }))
 }
 
+function isVideoAttachment(item: any): boolean {
+  if (!item || typeof item !== "object" || !item.url) return false
+  const mime = String(item.type || "").toLowerCase()
+  const fname = String(item.filename || "").toLowerCase()
+  return (
+    mime.startsWith("video/") ||
+    fname.endsWith(".mp4") ||
+    fname.endsWith(".mov") ||
+    fname.endsWith(".webm") ||
+    fname.endsWith(".m4v")
+  )
+}
+
+function isImageAttachment(item: any): boolean {
+  if (!item || typeof item !== "object" || !item.url) return false
+  const mime = String(item.type || "").toLowerCase()
+  const fname = String(item.filename || "").toLowerCase()
+  return (
+    mime.startsWith("image/") ||
+    Boolean(fname.match(/\.(jpg|jpeg|png|webp|gif|avif)$/i))
+  )
+}
+
 // Smart asset extractor across any Airtable table schema
 function extractAssetsFromRecord(fields: Record<string, any>, isVideoPreferred: boolean): {
   slides: string[]
@@ -451,7 +474,7 @@ function extractAssetsFromRecord(fields: Record<string, any>, isVideoPreferred: 
     "myth blended", "fact blended", "debunk myth thumbnail", 
     "debunk myth thumbnail generated interior", "outro photo generated", 
     "logo watermark for story", "outro layout", "myth layout", "fact layout",
-    "debunk layout"
+    "debunk layout", "prompt1", "prompt2", "prompt3"
   ])
 
   let videoUrl: string | undefined = undefined
@@ -466,15 +489,9 @@ function extractAssetsFromRecord(fields: Record<string, any>, isVideoPreferred: 
 
     if (IGNORED_INPUTS.has(kLower)) continue
 
-    // 1. Check for Video
+    // 1. Check for Video - ONLY genuine video files
     for (const item of val) {
-      const isVid =
-        item?.type?.startsWith("video/") ||
-        item?.filename?.toLowerCase().endsWith(".mp4") ||
-        kLower.includes("reel") ||
-        kLower.includes("video")
-
-      if (isVid && item?.url) {
+      if (isVideoAttachment(item)) {
         videoUrl = item.url
         if (isVideoPreferred) break
       }
@@ -502,12 +519,7 @@ function extractAssetsFromRecord(fields: Record<string, any>, isVideoPreferred: 
 
     const targetList = isPrimaryOutput ? primarySlides : secondarySlides
     for (const item of val) {
-      const isImg =
-        item?.type?.startsWith("image/") ||
-        item?.filename?.match(/\.(jpg|jpeg|png|webp)/i) ||
-        !item?.filename?.toLowerCase().endsWith(".mp4")
-
-      if (isImg && item?.url) {
+      if (isImageAttachment(item)) {
         targetList.push(item.url)
       }
     }
@@ -605,20 +617,58 @@ export async function GET(request: NextRequest) {
             if (slides.length === 0) continue
           } else {
             const candidates = getFinalOutputCandidates(category, contentType)
+            let foundCandidateMedia = false
+
             for (const cand of candidates) {
-              const exactImgs = extractExactFieldImages(fields, cand)
-              if (exactImgs.length > 0) {
-                slides = exactImgs
-                break
+              const candLower = cand.trim().toLowerCase()
+              for (const [key, val] of Object.entries(fields)) {
+                if (key.trim().toLowerCase() === candLower && Array.isArray(val) && val.length > 0) {
+                  for (const item of val) {
+                    if (isVideoAttachment(item)) {
+                      if (!videoUrl) videoUrl = item.url
+                    } else if (isImageAttachment(item)) {
+                      slides.push(item.url)
+                    }
+                  }
+                  if (videoUrl || slides.length > 0) {
+                    foundCandidateMedia = true
+                    break
+                  }
+                }
               }
+              if (foundCandidateMedia) break
             }
 
-            if (slides.length === 0) {
-              const assets = extractAssetsFromRecord(fields, isReels)
-              slides = assets.slides
-              videoUrl = assets.videoUrl
+            if (isReels) {
+              // If candidate field didn't yield a video, search all fields for a genuine video attachment
+              if (!videoUrl) {
+                for (const [key, val] of Object.entries(fields)) {
+                  if (Array.isArray(val) && val.length > 0) {
+                    for (const item of val) {
+                      if (isVideoAttachment(item)) {
+                        videoUrl = item.url
+                        break
+                      }
+                    }
+                    if (videoUrl) break
+                  }
+                }
+              }
+              // For Reels, NEVER treat intermediate interior or blended JPGs as slides
+              slides = []
+
+              // If no video was found, and the record has no identifiers, skip empty row
+              if (!videoUrl && !fields["Item Name"] && !fields["ID"] && !fields["Foreign Key ID"]) {
+                continue
+              }
+            } else {
+              if (slides.length === 0) {
+                const assets = extractAssetsFromRecord(fields, false)
+                slides = assets.slides
+                videoUrl = assets.videoUrl
+              }
+              if (slides.length === 0 && !videoUrl) continue
             }
-            if (slides.length === 0 && !videoUrl) continue
           }
 
           const rawStatus = fields["Status"] || "Completed"
@@ -682,9 +732,9 @@ export async function GET(request: NextRequest) {
             generatedTime,
             scheduledDate,
             scheduledTime,
-            mediaType: isReels && videoUrl ? "video" : "image",
-            slides,
-            videoUrl,
+            mediaType: isReels ? "video" : (videoUrl ? "video" : "image"),
+            slides: isReels ? [] : slides,
+            videoUrl: isReels ? videoUrl : (videoUrl || undefined),
             duration: isReels ? "15s" : undefined,
             caption,
             airtableUrl: `https://airtable.com/${AIRTABLE_BASE_ID}/${tableId}/${rec.id}`,
