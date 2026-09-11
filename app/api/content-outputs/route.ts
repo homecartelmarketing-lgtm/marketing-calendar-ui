@@ -447,7 +447,11 @@ function extractAssetsFromRecord(fields: Record<string, any>, isVideoPreferred: 
   const IGNORED_INPUTS = new Set([
     "furniture item", "furniture items", "interior", "interiors",
     "logo", "arrow", "arrow2", "fact emoticon", "myth emoticon",
-    "music generated", "outro", "overlay logo", "double tap converted"
+    "music generated", "outro", "overlay logo", "double tap converted",
+    "myth blended", "fact blended", "debunk myth thumbnail", 
+    "debunk myth thumbnail generated interior", "outro photo generated", 
+    "logo watermark for story", "outro layout", "myth layout", "fact layout",
+    "debunk layout"
   ])
 
   let videoUrl: string | undefined = undefined
