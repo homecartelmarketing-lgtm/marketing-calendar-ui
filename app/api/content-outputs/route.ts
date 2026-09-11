@@ -123,28 +123,38 @@ function formatDateDisplay(isoDateString?: string): { date: string; time: string
     return { date: "", time: "" }
   }
 
-  const d = new Date(isoDateString)
-  if (isNaN(d.getTime())) {
+  try {
+    const d = new Date(isoDateString)
+    if (isNaN(d.getTime())) {
+      return { date: "", time: "" }
+    }
+
+    // Format strictly in Asia/Manila (PHT, UTC+8)
+    const monthFormatter = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Manila", month: "long" })
+    const dayFormatter = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Manila", day: "numeric" })
+    const yearFormatter = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Manila", year: "numeric" })
+    const weekdayFormatter = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Manila", weekday: "long" })
+
+    const monthName = monthFormatter.format(d)
+    const dayNum = dayFormatter.format(d)
+    const yearNum = yearFormatter.format(d)
+    const dayName = weekdayFormatter.format(d)
+
+    // 24-hour time strictly in Asia/Manila
+    const timeFormatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Manila",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+    const time = timeFormatter.format(d)
+
+    return {
+      date: `${monthName} ${dayNum}, ${yearNum} (${dayName})`,
+      time,
+    }
+  } catch {
     return { date: "", time: "" }
-  }
-
-  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-  const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ]
-
-  const monthName = months[d.getMonth()]
-  const dayNum = d.getDate()
-  const yearNum = d.getFullYear()
-  const dayName = days[d.getDay()]
-
-  const hours = String(d.getHours()).padStart(2, "0")
-  const mins = String(d.getMinutes()).padStart(2, "0")
-
-  return {
-    date: `${monthName} ${dayNum}, ${yearNum} (${dayName})`,
-    time: `${hours}:${mins}`,
   }
 }
 
@@ -693,8 +703,8 @@ export async function GET(request: NextRequest) {
             ? formatDateDisplay(schedDateField)
             : { date: "", time: "" }
 
-          const date = generatedDate || scheduledDate
-          const time = generatedTime || scheduledTime
+          const date = generatedDate || ""
+          const time = generatedTime || ""
 
           const fkId =
             fields["Foreign Key ID"] ||
@@ -754,6 +764,15 @@ export async function GET(request: NextRequest) {
         try {
           const videoFiles = fs.readdirSync(videosDir).filter((f: string) => f.endsWith(".mp4"))
           for (const vf of videoFiles) {
+            let fileDate = ""
+            let fileTime = ""
+            try {
+              const st = fs.statSync(path.join(videosDir, vf))
+              const fd = formatDateDisplay(st.mtime.toISOString())
+              fileDate = fd.date
+              fileTime = fd.time
+            } catch {}
+
             allItems.push({
               recordId: vf.replace(/\.mp4$/, ""),
               category,
@@ -761,8 +780,10 @@ export async function GET(request: NextRequest) {
               foreignKeyId: `REEL-${vf.slice(0, 16)}`,
               status: "Completed",
               rawStatus: "Completed",
-              date: "August 31, 2026 (Monday)",
-              time: "13:00",
+              date: fileDate,
+              time: fileTime,
+              generatedDate: fileDate,
+              generatedTime: fileTime,
               mediaType: "video",
               slides: [],
               videoUrl: `/api/media/videos/${vf}`,

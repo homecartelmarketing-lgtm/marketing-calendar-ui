@@ -694,21 +694,31 @@ export function ContentPreviewModal({
                   <DetailRow label="Item Name" value={out.itemNames.join(", ")} />
                 )}
                 <DetailRow label="Content Type" value={TYPE_LABELS[item.type]} />
-                <DetailRow label="Scheduled Date" value={formatLongDate(iso)} />
-                <DetailRow label="Scheduled Time" value={item.time ?? "—"} />
+                <DetailRow
+                  label="Scheduled Date"
+                  value={
+                    out?.scheduledDate
+                      ? out.scheduledDate.split(" (")[0]
+                      : iso
+                      ? formatLongDate(iso)
+                      : "—"
+                  }
+                />
+                <DetailRow
+                  label="Scheduled Time"
+                  value={out?.scheduledTime || item.time || "—"}
+                />
                 <DetailRow
                   label="Date of Generation"
                   value={
                     out?.generatedDate
                       ? out.generatedDate.split(" (")[0]
-                      : out?.date
-                      ? out.date.split(" (")[0]
                       : "—"
                   }
                 />
                 <DetailRow
                   label="Time of Generation"
-                  value={out?.generatedTime || out?.time || "—"}
+                  value={out?.generatedTime || "—"}
                 />
 
                 <div className="flex items-stretch gap-2">

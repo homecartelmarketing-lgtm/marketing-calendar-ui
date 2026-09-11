@@ -343,17 +343,19 @@ function FeedCard({ item }: { item: OutputCardItem }) {
           </span>
         </div>
 
-        {/* Date and Time generated */}
-        <div className="mt-2 flex flex-col gap-1 text-[11px] text-neutral-600 sm:text-xs">
-          <div className="flex items-center gap-1.5">
-            <Calendar className="h-3.5 w-3.5 shrink-0 text-neutral-700" />
-            <span>{item.date}</span>
+        {/* Date and Time generated (Only rendered if present in Airtable) */}
+        {Boolean(item.date && item.time) && (
+          <div className="mt-2 flex flex-col gap-1 text-[11px] text-neutral-600 sm:text-xs">
+            <div className="flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5 shrink-0 text-neutral-700" />
+              <span>{item.date}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5 shrink-0 text-neutral-700" />
+              <span>{item.time}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 shrink-0 text-neutral-700" />
-            <span>{item.time}</span>
-          </div>
-        </div>
+        )}
 
         {/* Caption Area (Empty if no caption exists) */}
         <div className="mt-3 min-h-[40px] flex-1 border-t border-neutral-100 pt-2 text-xs leading-relaxed text-neutral-700">

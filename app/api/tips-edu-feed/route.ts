@@ -42,38 +42,42 @@ function normalizeStatus(
 }
 
 function formatDateDisplay(isoDateString?: string): { date: string; time: string } {
-  const d = isoDateString ? new Date(isoDateString) : new Date()
-  if (isNaN(d.getTime())) {
-    return { date: "August 31, 2026 (Monday)", time: "13:00" }
+  if (!isoDateString || !String(isoDateString).trim()) {
+    return { date: "", time: "" }
   }
 
-  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ]
+  try {
+    const d = new Date(isoDateString)
+    if (isNaN(d.getTime())) {
+      return { date: "", time: "" }
+    }
 
-  const monthName = months[d.getMonth()]
-  const dayNum = d.getDate()
-  const yearNum = d.getFullYear()
-  const dayName = days[d.getDay()]
+    // Format strictly in Asia/Manila (PHT, UTC+8)
+    const monthFormatter = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Manila", month: "long" })
+    const dayFormatter = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Manila", day: "numeric" })
+    const yearFormatter = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Manila", year: "numeric" })
+    const weekdayFormatter = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Manila", weekday: "long" })
 
-  const hours = String(d.getHours()).padStart(2, "0")
-  const mins = String(d.getMinutes()).padStart(2, "0")
+    const monthName = monthFormatter.format(d)
+    const dayNum = dayFormatter.format(d)
+    const yearNum = yearFormatter.format(d)
+    const dayName = weekdayFormatter.format(d)
 
-  return {
-    date: `${monthName} ${dayNum}, ${yearNum} (${dayName})`,
-    time: `${hours}:${mins}`,
+    // 24-hour time strictly in Asia/Manila
+    const timeFormatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Manila",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+    const time = timeFormatter.format(d)
+
+    return {
+      date: `${monthName} ${dayNum}, ${yearNum} (${dayName})`,
+      time,
+    }
+  } catch {
+    return { date: "", time: "" }
   }
 }
 
@@ -159,8 +163,11 @@ export async function GET() {
           const rawStatus = fields["Status"] || "Completed"
           const status = normalizeStatus(rawStatus)
 
-          const dateField = fields["Date and Time"] || fields["Date & Time"]
-          const { date, time } = formatDateDisplay(dateField || rec.createdTime)
+          const genDateField =
+            fields["Date and Time Generated"] ||
+            fields["Date and Time Run (PHT)"] ||
+            fields["Date & Time Run (PHT)"]
+          const { date, time } = formatDateDisplay(genDateField)
 
           const fkId =
             fields["Foreign Key ID"] ||
