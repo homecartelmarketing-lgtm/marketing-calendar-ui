@@ -153,7 +153,7 @@ export function getAllConfiguredTables(): TableTarget[] {
 
     // --- REELS ---
     // 1 Product, 3 Styles Reel
-    { tableId: "tblrlfqBGe5EjS5PI", category: "Reels", idea: "1 Product, 3 Styles", fixtureType: "Chandelier" },
+    { tableId: env.AIRTABLE_TABLE_ID_CHANDELIER_ONE_PRODUCT_THREE_STYLES_REEL || "tbl6ls4AWcEcynBpZ", category: "Reels", idea: "1 Product, 3 Styles", fixtureType: "Chandelier" },
     { tableId: "tblRy52kCasisCWzd", category: "Reels", idea: "1 Product, 3 Styles", fixtureType: "Pendant Light" },
     { tableId: "tbl9GIq2QeYCwMhWU", category: "Reels", idea: "1 Product, 3 Styles", fixtureType: "Floor Lamp" },
 
