@@ -404,6 +404,7 @@ function matchIdeaTarget(requestIdea: string, targetIdea: string): boolean {
   if (req.includes("2") && tgt.includes("1")) return false
   if (req.includes("desc") && tgt.includes("spec")) return false
   if (req.includes("spec") && tgt.includes("desc")) return false
+  if (tgt.includes("slideshow") && !req.includes("slideshow")) return false
 
   // Canonical semantic matching
   if (req.includes("cta") && tgt.includes("cta")) return true
