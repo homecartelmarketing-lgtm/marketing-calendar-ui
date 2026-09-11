@@ -35,7 +35,8 @@ async function getZohoAccessToken(clientId: string, clientSecret: string, refres
 
   const tokenData = await tokenRes.json()
   if (tokenData.error) {
-    throw new Error(`Zoho OAuth error: ${tokenData.error} (${tokenData.error_description || "Please check your Zoho credentials in Vercel"})`)
+    const debugInfo = `[ID: ${clientId ? clientId.slice(0, 10) + '...' : 'EMPTY'} (len ${clientId.length}), Secret: len ${clientSecret.length}, Refresh: len ${refreshToken.length}]`
+    throw new Error(`Zoho OAuth error: ${tokenData.error} ${debugInfo}`)
   }
   if (!tokenData.access_token) {
     throw new Error(`Zoho token response did not contain access_token: ${JSON.stringify(tokenData)}`)
@@ -169,10 +170,10 @@ export async function POST(request: NextRequest) {
     let uploadedCount = 0
 
     // 1. Check for Zoho WorkDrive credentials
-    const zohoClientId = process.env.ZOHO_CLIENT_ID || autoEnv.ZOHO_CLIENT_ID
-    const zohoClientSecret = process.env.ZOHO_CLIENT_SECRET || autoEnv.ZOHO_CLIENT_SECRET
-    const zohoRefreshToken = process.env.ZOHO_REFRESH_TOKEN || autoEnv.ZOHO_REFRESH_TOKEN
-    const masterFolderId = process.env.ZOHO_DISCARD_FOLDER_ID || autoEnv.ZOHO_DISCARD_FOLDER_ID || DEFAULT_DISCARD_FOLDER_ID
+    const zohoClientId = (process.env.ZOHO_CLIENT_ID || autoEnv.ZOHO_CLIENT_ID || "").trim().replace(/^["']|["']$/g, "")
+    const zohoClientSecret = (process.env.ZOHO_CLIENT_SECRET || autoEnv.ZOHO_CLIENT_SECRET || "").trim().replace(/^["']|["']$/g, "")
+    const zohoRefreshToken = (process.env.ZOHO_REFRESH_TOKEN || autoEnv.ZOHO_REFRESH_TOKEN || "").trim().replace(/^["']|["']$/g, "")
+    const masterFolderId = (process.env.ZOHO_DISCARD_FOLDER_ID || autoEnv.ZOHO_DISCARD_FOLDER_ID || DEFAULT_DISCARD_FOLDER_ID).trim().replace(/^["']|["']$/g, "")
 
     if (zohoClientId && zohoClientSecret && zohoRefreshToken) {
       try {
