@@ -34,8 +34,11 @@ async function getZohoAccessToken(clientId: string, clientSecret: string, refres
   }
 
   const tokenData = await tokenRes.json()
+  if (tokenData.error) {
+    throw new Error(`Zoho OAuth error: ${tokenData.error} (${tokenData.error_description || "Please check your Zoho credentials in Vercel"})`)
+  }
   if (!tokenData.access_token) {
-    throw new Error("Zoho token response did not contain access_token")
+    throw new Error(`Zoho token response did not contain access_token: ${JSON.stringify(tokenData)}`)
   }
 
   return tokenData.access_token
