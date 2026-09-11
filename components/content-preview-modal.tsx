@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react"
 import {
+  AlertCircle,
+  Archive,
   ArrowLeft,
   ArrowRight,
   CalendarCheck,
@@ -10,13 +12,11 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
-  CloudUpload,
   Link2,
   Maximize2,
   Pencil,
   Share2,
   Trash2,
-  Upload,
   X,
 } from "lucide-react"
 import { formatLongDate, type ContentType } from "@/lib/content"
@@ -116,12 +116,8 @@ export function ContentPreviewModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isPostingMeta, setIsPostingMeta] = useState(false)
 
-  // Lightbox & Manual upload states
+  // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false)
-  const [manualUploads, setManualUploads] = useState<Record<string, string[]>>({})
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadStatusText, setUploadStatusText] = useState<string | null>(null)
-  const [zohoLinkNotes, setZohoLinkNotes] = useState<Record<string, string>>({})
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -145,7 +141,6 @@ export function ContentPreviewModal({
     setConfirmDiscard(false)
     setShowSuccess(false)
     setLightboxOpen(false)
-    setUploadStatusText(null)
   }, [index])
 
   if (!item) return null
@@ -154,8 +149,7 @@ export function ContentPreviewModal({
   const status = statusByKey[item.key] ?? out?.status ?? "Completed"
   const caption = captionByKey[item.key] ?? out?.caption ?? ""
   const slides = out?.slides || []
-  const manualSlides = manualUploads[item.key] || []
-  const currentSlides = slides.length > 0 ? [...slides, ...manualSlides] : manualSlides
+  const currentSlides = slides
   const isVideo = out?.mediaType === "video" && Boolean(out?.videoUrl)
 
   const isStoriesOrReels = item.type === "Stories" || item.type === "Reels"
@@ -174,48 +168,71 @@ export function ContentPreviewModal({
     onIndexChange((index + 1) % items.length)
   }
 
-  async function handleManualUpload(file: File) {
-    setIsUploading(true)
-    setUploadStatusText("Uploading to Zoho Drive...")
-    try {
-      const fd = new FormData()
-      fd.append("file", file)
-      fd.append("recordId", out?.recordId || "")
-      fd.append("tableId", out?.tableId || "")
-      fd.append("fixtureType", item.fixture || out?.fixtureType || "Chandelier")
-      fd.append("notes", zohoLinkNotes[item.key] || "")
-      fd.append("imageKind", activeSlide === 0 ? "Day" : "Night")
+  async function handleDiscardAndArchive() {
+    setIsSubmitting(true)
+    setConfirmDiscard(false)
+    setShowSuccess(true)
+    setSuccessTitle("ARCHIVING TO ZOHO WORKDRIVE & DISCARDING...")
 
-      const res = await fetch("/api/upload/zoho-drive", {
+    try {
+      const mediaUrlsToSend =
+        currentSlides.length > 0
+          ? currentSlides
+          : out?.videoUrl
+          ? [out.videoUrl]
+          : []
+      const itemName = Array.isArray(out?.itemNames)
+        ? out.itemNames.join(", ")
+        : out?.itemNames || ""
+
+      const res = await fetch("/api/discard-archive", {
         method: "POST",
-        body: fd,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recordId: out?.recordId,
+          tableId: out?.tableId,
+          idea: item.idea,
+          itemName: itemName,
+          mediaUrls: mediaUrlsToSend,
+        }),
       })
 
       const data = await res.json()
-      if (res.ok && data.fileUrl) {
-        setManualUploads((prev) => ({
-          ...prev,
-          [item.key]: [...(prev[item.key] || []), data.fileUrl],
-        }))
-        setUploadStatusText(
-          data.zohoUploaded
-            ? "✓ Uploaded to Zoho WorkDrive!"
-            : "✓ Saved for manual review!"
-        )
+      if (res.ok && data.status === "success") {
+        setStatusByKey((prev) => ({ ...prev, [item.key]: "Discard" }))
+        onScheduleSuccess?.(item.key, "Discard")
+
+        if (data.zohoArchived) {
+          setSuccessTitle(`✓ DISCARDED & ARCHIVED TO ZOHO! (${data.uploadedCount || 0} files)`)
+        } else {
+          setSuccessTitle(
+            `STATUS DISCARDED! (Note: ${data.zohoWarning || "Zoho archive skipped"})`
+          )
+        }
       } else {
-        setUploadStatusText(`Upload error: ${data.message || "Failed"}`)
+        throw new Error(data.message || "Failed to archive discard")
       }
     } catch (err: any) {
-      setUploadStatusText(`Upload failed: ${err?.message || err}`)
+      console.error("Discard archive error:", err)
+      setSuccessTitle(`DISCARD ERROR: ${err?.message || err}`)
     } finally {
-      setIsUploading(false)
+      setIsSubmitting(false)
+      window.setTimeout(() => {
+        setShowSuccess(false)
+        onClose()
+      }, 2400)
     }
   }
 
   async function confirmStatusChange() {
+    const finalStatus = status || "Completed"
+    if (finalStatus === "Discard") {
+      setConfirmDiscard(true)
+      return
+    }
+
     setIsSubmitting(true)
     try {
-      const finalStatus = status || "Completed"
 
       if (out?.recordId) {
         const patchRes = await fetch("/api/content-outputs", {
@@ -225,7 +242,6 @@ export function ContentPreviewModal({
             recordId: out.recordId,
             tableId: out.tableId,
             status: finalStatus,
-            notes: zohoLinkNotes[item.key] || undefined,
           }),
         })
         if (!patchRes.ok) {
@@ -709,6 +725,9 @@ export function ContentPreviewModal({
                                           [item.key]: opt,
                                         }))
                                         setStatusOpen(false)
+                                        if (opt === "Discard") {
+                                          setConfirmDiscard(true)
+                                        }
                                       }}
                                       className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-xs sm:text-sm font-semibold transition-all ${
                                         isSelected
@@ -758,67 +777,6 @@ export function ContentPreviewModal({
                 </div>
               </dl>
             </div>
-
-            {/* "For Manual" Review & Zoho Drive Upload Section */}
-            {status === "For Manual" && (
-              <div className="rounded-2xl border-2 border-amber-500/40 bg-neutral-900 p-3 sm:p-4">
-                <div className="mb-2.5 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-sm font-bold text-amber-400">
-                    <Upload className="h-4 w-4" />
-                    Manual Review & Replacement Upload
-                  </span>
-                  {uploadStatusText && (
-                    <span className="text-xs font-semibold text-amber-200">{uploadStatusText}</span>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-2.5">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/jpg"
-                      id={`manual-file-upload-${item.key}`}
-                      className="hidden"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0]
-                        if (!file) return
-                        await handleManualUpload(file)
-                      }}
-                    />
-                    <label
-                      htmlFor={`manual-file-upload-${item.key}`}
-                      className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-amber-400/60 bg-amber-950/40 px-3 py-2.5 text-xs font-semibold text-amber-200 transition hover:bg-amber-900/50"
-                    >
-                      <CloudUpload className="h-4 w-4" />
-                      {isUploading ? "Uploading to Zoho WorkDrive..." : "Upload Replacement Photo to Zoho Drive"}
-                    </label>
-                  </div>
-
-                  <div>
-                    <input
-                      type="text"
-                      value={zohoLinkNotes[item.key] || ""}
-                      onChange={(e) =>
-                        setZohoLinkNotes((prev) => ({ ...prev, [item.key]: e.target.value }))
-                      }
-                      placeholder="Zoho Drive folder link or revision notes..."
-                      className="w-full rounded-lg border border-neutral-700 bg-neutral-950 px-3 py-2 text-xs text-white placeholder-neutral-500 outline-none focus:border-amber-400"
-                    />
-                  </div>
-
-                  {manualUploads[item.key] && manualUploads[item.key].length > 0 && (
-                    <div className="flex items-center gap-2 overflow-x-auto py-1">
-                      <span className="text-[11px] font-semibold text-neutral-400">Uploaded:</span>
-                      {manualUploads[item.key].map((u, idx) => (
-                        <div key={idx} className="relative h-12 w-12 shrink-0 overflow-hidden rounded border border-amber-400">
-                          <img src={u} alt="Manual replacement" className="h-full w-full object-cover" />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
 
             <div className="rounded-2xl bg-black p-3 sm:p-4">
               <div className="mb-2 flex items-center justify-between">
@@ -899,33 +857,48 @@ export function ContentPreviewModal({
         {/* Confirm discard dialog */}
         {confirmDiscard && (
           <div
-            className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/40 p-4"
+            className="absolute inset-0 z-50 flex items-center justify-center rounded-2xl bg-black/60 p-4 backdrop-blur-sm"
             onClick={() => setConfirmDiscard(false)}
           >
             <div
-              className="w-full max-w-md rounded-2xl border-4 border-black bg-white p-6 text-center shadow-2xl"
+              className="w-full max-w-lg rounded-2xl border-2 border-neutral-800 bg-neutral-950 p-6 text-center shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <p className="text-xl font-medium text-black sm:text-2xl">
-                Confirm <span className="font-extrabold">DISCARD?</span>
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-950/60 border border-red-500/40 text-red-400">
+                <Archive className="h-7 w-7" />
+              </div>
+              <p className="text-xl font-bold text-white sm:text-2xl">
+                Discard & Archive to Zoho WorkDrive?
               </p>
-              <div className="mt-5 flex items-center justify-center gap-4">
+              <p className="mt-2 text-sm text-neutral-400 leading-relaxed">
+                All generated photos and videos for{" "}
+                <span className="font-semibold text-neutral-200">
+                  {item.idea}
+                </span>{" "}
+                will be automatically organized into a subfolder on Zoho
+                WorkDrive, and status will be updated to{" "}
+                <span className="font-semibold text-red-400">"Discard"</span> in
+                Airtable.
+              </p>
+              <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
                   type="button"
-                  onClick={() => {
-                    setConfirmDiscard(false)
-                    onClose()
-                  }}
-                  className="rounded-lg bg-green-400 px-6 py-2.5 text-sm font-bold text-black transition-colors hover:bg-green-500"
+                  disabled={isSubmitting}
+                  onClick={handleDiscardAndArchive}
+                  className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-red-600 px-6 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-red-500 disabled:opacity-50"
                 >
-                  CONFIRM DISCARD
+                  <Archive className="h-4 w-4" />
+                  {isSubmitting
+                    ? "ARCHIVING..."
+                    : "CONFIRM & ARCHIVE TO ZOHO"}
                 </button>
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={() => setConfirmDiscard(false)}
-                  className="rounded-lg bg-red-400 px-6 py-2.5 text-sm font-bold text-black transition-colors hover:bg-red-500"
+                  className="w-full sm:w-auto rounded-xl border border-neutral-700 bg-neutral-900 px-6 py-3 text-sm font-semibold text-neutral-300 transition hover:bg-neutral-800"
                 >
-                  CANCEL
+                  Cancel
                 </button>
               </div>
             </div>
