@@ -133,9 +133,21 @@ export function extractMediaFromRecord(
     }
   }
 
+  if (idea && idea.toLowerCase().includes("this or that") && category.toLowerCase() === "stories") {
+    for (const [k, val] of Object.entries(fields)) {
+      const kl = k.trim().toLowerCase()
+      if (kl === "story this or that (1)" || kl === "story - this or that (1)" || kl === "this or that converted") {
+        if (Array.isArray(val) && val.length > 0 && val[0]?.url) {
+          return { mediaUrl: val[0].url, mediaType: "image", slides: [val[0].url] }
+        }
+      }
+    }
+  }
+
   // 3. Fallback to generic wildcard search across all fields
   for (const [key, val] of Object.entries(fields)) {
     if (!Array.isArray(val) || val.length === 0) continue
+    if (key.toLowerCase().includes("layout")) continue
 
     for (const item of val) {
       if (item && typeof item === "object" && item.url) {
@@ -244,10 +256,18 @@ export async function pullAirtableSchedulesWithDiagnostics(): Promise<{
             const pht = parsePhtDateAndTime(dateVal)
             if (!pht) continue
 
+            const isDayNightReel =
+              cfg.category === "Reels" &&
+              (cfg.idea.toLowerCase().includes("day & night") || cfg.idea.toLowerCase().includes("day and night"))
+
             const fkId =
               fields["Foreign Key ID"] ||
               fields["CID"] ||
-              (fields["ID"] ? `CID-${fields["ID"]}` : r.id)
+              (fields["ID"]
+                ? isDayNightReel
+                  ? `DN-REEL-${cfg.fixtureType ? cfg.fixtureType.slice(0, 2).toUpperCase() : "FX"}-${fields["ID"]}`
+                  : `CID-${fields["ID"]}`
+                : r.id)
 
             // Extract item names
             const itemNames: string[] = []
@@ -331,8 +351,13 @@ export async function syncAirtableRecord(
     const timePart = (time || "00:00").padStart(5, "0")
     // Explicit Philippine Time offset (+08:00) so Airtable stores the exact intended wall-clock time
     fieldsToUpdate["Date and Time Scheduled"] = `${isoDate}T${timePart}:00+08:00`
-  } else if (status === "Completed" || status === "Complete") {
-    // Clear scheduled dates when unscheduled
+  } else if (
+    status === "Completed" ||
+    status === "Complete" ||
+    status === "For Manual" ||
+    status === "Discard"
+  ) {
+    // Clear scheduled dates when unscheduled or discarded or sent for manual
     fieldsToUpdate["Date and Time Scheduled"] = null
   }
 

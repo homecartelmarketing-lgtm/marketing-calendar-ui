@@ -32,6 +32,7 @@ export type PreviewItem = {
   fixture?: string
   cid?: string
   outputItem?: OutputItem
+  isoDate?: string
 }
 
 const TYPE_LABELS: Record<ContentType, string> = {
@@ -226,6 +227,97 @@ export function ContentPreviewModal({
     }
   }
 
+  async function tagAsScheduled() {
+    setIsSubmitting(true)
+    try {
+      const scheduledDate = item.isoDate || iso
+      const scheduledTime = item.time || "09:00"
+
+      if (out?.recordId) {
+        const patchRes = await fetch("/api/content-outputs", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            recordId: out.recordId,
+            tableId: out.tableId,
+            status: "Scheduled",
+            scheduledIso: scheduledDate,
+            time: scheduledTime,
+          }),
+        })
+        if (!patchRes.ok) {
+          console.warn("Airtable status patch warning:", await patchRes.text())
+        }
+      }
+
+      const scheduledEntry: ScheduledEntry = {
+        recordId: out?.recordId || item.key,
+        tableId: out?.tableId || "",
+        isoDate: scheduledDate,
+        rowKey: item.key,
+        category: item.type,
+        idea: item.idea,
+        time: scheduledTime,
+        fixture: item.fixture,
+        foreignKeyId: item.cid || out?.foreignKeyId || "",
+        status: "Scheduled",
+        caption: caption,
+        airtableUrl: out?.airtableUrl,
+        itemNames: out?.itemNames,
+        mediaUrl: currentSlides[0] || slides[0] || out?.videoUrl,
+        slides: currentSlides.length > 0 ? currentSlides : slides,
+        mediaType: isVideo ? "video" : "image",
+        updatedAt: new Date().toISOString(),
+      }
+
+      setStatusByKey((prev) => ({ ...prev, [item.key]: "Scheduled" }))
+      onScheduleSuccess?.(item.key, "Scheduled", scheduledEntry)
+      setSuccessTitle(`STATUS TAGGED AS "SCHEDULED"!`)
+      setShowSuccess(true)
+      window.setTimeout(() => {
+        setShowSuccess(false)
+        onClose()
+      }, 1500)
+    } catch (err: any) {
+      alert(`Failed to tag as scheduled: ${err?.message || err}`)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  async function untagAsScheduled() {
+    setIsSubmitting(true)
+    try {
+      if (out?.recordId) {
+        const patchRes = await fetch("/api/content-outputs", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            recordId: out.recordId,
+            tableId: out.tableId,
+            status: "Completed",
+          }),
+        })
+        if (!patchRes.ok) {
+          console.warn("Airtable status patch warning:", await patchRes.text())
+        }
+      }
+
+      setStatusByKey((prev) => ({ ...prev, [item.key]: "Completed" }))
+      onScheduleSuccess?.(item.key, "Completed", undefined)
+      setSuccessTitle(`STATUS REVERTED TO "COMPLETED"!`)
+      setShowSuccess(true)
+      window.setTimeout(() => {
+        setShowSuccess(false)
+        onClose()
+      }, 1500)
+    } catch (err: any) {
+      alert(`Failed to untag: ${err?.message || err}`)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   async function confirmStatusChange() {
     const finalStatus = status || "Completed"
     if (finalStatus === "Discard") {
@@ -235,6 +327,8 @@ export function ContentPreviewModal({
 
     setIsSubmitting(true)
     try {
+      const scheduledDate = finalStatus === "Scheduled" ? (item.isoDate || iso) : undefined
+      const scheduledTime = finalStatus === "Scheduled" ? (item.time || "09:00") : undefined
 
       if (out?.recordId) {
         const patchRes = await fetch("/api/content-outputs", {
@@ -244,6 +338,8 @@ export function ContentPreviewModal({
             recordId: out.recordId,
             tableId: out.tableId,
             status: finalStatus,
+            scheduledIso: scheduledDate,
+            time: scheduledTime,
           }),
         })
         if (!patchRes.ok) {
@@ -251,12 +347,38 @@ export function ContentPreviewModal({
         }
       }
 
+      let scheduledEntry: ScheduledEntry | undefined = undefined
+      if (finalStatus === "Scheduled") {
+        scheduledEntry = {
+          recordId: out?.recordId || item.key,
+          tableId: out?.tableId || "",
+          isoDate: scheduledDate!,
+          rowKey: item.key,
+          category: item.type,
+          idea: item.idea,
+          time: scheduledTime || null,
+          fixture: item.fixture,
+          foreignKeyId: item.cid || out?.foreignKeyId || "",
+          status: "Scheduled",
+          caption: caption,
+          airtableUrl: out?.airtableUrl,
+          itemNames: out?.itemNames,
+          mediaUrl: currentSlides[0] || slides[0] || out?.videoUrl,
+          slides: currentSlides.length > 0 ? currentSlides : slides,
+          mediaType: isVideo ? "video" : "image",
+          updatedAt: new Date().toISOString(),
+        }
+      }
+
       setStatusByKey((prev) => ({ ...prev, [item.key]: finalStatus }))
-      onScheduleSuccess?.(item.key, finalStatus)
+      onScheduleSuccess?.(item.key, finalStatus, scheduledEntry)
       setSuccessTitle(`STATUS UPDATED TO "${finalStatus.toUpperCase()}"!`)
       setShowSuccess(true)
       window.setTimeout(() => {
         setShowSuccess(false)
+        if (finalStatus === "For Manual" || finalStatus === "Discard") {
+          onClose()
+        }
       }, 1500)
     } catch (err: any) {
       alert(`Failed to update status: ${err?.message || err}`)
@@ -885,12 +1007,47 @@ export function ContentPreviewModal({
                 <button
                   type="button"
                   disabled={isSubmitting || isPostingMeta}
-                  onClick={confirmSchedule}
-                  className="flex items-center gap-2 rounded-lg bg-green-400 px-6 py-2.5 text-sm font-bold text-black shadow-md transition-colors hover:bg-green-500 disabled:opacity-50"
+                  onClick={untagAsScheduled}
+                  className="flex items-center gap-2 rounded-lg bg-sky-100 px-5 py-2.5 text-sm font-bold text-sky-700 shadow-md transition-colors hover:bg-sky-200 disabled:opacity-50"
+                >
+                  <AlertCircle className="h-4 w-4" />
+                  {isSubmitting ? "REVERTING..." : "UNTAG SCHEDULE"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={isSubmitting || isPostingMeta}
+                  onClick={tagAsScheduled}
+                  className="flex items-center gap-2 rounded-lg bg-sky-500 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-sky-600 disabled:opacity-50"
                 >
                   <CalendarCheck className="h-4 w-4" />
-                  {isSubmitting ? "SAVING TO AIRTABLE..." : "CONFIRM SCHEDULE"}
+                  {isSubmitting ? "TAGGING..." : "TAG AS SCHEDULED"}
                 </button>
+              )}
+
+              {status === "Scheduled" ? (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={isSubmitting || isPostingMeta}
+                    onClick={tagAsScheduled}
+                    className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-emerald-600 px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition-colors hover:bg-emerald-500 disabled:opacity-50"
+                    title="Save schedule directly to Airtable without Meta posting"
+                  >
+                    <Check className="h-4 w-4" strokeWidth={2.5} />
+                    <span>{isSubmitting ? "SAVING..." : "SAVE SCHEDULE (AIRTABLE ONLY)"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isSubmitting || isPostingMeta}
+                    onClick={confirmSchedule}
+                    className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-green-400 px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-black shadow-md transition-colors hover:bg-green-500 disabled:opacity-50"
+                    title="Schedule post via Meta Graph API"
+                  >
+                    <CalendarCheck className="h-4 w-4" />
+                    <span>{isSubmitting ? "SAVING TO META API..." : "SAVE META SCHEDULE"}</span>
+                  </button>
+                </div>
               ) : (
                 <button
                   type="button"

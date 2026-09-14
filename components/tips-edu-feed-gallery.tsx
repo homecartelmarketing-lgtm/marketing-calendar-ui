@@ -46,7 +46,7 @@ export function TipsEduFeedGallery({ onBackToCalendar }: { onBackToCalendar: () 
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch("/api/tips-edu-feed")
+      const res = await fetch(`/api/tips-edu-feed?_t=${Date.now()}`)
       if (!res.ok) throw new Error("Failed to load automation outputs")
       const data = await res.json()
       setItems(data.items || [])
@@ -182,7 +182,13 @@ export function TipsEduFeedGallery({ onBackToCalendar }: { onBackToCalendar: () 
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {visibleItems.map((item) => (
-              <FeedCard key={item.recordId} item={item} />
+              <FeedCard 
+                key={item.recordId} 
+                item={item} 
+                onUpdateStatus={(id, status) => {
+                  setItems((prev) => prev.map((i) => i.recordId === id ? { ...i, status: status as any } : i))
+                }}
+              />
             ))}
           </div>
         )}
@@ -220,9 +226,39 @@ export function TipsEduFeedGallery({ onBackToCalendar }: { onBackToCalendar: () 
   )
 }
 
-function FeedCard({ item }: { item: OutputCardItem }) {
+function FeedCard({ 
+  item,
+  onUpdateStatus
+}: { 
+  item: OutputCardItem;
+  onUpdateStatus: (id: string, status: string) => void;
+}) {
   const [activeSlide, setActiveSlide] = useState(0)
+  const [isUpdating, setIsUpdating] = useState(false)
   const slides = item.slides || []
+
+  async function toggleScheduleStatus() {
+    if (!item.recordId || !item.tableId) return
+    setIsUpdating(true)
+    const newStatus = item.status === "Scheduled" ? "Completed" : "Scheduled"
+    try {
+      const res = await fetch("/api/content-outputs", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recordId: item.recordId,
+          tableId: item.tableId,
+          status: newStatus,
+        }),
+      })
+      if (!res.ok) throw new Error("Failed to update status")
+      onUpdateStatus(item.recordId, newStatus)
+    } catch (err: any) {
+      alert(`Error updating status: ${err.message}`)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
 
   function handlePrevSlide(e: React.MouseEvent) {
     e.stopPropagation()
@@ -325,15 +361,30 @@ function FeedCard({ item }: { item: OutputCardItem }) {
             </div>
           )}
 
-          {/* Non-clickable Link button as requested */}
-          <button
-            type="button"
-            disabled
-            className="flex cursor-default select-none items-center gap-1 rounded-full border border-black px-2.5 py-0.5 text-xs font-bold text-black"
-          >
-            <LinkIcon className="h-3 w-3" />
-            <span>Link</span>
-          </button>
+          {/* Schedule toggle and Non-clickable Link button as requested */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleScheduleStatus}
+              disabled={isUpdating}
+              className={`flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-bold transition-colors disabled:opacity-50 ${
+                item.status === "Scheduled"
+                  ? "border-sky-300 bg-sky-100 text-sky-700 hover:bg-sky-200"
+                  : "border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-100"
+              }`}
+            >
+              <Calendar className="h-3 w-3" />
+              <span>{item.status === "Scheduled" ? "Untag" : "Tag"}</span>
+            </button>
+            <button
+              type="button"
+              disabled
+              className="flex cursor-default select-none items-center gap-1 rounded-full border border-black px-2.5 py-0.5 text-xs font-bold text-black"
+            >
+              <LinkIcon className="h-3 w-3" />
+              <span>Link</span>
+            </button>
+          </div>
         </div>
 
         {/* CID / Foreign Key ID */}

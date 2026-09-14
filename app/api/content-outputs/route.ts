@@ -484,7 +484,7 @@ function extractAssetsFromRecord(fields: Record<string, any>, isVideoPreferred: 
     "myth blended", "fact blended", "debunk myth thumbnail", 
     "debunk myth thumbnail generated interior", "outro photo generated", 
     "logo watermark for story", "outro layout", "myth layout", "fact layout",
-    "debunk layout", "prompt1", "prompt2", "prompt3"
+    "debunk layout", "prompt1", "prompt2", "prompt3", "this or that layout"
   ])
 
   let videoUrl: string | undefined = undefined
@@ -565,6 +565,7 @@ export async function GET(request: NextRequest) {
     const isCollectionCategoryStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("collection")
     const isMythAndFactStory = category.toLowerCase() === "stories" && (contentType.toLowerCase().includes("myth") || contentType.toLowerCase().includes("fact"))
     const isTipsAndEduStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("tips")
+    const isThisOrThatStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("this or that")
 
     const aspectRatio = category.toLowerCase() === "feeds" ? "4:5" : "9:16"
     const mediaType = isReels ? "video" : "image"
@@ -579,7 +580,7 @@ export async function GET(request: NextRequest) {
           `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}?pageSize=100`,
           {
             headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
-            next: { revalidate: 5 },
+            cache: "no-store",
           }
         )
 
@@ -624,6 +625,12 @@ export async function GET(request: NextRequest) {
             if (slides.length === 0) continue
           } else if (isTipsAndEduStory) {
             slides = extractExactFieldImages(fields, "Tips and Edu Story Converted")
+            if (slides.length === 0) continue
+          } else if (isThisOrThatStory) {
+            slides = extractExactFieldImages(fields, "Story This or That (1)")
+            if (slides.length === 0) {
+              slides = extractExactFieldImages(fields, "STORY - This or That (1)")
+            }
             if (slides.length === 0) continue
           } else {
             const candidates = getFinalOutputCandidates(category, contentType)
@@ -706,11 +713,19 @@ export async function GET(request: NextRequest) {
           const date = generatedDate || ""
           const time = generatedTime || ""
 
+          const isDayAndNightReel =
+            category.toLowerCase() === "reels" &&
+            (contentType.toLowerCase().includes("day & night") ||
+              contentType.toLowerCase().includes("day and night") ||
+              contentType.toLowerCase().includes("d&n"))
+
           const fkId =
             fields["Foreign Key ID"] ||
             fields["CID"] ||
             (fields["ID"]
-              ? `${isMoodboardStory ? "MB-STORY" : "CTA-STORY"}-${fixtureType ? fixtureType.slice(0, 2).toUpperCase() : "ST"}-${fields["ID"]}`
+              ? isDayAndNightReel
+                ? `DN-REEL-${fixtureType ? fixtureType.slice(0, 2).toUpperCase() : "FX"}-${fields["ID"]}`
+                : `${isMoodboardStory ? "MB-STORY" : isThisOrThatStory ? "TOT-STORY" : "CTA-STORY"}-${fixtureType ? fixtureType.slice(0, 2).toUpperCase() : "ST"}-${fields["ID"]}`
               : rec.id)
 
           const itemNames: string[] = []
@@ -823,7 +838,7 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json()
-    const { recordId, tableId, status, date, time } = body
+    const { recordId, tableId, status, date, scheduledIso, time } = body
 
     if (!recordId) {
       return NextResponse.json({ status: "error", message: "recordId is required" }, { status: 400 })
@@ -834,10 +849,16 @@ export async function PATCH(request: NextRequest) {
       fieldsToUpdate["Status"] = status === "Completed" ? "Complete" : status
     }
 
-    if (date) {
+    const targetDate = scheduledIso || date
+    if (targetDate) {
       const timePart = (time || "00:00").padStart(5, "0")
-      fieldsToUpdate["Date and Time Scheduled"] = `${date}T${timePart}:00+08:00`
-    } else if (status === "Completed" || status === "Complete") {
+      fieldsToUpdate["Date and Time Scheduled"] = `${targetDate}T${timePart}:00+08:00`
+    } else if (
+      status === "Completed" ||
+      status === "Complete" ||
+      status === "For Manual" ||
+      status === "Discard"
+    ) {
       fieldsToUpdate["Date and Time Scheduled"] = null
     }
 
