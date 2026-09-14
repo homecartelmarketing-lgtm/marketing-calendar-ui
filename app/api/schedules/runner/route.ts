@@ -6,6 +6,8 @@ import { AIRTABLE_BASE_ID, AIRTABLE_TOKEN } from "@/lib/tables-config"
 export const dynamic = "force-dynamic"
 export const maxDuration = 300
 
+const activePublishLocks = new Set<string>()
+
 function isAuthorized(request: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET?.trim()
   // Fail closed if CRON_SECRET is not configured
@@ -111,22 +113,17 @@ async function runScheduledJobs(originUrl: string) {
             continue
           }
 
-          // Concurrency lock: Mark record as 'Publishing' before contacting Meta API
-          // This stops concurrent runs from attempting to publish the same record.
+          // Concurrency lock: In-memory lock + best-effort Airtable status update
+          if (activePublishLocks.has(entry.recordId)) {
+            continue
+          }
+          activePublishLocks.add(entry.recordId)
+
           try {
             await updateAirtableRecordStatus(entry.tableId, entry.recordId, "Publishing")
           } catch (lockErr: any) {
-            console.error(`[Runner Lock Error] Could not lock record ${entry.recordId}:`, lockErr)
-            results.push({
-              key: entry.rowKey,
-              isoDate,
-              time: entry.time,
-              category: entry.category,
-              idea: entry.idea,
-              action: "error",
-              details: `Concurrency lock failed: ${lockErr?.message || lockErr}`,
-            })
-            continue
+            // If Airtable schema doesn't have 'Publishing' option (HTTP 422), log warning and proceed with memory lock
+            console.warn(`[Runner Lock] Could not set 'Publishing' status on Airtable (proceeding with memory lock): ${lockErr?.message || lockErr}`)
           }
 
           // Publish to Instagram (Stories as STORIES, Reels as REELS, Feeds as VIDEO/image)
@@ -188,6 +185,8 @@ async function runScheduledJobs(originUrl: string) {
             action: "error",
             details: err?.message || err,
           })
+        } finally {
+          activePublishLocks.delete(entry.recordId)
         }
       } else {
         // Pending future schedule
