@@ -156,11 +156,11 @@ async function runScheduledJobs(originUrl: string) {
               details: publishRes,
             })
           } else {
-            // Revert status to Scheduled or Error so it doesn't stay stuck in Publishing
+            // Update status to 'For Manual' to prevent infinite publish loop on failing items
             try {
-              await updateAirtableRecordStatus(entry.tableId, entry.recordId, "Error")
+              await updateAirtableRecordStatus(entry.tableId, entry.recordId, "For Manual")
             } catch {
-              await updateAirtableRecordStatus(entry.tableId, entry.recordId, "Scheduled").catch(() => {})
+              await updateAirtableRecordStatus(entry.tableId, entry.recordId, "Completed").catch(() => {})
             }
 
             results.push({
@@ -174,8 +174,10 @@ async function runScheduledJobs(originUrl: string) {
             })
           }
         } catch (err: any) {
-          // In case of unhandled exception, release lock
-          await updateAirtableRecordStatus(entry.tableId, entry.recordId, "Scheduled").catch(() => {})
+          // On unhandled exception, release lock to 'For Manual'
+          await updateAirtableRecordStatus(entry.tableId, entry.recordId, "For Manual").catch(() => {
+            updateAirtableRecordStatus(entry.tableId, entry.recordId, "Completed").catch(() => {})
+          })
 
           results.push({
             key: entry.rowKey,

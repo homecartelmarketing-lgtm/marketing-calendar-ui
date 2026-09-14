@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { publishToInstagram } from "@/lib/meta-api"
+import { syncAirtableRecord } from "@/lib/schedules"
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,23 +45,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Update Airtable and local schedule if requested
+    // Update Airtable record directly to Posted
     if (recordId && tableId) {
       try {
-        await fetch(
-          new URL("/api/content-outputs", request.url).toString(),
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              recordId,
-              tableId,
-              status: "Posted",
-              date: isoDate,
-              time,
-            }),
-          }
-        )
+        await syncAirtableRecord(tableId, recordId, "Posted", isoDate, time)
       } catch (patchErr) {
         console.warn("Could not patch status to Posted:", patchErr)
       }

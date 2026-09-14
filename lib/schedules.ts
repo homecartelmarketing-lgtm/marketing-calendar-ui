@@ -213,9 +213,12 @@ export async function pullAirtableSchedulesWithDiagnostics(): Promise<{
   const out: Record<string, ScheduledEntry[]> = {}
   const failedTables: TableFetchError[] = []
 
-  // Batch requests in chunks of 5 to strictly respect Airtable's 5 requests/second rate limit
+  // Batch requests in chunks of 5 with 220ms spacing to strictly respect Airtable's 5 requests/second rate limit
   const BATCH_SIZE = 5
   for (let i = 0; i < tables.length; i += BATCH_SIZE) {
+    if (i > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 220))
+    }
     const batch = tables.slice(i, i + BATCH_SIZE)
     await Promise.all(
       batch.map(async (cfg) => {
