@@ -7,7 +7,9 @@ import {
   autoEnv,
   getAllConfiguredTables,
 } from "@/lib/tables-config"
-import { getFinalOutputCandidates } from "@/lib/output-mapping"
+import { extractOutputMedia } from "@/lib/output-media"
+import { AirtableReadError, readAirtableRecords } from "@/server/airtable/records"
+import { ScheduleValidationError, syncAirtableRecord } from "@/server/airtable/write-schedule"
 
 const MARKETING_AUTOMATION_DIR =
   process.env.MARKETING_AUTOMATION_DIR || "C:\\Users\\User\\marketing-automation"
@@ -44,47 +46,6 @@ export type TableTarget = {
   fixtureType?: string
 }
 
-export function getCtaStoryTargets(env: Record<string, string>): TableTarget[] {
-  return [
-    {
-      tableId: env.AIRTABLE_TABLE_ID_CHANDELIER_CTA || "tblYHdVq14FjMWg5o",
-      fixtureType: "Chandelier",
-    },
-    {
-      tableId: env.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIER_CTA || "tblSpGJLO3faYfIDY",
-      fixtureType: "Cluster Chandelier",
-    },
-    {
-      tableId: env.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_CTA || "tblfl7fqFZa2vUieB",
-      fixtureType: "Pendant Light",
-    },
-    {
-      tableId: env.AIRTABLE_TABLE_ID_TABLE_LAMPS_CTA || "tblKJeCCp4zQ6g7Em",
-      fixtureType: "Table Lamp",
-    },
-    {
-      tableId: env.AIRTABLE_TABLE_ID_FLOOR_LAMP_CTA || "tblPKSYyjgbgMypE2",
-      fixtureType: "Floor Lamp",
-    },
-  ]
-}
-
-export function getMoodboardStoryTargets(env: Record<string, string>): TableTarget[] {
-  return [
-    {
-      tableId: env.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_STORY || "tblHQrci8d1K9ws2M",
-      fixtureType: "Chandelier",
-    },
-    {
-      tableId: env.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_STORY || "tblkm119i48y0M1IQ",
-      fixtureType: "Pendant Light",
-    },
-    {
-      tableId: env.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_STORY || "tblBaNeiSZeYrUawW",
-      fixtureType: "Floor Lamp",
-    },
-  ]
-}
 
 function normalizeStatus(
   raw?: string | null
@@ -158,123 +119,6 @@ function formatDateDisplay(isoDateString?: string): { date: string; time: string
   }
 }
 
-function extractCtaConvertedImages(fields: Record<string, any>): string[] {
-  for (const [key, val] of Object.entries(fields)) {
-    if (key.trim().toLowerCase() === "cta converted image") {
-      if (Array.isArray(val) && val.length > 0) {
-        return val
-          .filter((item: any) => item && typeof item === "object" && item.url)
-          .map((item: any) => item.url as string)
-      }
-    }
-  }
-  return []
-}
-
-function extractMoodboardStoryImages(fields: Record<string, any>): string[] {
-  const slides: string[] = []
-
-  // Slide 1: Moodboard Converted
-  for (const [key, val] of Object.entries(fields)) {
-    if (key.trim().toLowerCase() === "moodboard converted") {
-      if (Array.isArray(val) && val.length > 0) {
-        for (const item of val) {
-          if (item && typeof item === "object" && item.url) {
-            slides.push(item.url as string)
-          }
-        }
-      }
-    }
-  }
-
-  // Slide 2: Blended Image
-  for (const [key, val] of Object.entries(fields)) {
-    if (key.trim().toLowerCase() === "blended image") {
-      if (Array.isArray(val) && val.length > 0) {
-        for (const item of val) {
-          if (item && typeof item === "object" && item.url) {
-            slides.push(item.url as string)
-          }
-        }
-      }
-    }
-  }
-
-  return slides
-}
-
-function extractProductCloseupDescriptionConverted(fields: Record<string, any>): string[] {
-  for (const [key, val] of Object.entries(fields)) {
-    if (key.trim().toLowerCase() === "product closeup description converted") {
-      if (Array.isArray(val) && val.length > 0) {
-        return val
-          .filter((item: any) => item && typeof item === "object" && item.url)
-          .map((item: any) => item.url as string)
-      }
-    }
-  }
-  return []
-}
-
-function extractDayAndNightFeedImages(fields: Record<string, any>): string[] {
-  const slides: string[] = []
-
-  // Slide 1: Day Image
-  for (const [key, val] of Object.entries(fields)) {
-    if (key.trim().toLowerCase() === "day image") {
-      if (Array.isArray(val) && val.length > 0) {
-        for (const item of val) {
-          if (item && typeof item === "object" && item.url) {
-            slides.push(item.url as string)
-            break
-          }
-        }
-      }
-    }
-  }
-
-  // Slide 2: Night Image
-  for (const [key, val] of Object.entries(fields)) {
-    if (key.trim().toLowerCase() === "night image") {
-      if (Array.isArray(val) && val.length > 0) {
-        for (const item of val) {
-          if (item && typeof item === "object" && item.url) {
-            slides.push(item.url as string)
-            break
-          }
-        }
-      }
-    }
-  }
-
-  return slides
-}
-
-function extractTipsAndEduFeedImages(fields: Record<string, any>): string[] {
-  for (const [key, val] of Object.entries(fields)) {
-    if (key.trim().toLowerCase() === "tips and edu blended attach item name") {
-      if (Array.isArray(val) && val.length > 0) {
-        return val
-          .filter((item: any) => item && typeof item === "object" && item.url)
-          .map((item: any) => item.url as string)
-      }
-    }
-  }
-  return []
-}
-
-function extractExactFieldImages(fields: Record<string, any>, exactFieldName: string): string[] {
-  for (const [key, val] of Object.entries(fields)) {
-    if (key.trim().toLowerCase() === exactFieldName.toLowerCase()) {
-      if (Array.isArray(val) && val.length > 0) {
-        return val
-          .filter((item: any) => item && typeof item === "object" && item.url)
-          .map((item: any) => item.url as string)
-      }
-    }
-  }
-  return []
-}
 
 // Map pipeline keys to table IDs retrieved from .env
 function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<string, string>): string[] {
@@ -449,244 +293,48 @@ function getTableTargetsForPipeline(category: string, type: string, autoEnv: Rec
   return ids.map((tableId) => ({ tableId }))
 }
 
-function isVideoAttachment(item: any): boolean {
-  if (!item || typeof item !== "object" || !item.url) return false
-  const mime = String(item.type || "").toLowerCase()
-  const fname = String(item.filename || "").toLowerCase()
-  return (
-    mime.startsWith("video/") ||
-    fname.endsWith(".mp4") ||
-    fname.endsWith(".mov") ||
-    fname.endsWith(".webm") ||
-    fname.endsWith(".m4v")
-  )
-}
-
-function isImageAttachment(item: any): boolean {
-  if (!item || typeof item !== "object" || !item.url) return false
-  const mime = String(item.type || "").toLowerCase()
-  const fname = String(item.filename || "").toLowerCase()
-  return (
-    mime.startsWith("image/") ||
-    Boolean(fname.match(/\.(jpg|jpeg|png|webp|gif|avif)$/i))
-  )
-}
-
-// Smart asset extractor across any Airtable table schema
-function extractAssetsFromRecord(fields: Record<string, any>, isVideoPreferred: boolean): {
-  slides: string[]
-  videoUrl?: string
-} {
-  const IGNORED_INPUTS = new Set([
-    "furniture item", "furniture items", "interior", "interiors",
-    "logo", "arrow", "arrow2", "fact emoticon", "myth emoticon",
-    "music generated", "outro", "overlay logo", "double tap converted",
-    "myth blended", "fact blended", "debunk myth thumbnail", 
-    "debunk myth thumbnail generated interior", "outro photo generated", 
-    "logo watermark for story", "outro layout", "myth layout", "fact layout",
-    "debunk layout", "prompt1", "prompt2", "prompt3", "this or that layout"
-  ])
-
-  let videoUrl: string | undefined = undefined
-  const primarySlides: string[] = []
-  const secondarySlides: string[] = []
-
-  for (const [key, val] of Object.entries(fields)) {
-    const kLower = key.trim().toLowerCase()
-    if (!Array.isArray(val) || val.length === 0 || typeof val[0] !== "object" || !val[0]?.url) {
-      continue
-    }
-
-    if (IGNORED_INPUTS.has(kLower)) continue
-
-    // 1. Check for Video - ONLY genuine video files
-    for (const item of val) {
-      if (isVideoAttachment(item)) {
-        videoUrl = item.url
-        if (isVideoPreferred) break
-      }
-    }
-
-    // 2. Check for Slides (Final outputs get primary priority)
-    const isPrimaryOutput =
-      kLower.startsWith("story -") ||
-      kLower.startsWith("reel -") ||
-      kLower.includes("converted") ||
-      kLower.includes("tips and edu") ||
-      kLower.includes("final stamped output") ||
-      kLower.includes("style reel slideshow") ||
-      kLower.includes("slide show before") ||
-      kLower.includes("day and night reel") ||
-      kLower.includes("product showcase") ||
-      kLower.includes("showcase feed") ||
-      kLower.includes("moodboard") ||
-      kLower.includes("1 product") ||
-      kLower.includes("collection") ||
-      kLower.includes("closeup") ||
-      kLower.includes("this or that") ||
-      kLower.includes("myth") ||
-      kLower.includes("style this")
-
-    const targetList = isPrimaryOutput ? primarySlides : secondarySlides
-    for (const item of val) {
-      if (isImageAttachment(item)) {
-        targetList.push(item.url)
-      }
-    }
-  }
-
-  const slides = primarySlides.length > 0 ? primarySlides : secondarySlides
-  return { slides, videoUrl }
-}
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const category = (searchParams.get("category") || "Feeds").trim() as "Feeds" | "Stories" | "Reels"
+    const requestedCategory = (searchParams.get("category") || "Feeds").trim().toLowerCase()
+    const category = ({ feeds: "Feeds", stories: "Stories", reels: "Reels" } as const)[requestedCategory as "feeds" | "stories" | "reels"]
+    if (!category) {
+      return NextResponse.json({ status: "error", error: "Unsupported content category" }, { status: 400 })
+    }
     const contentType = (searchParams.get("type") || "Tips & Educational").trim()
 
-    const isReels = category.toLowerCase() === "reels"
-    const isCtaStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("cta")
-    const isMoodboardStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("moodboard")
-    const isProductDescriptionStory =
-      category.toLowerCase() === "stories" &&
-      (contentType.toLowerCase().includes("description") ||
-        (contentType.toLowerCase().includes("closeup") && !contentType.toLowerCase().includes("spec")))
-    const isDayAndNightFeed =
-      category.toLowerCase() === "feeds" &&
-      (contentType.toLowerCase().includes("day & night") ||
-        contentType.toLowerCase().includes("day and night") ||
-        contentType.toLowerCase().includes("d&n"))
-    const isTipsAndEduFeed =
-      category.toLowerCase() === "feeds" &&
-      contentType.toLowerCase().includes("tips")
-    
-    // Explicit requested story categories
-    const isCollectionCategoryStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("collection")
-    const isMythAndFactStory = category.toLowerCase() === "stories" && (contentType.toLowerCase().includes("myth") || contentType.toLowerCase().includes("fact"))
-    const isTipsAndEduStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("tips")
-    const isThisOrThatStory = category.toLowerCase() === "stories" && contentType.toLowerCase().includes("this or that")
+    const isReels = category === "Reels"
+    const isMoodboardStory = category === "Stories" && contentType.toLowerCase().includes("moodboard")
+    const isThisOrThatStory = category === "Stories" && contentType.toLowerCase().includes("this or that")
 
     const aspectRatio = category.toLowerCase() === "feeds" ? "4:5" : "9:16"
     const mediaType = isReels ? "video" : "image"
 
-    const tableTargets = getTableTargetsForPipeline(category, contentType, autoEnv)
+    const tableTargets = [...new Map(getTableTargetsForPipeline(category, contentType, autoEnv)
+      .map(target => [target.tableId, target])).values()]
     const allItems: OutputItem[] = []
+    const failures: { tableId: string; code: string; httpStatus?: number }[] = []
+    let successfulTables = 0
+
+    if (tableTargets.length === 0) {
+      return NextResponse.json({ status: "error", error: "No table mapping exists for this content type" }, { status: 422 })
+    }
 
     for (const target of tableTargets) {
       const { tableId, fixtureType } = target
       try {
-        const res = await fetch(
-          `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}?pageSize=100`,
-          {
-            headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
-            cache: "no-store",
-          }
-        )
-
-        if (!res.ok) continue
-
-        const data = await res.json()
-        const records = data.records || []
+        const records = await readAirtableRecords({
+          baseId: AIRTABLE_BASE_ID, tableId, token: AIRTABLE_TOKEN, signal: request.signal,
+        })
 
         for (const rec of records) {
           const fields = rec.fields || {}
 
-          let slides: string[] = []
-          let videoUrl: string | undefined = undefined
-
-          if (isCtaStory) {
-            // Strictly extract ONLY from "CTA Converted Image"
-            slides = extractCtaConvertedImages(fields)
-            if (slides.length === 0) {
-              // Exclude records that have no CTA Converted Image attachment
-              continue
-            }
-          } else if (isMoodboardStory) {
-            // Extract Slide 1: Moodboard Converted, Slide 2: Blended Image
-            slides = extractMoodboardStoryImages(fields)
-            if (slides.length === 0) continue
-          } else if (isProductDescriptionStory) {
-            // Strictly extract ONLY from "Product Closeup Description Converted" (Zero fallback to Layout drafts)
-            slides = extractProductCloseupDescriptionConverted(fields)
-            if (slides.length === 0) continue
-          } else if (isDayAndNightFeed) {
-            // Strictly extract Slide 1: Day Image, Slide 2: Night Image (Ignore Story and Interior inputs)
-            slides = extractDayAndNightFeedImages(fields)
-            if (slides.length === 0) continue
-          } else if (isTipsAndEduFeed) {
-            slides = extractTipsAndEduFeedImages(fields)
-            if (slides.length === 0) continue
-          } else if (isCollectionCategoryStory) {
-            slides = extractExactFieldImages(fields, "Collection Category Converted")
-            if (slides.length === 0) continue
-          } else if (isMythAndFactStory) {
-            slides = extractExactFieldImages(fields, "STORY - Myth & Fact (4)")
-            if (slides.length === 0) continue
-          } else if (isTipsAndEduStory) {
-            slides = extractExactFieldImages(fields, "Tips and Edu Story Converted")
-            if (slides.length === 0) continue
-          } else if (isThisOrThatStory) {
-            slides = extractExactFieldImages(fields, "Story This or That (1)")
-            if (slides.length === 0) {
-              slides = extractExactFieldImages(fields, "STORY - This or That (1)")
-            }
-            if (slides.length === 0) continue
-          } else {
-            const candidates = getFinalOutputCandidates(category, contentType)
-            let foundCandidateMedia = false
-
-            for (const cand of candidates) {
-              const candLower = cand.trim().toLowerCase()
-              for (const [key, val] of Object.entries(fields)) {
-                if (key.trim().toLowerCase() === candLower && Array.isArray(val) && val.length > 0) {
-                  for (const item of val) {
-                    if (isVideoAttachment(item)) {
-                      if (!videoUrl) videoUrl = item.url
-                    } else if (isImageAttachment(item)) {
-                      slides.push(item.url)
-                    }
-                  }
-                  if (videoUrl || slides.length > 0) {
-                    foundCandidateMedia = true
-                    break
-                  }
-                }
-              }
-              if (foundCandidateMedia) break
-            }
-
-            if (isReels) {
-              // If candidate field didn't yield a video, search all fields for a genuine video attachment
-              if (!videoUrl) {
-                for (const [key, val] of Object.entries(fields)) {
-                  if (Array.isArray(val) && val.length > 0) {
-                    for (const item of val) {
-                      if (isVideoAttachment(item)) {
-                        videoUrl = item.url
-                        break
-                      }
-                    }
-                    if (videoUrl) break
-                  }
-                }
-              }
-              // For Reels, NEVER treat intermediate interior or blended JPGs as slides
-              slides = []
-
-              // If no video was found, and the record has no identifiers, skip empty row
-              if (!videoUrl && !fields["Item Name"] && !fields["ID"] && !fields["Foreign Key ID"]) {
-                continue
-              }
-            } else {
-              if (slides.length === 0) {
-                const assets = extractAssetsFromRecord(fields, false)
-                slides = assets.slides
-                videoUrl = assets.videoUrl
-              }
-              if (slides.length === 0 && !videoUrl) continue
-            }
-          }
+          const media = extractOutputMedia(fields, category, contentType)
+          if (!media.mediaUrl) continue
+          const slides = media.mediaType === "image" ? media.slides : []
+          const videoUrl = media.mediaType === "video" ? media.mediaUrl : undefined
 
           const rawStatus = fields["Status"] || "Completed"
           const status = normalizeStatus(rawStatus)
@@ -767,13 +415,28 @@ export async function GET(request: NextRequest) {
             fixtureType: fixture,
           })
         }
+        successfulTables++
       } catch (err) {
-        console.error(`Error querying table ${tableId}:`, err)
+        failures.push({
+          tableId,
+          code: err instanceof AirtableReadError ? err.code : "READ_FAILED",
+          httpStatus: err instanceof AirtableReadError ? err.httpStatus : undefined,
+        })
       }
     }
 
+    const diagnostics = {
+      partial: failures.length > 0 && successfulTables > 0,
+      successfulTables,
+      failedTables: failures.length,
+      failures,
+    }
+    if (successfulTables === 0) {
+      return NextResponse.json({ status: "error", error: "Unable to read output tables. Check Airtable configuration and retry.", diagnostics, items: [] }, { status: 502 })
+    }
+
     // Also fallback to local MP4s in output/videos/ if category is Reels
-    if (isReels && allItems.length === 0) {
+    if (process.env.NODE_ENV === "development" && isReels && allItems.length === 0) {
       const videosDir = path.join(MARKETING_AUTOMATION_DIR, "output", "videos")
       if (fs.existsSync(videosDir)) {
         try {
@@ -820,6 +483,7 @@ export async function GET(request: NextRequest) {
       mediaType,
       total: allItems.length,
       items: allItems,
+      diagnostics,
     }, {
       headers: {
         "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
@@ -837,130 +501,14 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { recordId, tableId, status, date, scheduledIso, time } = body
-
-    if (!recordId) {
-      return NextResponse.json({ status: "error", message: "recordId is required" }, { status: 400 })
-    }
-
-    const fieldsToUpdate: Record<string, any> = {}
-    if (status) {
-      fieldsToUpdate["Status"] = status === "Completed" ? "Complete" : status
-    }
-
-    const targetDate = scheduledIso || date
-    if (targetDate) {
-      const timePart = (time || "00:00").padStart(5, "0")
-      fieldsToUpdate["Date and Time Scheduled"] = `${targetDate}T${timePart}:00+08:00`
-    } else if (
-      status === "Completed" ||
-      status === "Complete" ||
-      status === "For Manual" ||
-      status === "Discard"
-    ) {
-      fieldsToUpdate["Date and Time Scheduled"] = null
-    }
-
-    let airtableRes: any = null
-
-    if (tableId && tableId.startsWith("tbl")) {
-      try {
-        // 1. Primary update targeting 'Date and Time Scheduled' with normalized Status
-        const patchRes = await fetch(
-          `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
-          {
-            method: "PATCH",
-            headers: {
-              Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ fields: fieldsToUpdate }),
-          }
-        )
-
-        if (patchRes.ok) {
-          airtableRes = await patchRes.json()
-        } else {
-          const errText = await patchRes.text()
-          console.warn(`Primary Airtable patch to table ${tableId} failed: ${patchRes.status} ${errText}`)
-
-          // 2. Fallback: If table uses "Completed" instead of "Complete"
-          if (fieldsToUpdate["Status"] === "Complete") {
-            const completedFields = { ...fieldsToUpdate, Status: "Completed" }
-            const completedRes = await fetch(
-              `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
-              {
-                method: "PATCH",
-                headers: {
-                  Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ fields: completedFields }),
-              }
-            )
-            if (completedRes.ok) {
-              airtableRes = await completedRes.json()
-            }
-          }
-
-          // 3. Fallback: If table uses legacy 'Date and Time' field name instead
-          if (!airtableRes && fieldsToUpdate["Date and Time Scheduled"] !== undefined) {
-            const legacyFields: Record<string, any> = { ...fieldsToUpdate }
-            legacyFields["Date and Time"] = legacyFields["Date and Time Scheduled"]
-            delete legacyFields["Date and Time Scheduled"]
-
-            const legacyRes = await fetch(
-              `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
-              {
-                method: "PATCH",
-                headers: {
-                  Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ fields: legacyFields }),
-              }
-            )
-
-            if (legacyRes.ok) {
-              airtableRes = await legacyRes.json()
-            }
-          }
-
-          // 3. Fallback: Status only if date fields are completely missing from schema
-          if (!airtableRes) {
-            const statusOnlyRes = await fetch(
-              `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
-              {
-                method: "PATCH",
-                headers: {
-                  Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ fields: { Status: status || "Scheduled" } }),
-              }
-            )
-            if (statusOnlyRes.ok) {
-              airtableRes = await statusOnlyRes.json()
-            }
-          }
-        }
-      } catch (patchErr) {
-        console.error("Error updating Airtable record:", patchErr)
-      }
-    }
-
-    return NextResponse.json({
-      status: "success",
-      recordId,
-      tableId,
-      updated: fieldsToUpdate,
-      airtableResponse: airtableRes,
-    })
-  } catch (error: any) {
+    const { recordId, tableId, status, date, scheduledIso, time } = await request.json()
+    await syncAirtableRecord(tableId, recordId, status, scheduledIso || date, time)
+    return NextResponse.json({ status: "success", recordId, tableId })
+  } catch (error) {
+    const invalid = error instanceof ScheduleValidationError || error instanceof SyntaxError
     return NextResponse.json(
-      { status: "error", error: error?.message || "Failed to update record" },
-      { status: 500 }
+      { status: "error", error: invalid ? (error instanceof SyntaxError ? "Invalid JSON body" : error.message) : "Airtable could not save the complete change. Verify the date/status fields and retry." },
+      { status: invalid ? 400 : 502 },
     )
   }
 }

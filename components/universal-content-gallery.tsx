@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo, useRef } from "react"
+import { useCallback, useEffect, useState, useMemo, useRef } from "react"
 import {
   ChevronDown,
   ChevronLeft,
@@ -50,31 +50,45 @@ export function UniversalContentGallery({
   const [items, setItems] = useState<OutputItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [warning, setWarning] = useState<string | null>(null)
+  const activeRequest = useRef<AbortController | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<StatusFilter>("All Statuses")
   const [filterOpen, setFilterOpen] = useState(false)
   const [pageIndex, setPageIndex] = useState(0)
 
-  async function loadData() {
+  const loadData = useCallback(async () => {
+    activeRequest.current?.abort()
+    const controller = new AbortController()
+    activeRequest.current = controller
     setLoading(true)
     setError(null)
+    setWarning(null)
     try {
       const url = `/api/content-outputs?category=${encodeURIComponent(category)}&type=${encodeURIComponent(contentType)}&_t=${Date.now()}`
-      const res = await fetch(url)
-      if (!res.ok) throw new Error("Failed to load automation outputs")
+      const res = await fetch(url, { signal: controller.signal, cache: "no-store" })
       const data = await res.json()
+      if (controller.signal.aborted) return
+      if (!res.ok || data.status === "error") throw new Error(data.error || "Failed to load automation outputs")
       setItems(data.items || [])
+      setPageIndex(0)
+      if (data.diagnostics?.partial) {
+        setWarning(`${data.diagnostics.failedTables} output tables could not be loaded. Showing available outputs; use Sync Airtable to retry.`)
+      }
     } catch (err: any) {
+      if (controller.signal.aborted) return
       setError(err?.message || "Failed to fetch outputs")
     } finally {
-      setLoading(false)
+      if (!controller.signal.aborted) setLoading(false)
     }
-  }
+  }, [category, contentType])
 
   useEffect(() => {
     setPageIndex(0)
     setSelectedStatus("All Statuses")
+    setItems([])
     loadData()
-  }, [category, contentType])
+    return () => activeRequest.current?.abort()
+  }, [loadData])
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -187,6 +201,7 @@ export function UniversalContentGallery({
 
       {/* Gallery Cards Container */}
       <div className="mx-auto mt-10 max-w-[1500px] px-4 sm:px-8">
+        {warning && <p role="status" className="mb-4 text-sm text-amber-700">{warning}</p>}
         {loading ? (
           <div className="flex h-96 flex-col items-center justify-center gap-3">
             <RefreshCw className="h-8 w-8 animate-spin text-neutral-500" />
