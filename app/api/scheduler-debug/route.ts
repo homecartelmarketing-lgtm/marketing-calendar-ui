@@ -9,7 +9,7 @@ export const revalidate = 0
 export async function GET() {
   try {
     const metaConfig = getMetaConfig()
-    const cronSecret = process.env.CRON_SECRET || ""
+    const cronSecret = (process.env.CRON_SECRET || "").trim()
 
     // 1. Check Meta Graph API connectivity and get account handle
     let metaStatus: {
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
 
     if (action === "trigger-runner") {
       const originUrl = request.nextUrl.origin
-      const cronSecret = process.env.CRON_SECRET
+      const cronSecret = process.env.CRON_SECRET?.trim()
       const startTime = Date.now()
 
       const runnerRes = await fetch(new URL("/api/schedules/runner", originUrl).toString(), {

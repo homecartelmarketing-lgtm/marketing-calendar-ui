@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic"
 export const maxDuration = 300
 
 function isAuthorized(request: NextRequest): boolean {
-  const cronSecret = process.env.CRON_SECRET
+  const cronSecret = process.env.CRON_SECRET?.trim()
   // Fail closed if CRON_SECRET is not configured
   if (!cronSecret) {
     console.warn("[Runner Auth] Request denied: CRON_SECRET is not configured on the server.")
