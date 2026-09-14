@@ -7,7 +7,7 @@ import {
   autoEnv,
   getAllConfiguredTables,
 } from "@/lib/tables-config"
-import { extractOutputMedia } from "@/lib/output-media"
+import { extractOutputMedia, deriveForeignKeyId } from "@/lib/output-media"
 import { AirtableReadError, readAirtableRecords } from "@/server/airtable/records"
 import { ScheduleValidationError, syncAirtableRecord } from "@/server/airtable/write-schedule"
 
@@ -228,8 +228,8 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
       )
     } else if (t.includes("before") && t.includes("after")) {
       ids.push(
-        autoEnv.AIRTABLE_TABLE_ID_BEFORE_AFTER_CHANDELIER,
-        autoEnv.AIRTABLE_TABLE_ID_BEFORE_AFTER_PENDANT_LIGHTS
+        autoEnv.AIRTABLE_TABLE_ID_BEFORE_AFTER_CHANDELIER || "tbloMhCOngGDWFS2y",
+        autoEnv.AIRTABLE_TABLE_ID_BEFORE_AFTER_PENDANT_LIGHTS || "tbleUP86Kw36G8Hdw"
       )
     } else if (t.includes("moodboard")) {
       ids.push(autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MODERN_MOODBOARDREEL)
@@ -361,20 +361,7 @@ export async function GET(request: NextRequest) {
           const date = generatedDate || ""
           const time = generatedTime || ""
 
-          const isDayAndNightReel =
-            category.toLowerCase() === "reels" &&
-            (contentType.toLowerCase().includes("day & night") ||
-              contentType.toLowerCase().includes("day and night") ||
-              contentType.toLowerCase().includes("d&n"))
-
-          const fkId =
-            fields["Foreign Key ID"] ||
-            fields["CID"] ||
-            (fields["ID"]
-              ? isDayAndNightReel
-                ? `DN-REEL-${fixtureType ? fixtureType.slice(0, 2).toUpperCase() : "FX"}-${fields["ID"]}`
-                : `${isMoodboardStory ? "MB-STORY" : isThisOrThatStory ? "TOT-STORY" : "CTA-STORY"}-${fixtureType ? fixtureType.slice(0, 2).toUpperCase() : "ST"}-${fields["ID"]}`
-              : rec.id)
+          const fkId = deriveForeignKeyId(fields, category, contentType, fixtureType, rec.id)
 
           const itemNames: string[] = []
           for (let i = 1; i <= 4; i++) {

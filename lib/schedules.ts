@@ -4,7 +4,7 @@ import {
   getAllConfiguredTables,
   TableTarget,
 } from "@/lib/tables-config"
-import { extractOutputMedia as extractMediaFromRecord } from "@/lib/output-media"
+import { extractOutputMedia as extractMediaFromRecord, deriveForeignKeyId } from "@/lib/output-media"
 import { AirtableReadError, readAirtableRecords } from "@/server/airtable/records"
 
 export type ScheduledEntry = {
@@ -131,18 +131,7 @@ export async function pullAirtableSchedulesWithDiagnostics(): Promise<{
             const pht = parsePhtDateAndTime(dateVal)
             if (!pht) continue
 
-            const isDayNightReel =
-              cfg.category === "Reels" &&
-              (cfg.idea.toLowerCase().includes("day & night") || cfg.idea.toLowerCase().includes("day and night"))
-
-            const fkId =
-              fields["Foreign Key ID"] ||
-              fields["CID"] ||
-              (fields["ID"]
-                ? isDayNightReel
-                  ? `DN-REEL-${cfg.fixtureType ? cfg.fixtureType.slice(0, 2).toUpperCase() : "FX"}-${fields["ID"]}`
-                  : `CID-${fields["ID"]}`
-                : r.id)
+            const fkId = deriveForeignKeyId(fields, cfg.category, cfg.idea, cfg.fixtureType, r.id)
 
             // Extract item names
             const itemNames: string[] = []

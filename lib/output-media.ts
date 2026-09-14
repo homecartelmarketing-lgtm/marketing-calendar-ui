@@ -47,3 +47,111 @@ export function extractOutputMedia(fields: Record<string, unknown>, category: st
   const slides = selected.map(item => item.url)
   return { mediaUrl: slides[0], mediaType, slides }
 }
+
+/** Canonical derivation of Foreign Key IDs (CIDs) across Feeds, Stories, and Reels. */
+export function deriveForeignKeyId(
+  fields: Record<string, unknown>,
+  category: string,
+  idea: string,
+  fixtureType?: string,
+  fallbackId?: string
+): string {
+  if (typeof fields["Foreign Key ID"] === "string" && fields["Foreign Key ID"].trim()) {
+    return fields["Foreign Key ID"].trim()
+  }
+  if (typeof fields["CID"] === "string" && fields["CID"].trim()) {
+    return fields["CID"].trim()
+  }
+
+  const rawId = fields["ID"]
+  if (rawId === undefined || rawId === null || rawId === "") {
+    return fallbackId || ""
+  }
+
+  const cat = category.toLowerCase().trim()
+  const type = idea.toLowerCase().trim()
+  const fxCode = fixtureType ? fixtureType.slice(0, 2).toUpperCase() : "FX"
+
+  // Reels
+  if (cat === "reels") {
+    if (type.includes("before") && type.includes("after")) {
+      return `BA-REEL-${fxCode}-${rawId}`
+    }
+    if (type.includes("day") && type.includes("night")) {
+      return `DN-REEL-${fxCode}-${rawId}`
+    }
+    if (type.includes("moodboard")) {
+      return `MB-REEL-${fxCode}-${rawId}`
+    }
+    if (type.includes("1 product") || type.includes("3 styles")) {
+      return `1P3S-REEL-${fxCode}-${rawId}`
+    }
+    if (type.includes("closeup")) {
+      return `PC-REEL-${fxCode}-${rawId}`
+    }
+    return `REEL-${fxCode}-${rawId}`
+  }
+
+  // Stories
+  if (cat === "stories") {
+    if (type.includes("cta")) {
+      return `CTA-STORY-${fxCode}-${rawId}`
+    }
+    if (type.includes("moodboard")) {
+      return `MB-STORY-${fxCode}-${rawId}`
+    }
+    if (type.includes("this or that")) {
+      return `TOT-STORY-${fxCode}-${rawId}`
+    }
+    if (type.includes("day") && type.includes("night")) {
+      return `DN-STORY-${fxCode}-${rawId}`
+    }
+    if (type.includes("myth") || type.includes("fact")) {
+      return `MF-STORY-${fxCode}-${rawId}`
+    }
+    if (type.includes("style this")) {
+      return `ST-STORY-${fxCode}-${rawId}`
+    }
+    if (type.includes("tips")) {
+      return `TNE-STORY-${fxCode}-${rawId}`
+    }
+    if (type.includes("collection")) {
+      return `CC-STORY-${fxCode}-${rawId}`
+    }
+    if (type.includes("description") || type.includes("closeup")) {
+      return `PCD-STORY-${fxCode}-${rawId}`
+    }
+    if (type.includes("spec")) {
+      return `PCS-STORY-${fxCode}-${rawId}`
+    }
+    return `STORY-${fxCode}-${rawId}`
+  }
+
+  // Feeds
+  if (cat === "feeds") {
+    if (type.includes("tips")) {
+      return `TNE-FEEDS-${fxCode}-${rawId}`
+    }
+    if (type.includes("day") && type.includes("night")) {
+      return `DN-FEEDS-${fxCode}-${rawId}`
+    }
+    if (type.includes("moodboard #2") || type.includes("moodboard 2")) {
+      return `MB2-FEEDS-${fxCode}-${rawId}`
+    }
+    if (type.includes("moodboard")) {
+      return `MB1-FEEDS-${fxCode}-${rawId}`
+    }
+    if (type.includes("1 product") || type.includes("3 styles")) {
+      return `1P3S-FEEDS-${fxCode}-${rawId}`
+    }
+    if (type.includes("collection")) {
+      return `CC-FEEDS-${fxCode}-${rawId}`
+    }
+    if (type.includes("showcase")) {
+      return `PS-FEEDS-${fxCode}-${rawId}`
+    }
+    return `FEED-${fxCode}-${rawId}`
+  }
+
+  return `CID-${rawId}`
+}
