@@ -184,18 +184,25 @@ export function DayDetailModal({
     return out
   }, [entries, existingSchedules])
 
+  const userModifiedKeys = useRef<Set<string>>(new Set())
+
   const [selections, setSelections] = useState<Record<string, SelectionState>>(() => {
     return buildSelectionsFromSchedules(existingSchedules, [])
   })
 
-  // Reactive effect: whenever existingSchedules or rows update, re-sync selections
+  // Reactive effect: whenever existingSchedules or rows update, re-sync selections unless modified by user
   useEffect(() => {
     if (existingSchedules && existingSchedules.length > 0) {
       const fromSchedules = buildSelectionsFromSchedules(existingSchedules, rows)
-      setSelections((prev) => ({
-        ...prev,
-        ...fromSchedules,
-      }))
+      setSelections((prev) => {
+        const next = { ...prev }
+        for (const [k, v] of Object.entries(fromSchedules)) {
+          if (!userModifiedKeys.current.has(k)) {
+            next[k] = v
+          }
+        }
+        return next
+      })
     }
   }, [existingSchedules, rows])
 
@@ -297,9 +304,10 @@ export function DayDetailModal({
           fixture: sel.fixture ?? matchedItem?.fixtureType ?? r.entry!.fixture,
           cid: currentCid,
           outputItem: matchedItem,
+          isoDate: iso,
         }
       })
-  }, [rows, selections, outputsMap])
+  }, [rows, selections, outputsMap, iso])
 
   const openPreview = (key: string) => {
     const idx = previewItems.findIndex((p) => p.key === key)
@@ -307,6 +315,20 @@ export function DayDetailModal({
   }
 
   const handleScheduleSuccess = (key: string, status: string, fullEntry?: ScheduledEntry) => {
+    userModifiedKeys.current.add(key)
+    if (status === "For Manual" || status === "Discard") {
+      setSelections((prev) => ({
+        ...prev,
+        [key]: {
+          ...prev[key],
+          cid: "",
+          outputItem: undefined,
+        },
+      }))
+      refreshOutputs()
+      return
+    }
+
     setSelections((prev) => {
       const existing = prev[key] ?? {}
       return {
@@ -342,6 +364,7 @@ export function DayDetailModal({
     if (fullEntry && onScheduleSaved) {
       onScheduleSaved(fullEntry)
     }
+    refreshOutputs()
   }
 
   return (
@@ -398,6 +421,7 @@ export function DayDetailModal({
                 onOpenPreview={openPreview}
                 outputsMap={outputsMap}
                 loadingMap={loadingMap}
+                userModifiedKeys={userModifiedKeys}
               />
             ))}
           </div>
@@ -430,6 +454,7 @@ function TypeGroup({
   onOpenPreview,
   outputsMap,
   loadingMap,
+  userModifiedKeys,
 }: {
   type: ContentType
   rows: FlatRow[]
@@ -442,6 +467,7 @@ function TypeGroup({
   onOpenPreview: (key: string) => void
   outputsMap: Record<string, OutputItem[]>
   loadingMap: Record<string, boolean>
+  userModifiedKeys: React.MutableRefObject<Set<string>>
 }) {
   const style = TYPE_STYLES[type]
 
@@ -462,7 +488,8 @@ function TypeGroup({
             iso={iso}
             lockedForeignKeys={lockedForeignKeys}
             selection={selections[row.key] ?? {}}
-            onSelectCid={(cid, matchedItem, newFixture) =>
+            onSelectCid={(cid, matchedItem, newFixture) => {
+              userModifiedKeys.current.add(row.key)
               setSelections((prev) => {
                 const existing = prev[row.key] ?? {}
                 return {
@@ -475,8 +502,9 @@ function TypeGroup({
                   },
                 }
               })
-            }
-            onSelectFixture={(fixture, newCid, newOutputItem) =>
+            }}
+            onSelectFixture={(fixture, newCid, newOutputItem) => {
+              userModifiedKeys.current.add(row.key)
               setSelections((prev) => {
                 const existing = prev[row.key] ?? {}
                 return {
@@ -484,12 +512,12 @@ function TypeGroup({
                   [row.key]: {
                     ...existing,
                     fixture,
-                    cid: newCid,
+                    cid: newCid || "",
                     outputItem: newOutputItem,
                   },
                 }
               })
-            }
+            }}
             openDropdown={openDropdown}
             setOpenDropdown={setOpenDropdown}
             onOpenPreview={onOpenPreview}
@@ -568,7 +596,7 @@ function ContentRow({
   }
 
   const fixture = selection.fixture ?? entry.fixture
-  const cid = selection.cid ?? entry.cid
+  const cid = selection.cid !== undefined ? selection.cid : entry.cid
 
   const pairKey = `${row.type}::${entry.idea}`
   const items = outputsMap[pairKey] || []
@@ -582,11 +610,13 @@ function ContentRow({
   } else if (isLoading) {
     cidOptions = [{ label: "Loading Foreign Keys...", disabled: true }]
   } else {
-    // Strictly filter items: fixture match AND status === "Completed" (or already selected CID for this entry)
+    // Strictly filter items: fixture match AND status === "Completed" (strictly exclude For Manual & Discard)
     const matching = items.filter(
       (it) =>
         matchesFixture(it.fixtureType, fixture) &&
-        (it.status === "Completed" || it.foreignKeyId === cid)
+        it.status !== "For Manual" &&
+        it.status !== "Discard" &&
+        (it.status === "Completed" || (Boolean(cid) && it.foreignKeyId === cid))
     )
 
     if (matching.length > 0) {
@@ -611,12 +641,14 @@ function ContentRow({
     }
   }
 
-  // Generate Fixture dropdown options with real counts of available items
+  // Generate Fixture dropdown options with real counts of available items (strictly excluding For Manual & Discard)
   const fixtureOptions: DropdownOption[] = FIXTURES.map((f) => {
     const count = items.filter(
       (it) =>
         matchesFixture(it.fixtureType, f.name) &&
-        (it.status === "Completed" || it.foreignKeyId === cid)
+        it.status !== "For Manual" &&
+        it.status !== "Discard" &&
+        (it.status === "Completed" || (Boolean(cid) && it.foreignKeyId === cid))
     ).length
     return {
       label: count > 0 ? `${f.name} (${count})` : `${f.name} (0)`,

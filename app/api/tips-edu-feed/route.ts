@@ -16,6 +16,7 @@ const TABLES = [
 
 export type OutputCardItem = {
   recordId: string
+  tableId?: string
   category: string
   foreignKeyId: string
   status: "Completed" | "Scheduled" | "Posted" | "For Manual" | "Discard"
@@ -184,6 +185,7 @@ export async function GET() {
 
           allItems.push({
             recordId: rec.id,
+            tableId: table.id,
             category: table.category,
             foreignKeyId: fkId,
             status,

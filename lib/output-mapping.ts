@@ -11,7 +11,7 @@ export function getFinalOutputCandidates(category: string, contentType: string):
     if (type.includes("moodboard")) return ["Moodboard Converted", "Blended Image"]
     if (type.includes("spec")) return ["PCS Story"]
     if (type.includes("style this")) return ["STORY - Style This? (4)"]
-    if (type.includes("this or that")) return ["This or That Converted", "STORY - This or That (1)"]
+    if (type.includes("this or that")) return ["Story This or That (1)", "STORY - This or That (1)", "This or That Converted"]
     if (type.includes("cta")) return ["CTA Converted Image"]
   }
 

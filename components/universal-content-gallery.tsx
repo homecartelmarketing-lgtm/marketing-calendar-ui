@@ -58,7 +58,7 @@ export function UniversalContentGallery({
     setLoading(true)
     setError(null)
     try {
-      const url = `/api/content-outputs?category=${encodeURIComponent(category)}&type=${encodeURIComponent(contentType)}`
+      const url = `/api/content-outputs?category=${encodeURIComponent(category)}&type=${encodeURIComponent(contentType)}&_t=${Date.now()}`
       const res = await fetch(url)
       if (!res.ok) throw new Error("Failed to load automation outputs")
       const data = await res.json()
@@ -232,7 +232,14 @@ export function UniversalContentGallery({
             }`}
           >
             {visibleItems.map((item) => (
-              <ContentCard key={item.recordId} item={item} category={category} />
+              <ContentCard 
+                key={item.recordId} 
+                item={item} 
+                category={category} 
+                onUpdateStatus={(id, status) => {
+                  setItems((prev) => prev.map((i) => i.recordId === id ? { ...i, status: status as any } : i))
+                }}
+              />
             ))}
           </div>
         )}
@@ -270,12 +277,44 @@ export function UniversalContentGallery({
   )
 }
 
-function ContentCard({ item, category }: { item: OutputItem; category: "Feeds" | "Stories" | "Reels" }) {
+function ContentCard({ 
+  item, 
+  category,
+  onUpdateStatus
+}: { 
+  item: OutputItem; 
+  category: "Feeds" | "Stories" | "Reels";
+  onUpdateStatus: (id: string, status: string) => void;
+}) {
   const [activeSlide, setActiveSlide] = useState(0)
   const [showFullCaption, setShowFullCaption] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
   const slides = item.slides || []
   const isVideo = item.mediaType === "video" && Boolean(item.videoUrl)
   const aspectClass = category === "Feeds" ? "aspect-[4/5]" : "aspect-[9/16]"
+
+  async function toggleScheduleStatus() {
+    if (!item.recordId || !item.tableId) return
+    setIsUpdating(true)
+    const newStatus = item.status === "Scheduled" ? "Completed" : "Scheduled"
+    try {
+      const res = await fetch("/api/content-outputs", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recordId: item.recordId,
+          tableId: item.tableId,
+          status: newStatus,
+        }),
+      })
+      if (!res.ok) throw new Error("Failed to update status")
+      onUpdateStatus(item.recordId, newStatus)
+    } catch (err: any) {
+      alert(`Error updating status: ${err.message}`)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
 
   function handlePrevSlide(e: React.MouseEvent) {
     e.stopPropagation()
@@ -382,15 +421,30 @@ function ContentCard({ item, category }: { item: OutputItem; category: "Feeds" |
             </div>
           )}
 
-          {/* Non-clickable Link button */}
-          <button
-            type="button"
-            disabled
-            className="flex cursor-default select-none items-center gap-1 rounded-full border border-black px-2.5 py-0.5 text-xs font-bold text-black"
-          >
-            <LinkIcon className="h-3 w-3" />
-            <span>Link</span>
-          </button>
+          {/* Schedule toggle and Non-clickable Link button */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleScheduleStatus}
+              disabled={isUpdating}
+              className={`flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-bold transition-colors disabled:opacity-50 ${
+                item.status === "Scheduled"
+                  ? "border-sky-300 bg-sky-100 text-sky-700 hover:bg-sky-200"
+                  : "border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-100"
+              }`}
+            >
+              <Calendar className="h-3 w-3" />
+              <span>{item.status === "Scheduled" ? "Untag" : "Tag"}</span>
+            </button>
+            <button
+              type="button"
+              disabled
+              className="flex cursor-default select-none items-center gap-1 rounded-full border border-black px-2.5 py-0.5 text-xs font-bold text-black"
+            >
+              <LinkIcon className="h-3 w-3" />
+              <span>Link</span>
+            </button>
+          </div>
         </div>
 
         {/* CID / Foreign Key ID + Optional Fixture Badge */}
