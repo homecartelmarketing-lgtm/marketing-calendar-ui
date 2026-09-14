@@ -46,11 +46,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Update Airtable record directly to Posted
+    let statusSyncWarning: string | undefined = undefined
     if (recordId && tableId) {
       try {
         await syncAirtableRecord(tableId, recordId, "Posted", isoDate, time)
-      } catch (patchErr) {
+      } catch (patchErr: any) {
         console.warn("Could not patch status to Posted:", patchErr)
+        statusSyncWarning = patchErr?.message || "Failed to update Airtable status to Posted"
       }
     }
 
@@ -58,6 +60,7 @@ export async function POST(request: NextRequest) {
       success: true,
       id: publishResult.id,
       isSimulated: publishResult.isSimulated,
+      statusSyncWarning,
       message: "Successfully published to Instagram!",
     })
   } catch (error: any) {

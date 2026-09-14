@@ -15,15 +15,19 @@ The overall automation goal is active. This record distinguishes implemented fix
 - Gallery requests abort/ignore stale category responses; refresh resets pagination; partial warnings retain successful cards.
 - Gallery and scheduler share final-media extraction. Moodboard and Day & Night slide order is explicit; input drafts and non-video Reel attachments are excluded.
 - Removed duplicated media extraction and schedule-writing code while preserving route paths and output fields.
+- Fixed UI modal mutation handlers (`content-preview-modal.tsx`, `scheduled-posts-modal.tsx`) to eliminate duplicate Airtable writes across scheduling, cancellation, and Post Now flows.
+- Ensured non-OK responses from Airtable / Schedules API strictly block success toasts and prevent local state mutations.
+- Updated `/api/meta-post` to return `statusSyncWarning` when Meta succeeds but Airtable status update fails, alerting the operator while preventing duplicate writes.
+- Added regression test suite `tests/modal-mutations.test.tsx` (36 total tests passing across 7 test files).
 - Added the two implementation plans, root README, documentation index, Git workflow, and project AGENTS rules.
 
 ## Verification
 
-`npm test`: 32 passed across six test files. `npm run typecheck`: passed. Production build must be checked against the latest source before committing. Provider requests in these tests are fixtures, not live integration evidence.
+`npm test`: 36 passed across seven test files. `npm run typecheck`: passed. Production build must be checked against the latest source before committing. Provider requests in these tests are fixtures, not live integration evidence.
 
 ## Next work, in order
 
-1. Fix UI mutation handlers that still ignore failed schedule/cancel responses and remove duplicate writes. The API now fails correctly, but some modal handlers still claim success.
+1. (Completed) Fix UI mutation handlers that still ignore failed schedule/cancel responses and remove duplicate writes.
 2. Protect read/mutation/debug/upload routes, remove the secret preview/query-secret authorization, and separate simulation from live publishing.
 3. Implement durable publication claims, execution history, shared Post Now/runner orchestration, reconciliation, and bounded retry/recovery.
 4. Finish mapping fixtures, rate-limit handling across instances, legacy tips-feed route consolidation, and non-overlapping calendar polling.

@@ -246,7 +246,8 @@ export function ContentPreviewModal({
           }),
         })
         if (!patchRes.ok) {
-          console.warn("Airtable status patch warning:", await patchRes.text())
+          const errText = await patchRes.text().catch(() => "")
+          throw new Error(errText || `Failed to tag as scheduled (HTTP ${patchRes.status})`)
         }
       }
 
@@ -299,7 +300,8 @@ export function ContentPreviewModal({
           }),
         })
         if (!patchRes.ok) {
-          console.warn("Airtable status patch warning:", await patchRes.text())
+          const errText = await patchRes.text().catch(() => "")
+          throw new Error(errText || `Failed to untag scheduled status (HTTP ${patchRes.status})`)
         }
       }
 
@@ -343,7 +345,8 @@ export function ContentPreviewModal({
           }),
         })
         if (!patchRes.ok) {
-          console.warn("Airtable status patch warning:", await patchRes.text())
+          const errText = await patchRes.text().catch(() => "")
+          throw new Error(errText || `Failed to update status (HTTP ${patchRes.status})`)
         }
       }
 
@@ -393,29 +396,7 @@ export function ContentPreviewModal({
     try {
       const finalStatus = status || "Scheduled"
 
-      // 1. Update Airtable if record exists
-      if (out?.recordId) {
-        try {
-          const patchRes = await fetch("/api/content-outputs", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              recordId: out.recordId,
-              tableId: out.tableId,
-              status: finalStatus,
-              date: iso,
-              time: item.time,
-            }),
-          })
-          if (!patchRes.ok) {
-            console.warn("Airtable sync warning:", await patchRes.text())
-          }
-        } catch (airtableErr) {
-          console.warn("Airtable sync warning:", airtableErr)
-        }
-      }
-
-      // 2. Persist to Schedules API & Local Storage
+      // Persist directly to Schedules API (which validates PHT time and updates Airtable)
       const schedRes = await fetch("/api/schedules", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -441,7 +422,7 @@ export function ContentPreviewModal({
 
       if (!schedRes.ok) {
         const errData = await schedRes.json().catch(() => ({}))
-        throw new Error(errData.error || errData.message || "Failed to save schedule to Airtable")
+        throw new Error(errData.error || errData.message || `Failed to save schedule (HTTP ${schedRes.status})`)
       }
 
       const schedData = await schedRes.json()
@@ -467,24 +448,7 @@ export function ContentPreviewModal({
     if (!confirm("Are you sure you want to cancel and remove this schedule?")) return
     setIsSubmitting(true)
     try {
-      // 1. Reset Airtable record back to "Completed" and clear Date and Time Scheduled
-      if (out?.recordId && out?.tableId) {
-        try {
-          await fetch("/api/content-outputs", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              recordId: out.recordId,
-              tableId: out.tableId,
-              status: "Completed",
-            }),
-          })
-        } catch (airtableErr) {
-          console.warn("Airtable unschedule sync warning:", airtableErr)
-        }
-      }
-
-      // 2. Delete schedule entry from API
+      // Delete schedule entry via API (which resets Airtable record to Completed and clears scheduled date)
       const params = new URLSearchParams()
       if (iso) params.set("isoDate", iso)
       if (item.key) params.set("rowKey", item.key)
@@ -492,9 +456,14 @@ export function ContentPreviewModal({
       if (out?.recordId) params.set("recordId", out.recordId)
       if (item.cid || out?.foreignKeyId) params.set("foreignKeyId", item.cid || out?.foreignKeyId || "")
 
-      await fetch(`/api/schedules?${params.toString()}`, {
+      const delRes = await fetch(`/api/schedules?${params.toString()}`, {
         method: "DELETE",
       })
+
+      if (!delRes.ok) {
+        const errData = await delRes.json().catch(() => ({}))
+        throw new Error(errData.error || errData.message || `Failed to cancel schedule (HTTP ${delRes.status})`)
+      }
 
       setStatusByKey((prev) => ({ ...prev, [item.key]: "Completed" }))
       onScheduleSuccess?.(item.key, "Completed", undefined)
@@ -504,9 +473,9 @@ export function ContentPreviewModal({
         setShowSuccess(false)
         onClose()
       }, 1600)
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error cancelling schedule:", err)
-      alert("Failed to cancel schedule. Please check your connection.")
+      alert(`Failed to cancel schedule: ${err?.message || "Please check your connection."}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -538,52 +507,49 @@ export function ContentPreviewModal({
         }),
       })
 
-      const data = await res.json()
-      if (data.success) {
-        setStatusByKey((prev) => ({ ...prev, [item.key]: "Posted" }))
-
-        // Save schedule record as Posted
-        let savedEntry: ScheduledEntry | undefined = undefined
-        const schedRes = await fetch("/api/schedules", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            recordId: out?.recordId,
-            tableId: out?.tableId,
-            isoDate: iso,
-            rowKey: item.key,
-            category: item.type,
-            idea: item.idea,
-            time: item.time,
-            fixture: item.fixture,
-            foreignKeyId: item.cid || out?.foreignKeyId || "",
-            status: "Posted",
-            caption: caption,
-            airtableUrl: out?.airtableUrl,
-            itemNames: out?.itemNames,
-            mediaUrl,
-            slides: currentSlides.length > 0 ? currentSlides : (mediaUrl ? [mediaUrl] : []),
-            mediaType: isVideo ? "video" : "image",
-          }),
-        })
-
-        if (schedRes.ok) {
-          const schedData = await schedRes.json()
-          savedEntry = schedData.entry
-        }
-
-        onScheduleSuccess?.(item.key, "Posted", savedEntry)
-        setSuccessTitle("SUCCESSFULLY PUBLISHED TO INSTAGRAM!")
-        setShowSuccess(true)
-        window.setTimeout(() => {
-          setShowSuccess(false)
-          onClose()
-        }, 1800)
-      } else {
-        alert(`Failed to publish to Meta: ${data.error || "Unknown error"}`)
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || data.message || `Failed to publish to Meta (HTTP ${res.status})`)
       }
+
+      // /api/meta-post already syncs Airtable status to "Posted"
+      setStatusByKey((prev) => ({ ...prev, [item.key]: "Posted" }))
+
+      const postedEntry: ScheduledEntry = {
+        recordId: out?.recordId || item.key,
+        tableId: out?.tableId || "",
+        isoDate: iso,
+        rowKey: item.key,
+        category: item.type,
+        idea: item.idea,
+        time: item.time || null,
+        fixture: item.fixture,
+        foreignKeyId: item.cid || out?.foreignKeyId || "",
+        status: "Posted",
+        caption: caption,
+        airtableUrl: out?.airtableUrl,
+        itemNames: out?.itemNames,
+        mediaUrl,
+        slides: currentSlides.length > 0 ? currentSlides : (mediaUrl ? [mediaUrl] : []),
+        mediaType: isVideo ? "video" : "image",
+        updatedAt: new Date().toISOString(),
+      }
+
+      onScheduleSuccess?.(item.key, "Posted", postedEntry)
+
+      if (data.statusSyncWarning) {
+        alert(`Published to Instagram (ID: ${data.id}), but Airtable status update failed: ${data.statusSyncWarning}. Please verify Airtable manually.`)
+      }
+
+      setSuccessTitle("SUCCESSFULLY PUBLISHED TO INSTAGRAM!")
+      setShowSuccess(true)
+      window.setTimeout(() => {
+        setShowSuccess(false)
+        onClose()
+      }, 1800)
     } catch (err: any) {
-      alert(`Error publishing to Meta: ${err?.message || err}`)
+      console.error("Error posting to Meta:", err)
+      alert(`Failed to publish to Meta: ${err?.message || err}`)
     } finally {
       setIsPostingMeta(false)
     }

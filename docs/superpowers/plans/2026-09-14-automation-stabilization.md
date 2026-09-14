@@ -24,14 +24,14 @@
 
 **Files:** `package.json`, `vitest.config.mts`, `tests/content-outputs.test.ts`, `server/airtable/records.ts`, `app/api/content-outputs/route.ts`, `components/universal-content-gallery.tsx`.
 
-- [ ] Add a test command with isolated fake credentials and provider interception.
-- [ ] Reproduce loss of the 101st record using 100 records plus an opaque offset on page one and one record on page two.
-- [ ] Reproduce all-table failure returning a misleading empty success and partial-table failure disappearing from diagnostics.
-- [ ] Implement bounded paginated reads; reject malformed pages and repeated offsets; deduplicate records and queried table IDs.
-- [ ] Preserve successful data while reporting safe partial errors; return a provider error if every target fails.
-- [ ] Cover invalid categories and empty configuration separately from genuine empty results.
-- [ ] Fix stale gallery requests on category changes and clamp pagination after refresh/filter changes.
-- [ ] Run `npm test -- tests/content-outputs.test.ts`; then `npm run typecheck` and `npm run build`.
+- [x] Add a test command with isolated fake credentials and provider interception.
+- [x] Reproduce loss of the 101st record using 100 records plus an opaque offset on page one and one record on page two.
+- [x] Reproduce all-table failure returning a misleading empty success and partial-table failure disappearing from diagnostics.
+- [x] Implement bounded paginated reads; reject malformed pages and repeated offsets; deduplicate records and queried table IDs.
+- [x] Preserve successful data while reporting safe partial errors; return a provider error if every target fails.
+- [x] Cover invalid categories and empty configuration separately from genuine empty results.
+- [x] Fix stale gallery requests on category changes and clamp pagination after refresh/filter changes.
+- [x] Run `npm test -- tests/content-outputs.test.ts`; then `npm run typecheck` and `npm run build`.
 
 ## 2. Security and environment boundaries
 

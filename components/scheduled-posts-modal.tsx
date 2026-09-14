@@ -19,7 +19,7 @@ export function ScheduledPostsModal({
   const [cancellingKey, setCancellingKey] = useState<string | null>(null)
 
   // Flatten and sort active scheduled items by date and time
-  const scheduledList = Object.entries(schedules).flatMap(([isoDate, entries]) =>
+  const scheduledList = Object.entries(schedules || {}).flatMap(([isoDate, entries]) =>
     entries
       .filter((e) => e.status === "Scheduled")
       .map((e) => ({ ...e, isoDate }))
@@ -45,28 +45,20 @@ export function ScheduledPostsModal({
       if (item.recordId) params.set("recordId", item.recordId)
       if (item.foreignKeyId) params.set("foreignKeyId", item.foreignKeyId)
 
-      // 1. Reset in Airtable
-      if (item.tableId && item.recordId) {
-        await fetch("/api/content-outputs", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            recordId: item.recordId,
-            tableId: item.tableId,
-            status: "Completed",
-          }),
-        })
-      }
-
-      // 2. Delete schedule
-      await fetch(`/api/schedules?${params.toString()}`, {
+      // Delete schedule via /api/schedules (which resets Airtable record to Completed and clears scheduled date)
+      const res = await fetch(`/api/schedules?${params.toString()}`, {
         method: "DELETE",
       })
 
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || errData.message || `Failed to cancel schedule (HTTP ${res.status})`)
+      }
+
       onScheduleCancelled(item.isoDate, item.rowKey, item.foreignKeyId)
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error cancelling schedule:", err)
-      alert("Failed to cancel schedule. Please check connection.")
+      alert(`Failed to cancel schedule: ${err?.message || "Please check connection."}`)
     } finally {
       setCancellingKey(null)
     }
