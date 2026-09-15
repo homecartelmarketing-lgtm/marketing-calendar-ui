@@ -22,9 +22,19 @@ describe("scheduler final media selection", () => {
     expect(extractMediaFromRecord({ "Final Video": [{ url: "https://media.example/signed?token=fixture", type: "video/mp4" }] }, "Reels", "Product Closeup"))
       .toEqual({ mediaUrl: "https://media.example/signed?token=fixture", mediaType: "video", slides: ["https://media.example/signed?token=fixture"] })
   })
+  it("extracts Moodboard #2 feed slides from alternative candidate field names", () => {
+    expect(extractMediaFromRecord({ "FEED - Moodboard #2 Feed (3)": img("https://media.example/mb2-feed") }, "Feeds", "Moodboard #2").slides)
+      .toEqual(["https://media.example/mb2-feed"])
+    expect(extractMediaFromRecord({ "Converted Moodboard": img("https://media.example/mb2-converted") }, "Feeds", "Moodboard #2").slides)
+      .toEqual(["https://media.example/mb2-converted"])
+  })
 })
 
 describe("canonical Foreign Key ID derivation", () => {
+  it("derives MB2-FEEDS prefix for Moodboard #2 feeds", () => {
+    expect(deriveForeignKeyId({ ID: 7 }, "Feeds", "Moodboard #2", "Chandelier")).toBe("MB2-FEEDS-CH-7")
+    expect(deriveForeignKeyId({ ID: 15 }, "Feeds", "Moodboard #2", "Pendant Light")).toBe("MB2-FEEDS-PE-15")
+  })
   it("preserves explicit Foreign Key ID from Airtable", () => {
     expect(deriveForeignKeyId({ "Foreign Key ID": "BA-REEL-CH-2", ID: 2 }, "Reels", "Before & After", "Chandelier")).toBe("BA-REEL-CH-2")
   })

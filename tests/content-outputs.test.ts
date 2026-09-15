@@ -117,4 +117,24 @@ describe("output data completeness", () => {
     expect(response.status).toBe(200)
     expect((await response.json()).items).toEqual([])
   })
+
+  it("extracts Moodboard #2 records and derives canonical foreign keys with fixture", async () => {
+    targets.mockReturnValue([{ tableId: "tblMb2", category: "Feeds", idea: "Moodboard #2", fixtureType: "Chandelier" }])
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      records: [{
+        id: "recMb2",
+        fields: {
+          ID: 4,
+          Status: "Completed",
+          "FEED - Moodboard #2 Feed (3)": [{ id: "attMb2", url: "https://media.example/mb2.jpg", type: "image/jpeg" }],
+        },
+      }],
+    })))
+    const response = await GET(new NextRequest("http://localhost/api/content-outputs?category=Feeds&type=Moodboard%20%232"))
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body.items.length).toBe(1)
+    expect(body.items[0].foreignKeyId).toBe("MB2-FEEDS-CH-4")
+    expect(body.items[0].fixtureType).toBe("Chandelier")
+  })
 })

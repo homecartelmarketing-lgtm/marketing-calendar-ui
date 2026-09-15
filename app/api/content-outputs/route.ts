@@ -129,12 +129,12 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
   if (cat === "feeds") {
     if (t.includes("tips")) {
       ids.push("tblIhCP3Gjg09QFCK", "tblQ65S51Dmauwx4c", "tblQuhvktqYB59Ofw", "tblwY6eGQCD5bJeF1")
-    } else if (t.includes("moodboard #2") || t.includes("moodboard 2") || t.includes("moodboard")) {
+    } else if (t.includes("moodboard #2") || t.includes("moodboard 2")) {
       ids.push(
-        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_2_FEED,
-        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_2_FEED,
-        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_2_FEED,
-        autoEnv.AIRTABLE_TABLE_ID_WALL_LIGHTS_MOODBOARD_2_FEED
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_2_FEED || "tbltWgQKOYjuHw6tx",
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_2_FEED || "tbl4TiV90SzdBz4KG",
+        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_2_FEED || "tbl4YF9iXlBqGblEc",
+        autoEnv.AIRTABLE_TABLE_ID_WALL_LIGHTS_MOODBOARD_2_FEED || "tbljUk9JwzS1JeZJg"
       )
     } else if (t.includes("day & night") || t.includes("day and night") || t.includes("d&n") || t.includes("day (") || t.includes("night (")) {
       ids.push(
@@ -149,19 +149,12 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
         autoEnv.AIRTABLE_TABLE_ID_PRODUCT_SHOWCASE_CHANDELIER,
         autoEnv.AIRTABLE_TABLE_ID_PRODUCT_SHOWCASE_PENDANT_LIGHTS
       )
-    } else if (t.includes("moodboard #2") || t.includes("moodboard 2")) {
-      ids.push(
-        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_2_FEED,
-        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_2_FEED,
-        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_2_FEED,
-        autoEnv.AIRTABLE_TABLE_ID_WALL_LIGHTS_MOODBOARD_2_FEED
-      )
     } else if (t.includes("moodboard #1") || t.includes("moodboard 1") || t.includes("moodboard")) {
       ids.push(
-        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_1_FEED,
-        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_1_FEED,
-        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_1_FEED,
-        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_MOODBOARD_1_FEED
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_1_FEED || "tbl9u5vjgx8kuE44R",
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_1_FEED || "tblOvvYdgsNTXh2zK",
+        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_1_FEED || "tbl6uTmwM23KK9ocO",
+        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_MOODBOARD_1_FEED || "tbljsKOEhc0618qbM"
       )
     } else if (t.includes("collection category")) {
       ids.push(autoEnv.AIRTABLE_TABLE_ID_COLLECTION_CATEGORY_FEED)
@@ -290,7 +283,8 @@ function getTableTargetsForPipeline(category: string, type: string, autoEnv: Rec
 
   // Fallback to getTableIdsForPipeline if anything missed
   const ids = getTableIdsForPipeline(category, type, autoEnv)
-  return ids.map((tableId) => ({ tableId }))
+  const idToFixture = new Map(all.map((t) => [t.tableId, t.fixtureType]))
+  return ids.map((tableId) => ({ tableId, fixtureType: idToFixture.get(tableId) }))
 }
 
 
