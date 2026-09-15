@@ -117,4 +117,50 @@ describe("output data completeness", () => {
     expect(response.status).toBe(200)
     expect((await response.json()).items).toEqual([])
   })
+
+  it("extracts Moodboard #2 records and derives canonical foreign keys with fixture", async () => {
+    targets.mockReturnValue([{ tableId: "tblMb2", category: "Feeds", idea: "Moodboard #2", fixtureType: "Chandelier" }])
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      records: [{
+        id: "recMb2",
+        fields: {
+          ID: 4,
+          Status: "Completed",
+          "FEED - Moodboard #2 Feed (3)": [{ id: "attMb2", url: "https://media.example/mb2.jpg", type: "image/jpeg" }],
+        },
+      }],
+    })))
+    const response = await GET(new NextRequest("http://localhost/api/content-outputs?category=Feeds&type=Moodboard%20%232"))
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body.items.length).toBe(1)
+    expect(body.items[0].foreignKeyId).toBe("MB2-FEEDS-CH-4")
+    expect(body.items[0].fixtureType).toBe("Chandelier")
+  })
+
+  it("extracts Tips & Educational Feed records and derives canonical foreign keys with fixture", async () => {
+    targets.mockReturnValue([{ tableId: "tblQ65S51Dmauwx4c", category: "Feeds", idea: "Tips & Educational", fixtureType: "Chandelier" }])
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      records: [{
+        id: "recTips",
+        fields: {
+          ID: 4,
+          Status: "Complete",
+          "Thumbnail with Text": [{ id: "attCover", url: "https://media.example/cover.jpg", type: "image/jpeg" }],
+          "Tips and Edu Feeds": [
+            { id: "attF1", url: "https://media.example/f1.jpg", type: "image/jpeg" },
+            { id: "attF2", url: "https://media.example/f2.jpg", type: "image/jpeg" },
+            { id: "attF3", url: "https://media.example/f3.jpg", type: "image/jpeg" },
+          ],
+        },
+      }],
+    })))
+    const response = await GET(new NextRequest("http://localhost/api/content-outputs?category=Feeds&type=Tips%20%26%20Educational"))
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body.items.length).toBe(1)
+    expect(body.items[0].foreignKeyId).toBe("TNE-FEEDS-CH-4")
+    expect(body.items[0].fixtureType).toBe("Chandelier")
+    expect(body.items[0].slides.length).toBe(4)
+  })
 })

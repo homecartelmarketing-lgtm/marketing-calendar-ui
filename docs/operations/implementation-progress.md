@@ -14,6 +14,7 @@ The overall automation goal is active. This record distinguishes implemented fix
 - Output PATCH uses the shared validated writer and reports failed persistence.
 - Gallery requests abort/ignore stale category responses; refresh resets pagination; partial warnings retain successful cards.
 - Gallery and scheduler share final-media extraction. Moodboard and Day & Night slide order is explicit; input drafts and non-video Reel attachments are excluded.
+- Moodboard #2 feed output lookup now targets its own Airtable tables, accepts alternate final-media field names, and derives fixture-specific foreign keys. The day detail modal can preselect a completed output for an unmodified fixture/CID row. This is locally tested, not yet verified against live Airtable data.
 - Removed duplicated media extraction and schedule-writing code while preserving route paths and output fields.
 - Fixed UI modal mutation handlers (`content-preview-modal.tsx`, `scheduled-posts-modal.tsx`) to eliminate duplicate Airtable writes across scheduling, cancellation, and Post Now flows.
 - Ensured non-OK responses from Airtable / Schedules API strictly block success toasts and prevent local state mutations.
@@ -34,7 +35,7 @@ The overall automation goal is active. This record distinguishes implemented fix
 
 ## Verification
 
-`npm test`: 69 passed across ten test files. `npm run typecheck`: passed. `npm run build`: passed. `git diff --check`: passed. Provider requests in these tests are fixtures, not live integration evidence.
+Latest local run: `npm test`: 72 passed across ten test files. `npm run typecheck`: passed. `npm run build`: passed. `git diff --check`: passed. Provider requests in these tests are fixtures, not live integration evidence.
 
 A read-only local diagnostics run with the operator's configured local environment verified Meta and Airtable connectivity and loaded the schedule/catalog. This does not verify the Vercel Production environment, a native Cron invocation, or an Instagram publication.
 

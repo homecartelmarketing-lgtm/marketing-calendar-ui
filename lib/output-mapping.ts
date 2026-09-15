@@ -16,12 +16,42 @@ export function getFinalOutputCandidates(category: string, contentType: string):
   }
 
   if (cat === "feeds") {
-    if (type.includes("tips")) return ["Tips and Edu Blended Attach Item Name", "Tips and Edu Feeds"]
+    if (type.includes("tips")) {
+      return [
+        "Thumbnail with Text",
+        "Thumbnail",
+        "Tips and Edu Feeds",
+        "Tips and Edu Blended Attach Item Name",
+        "FEED - Tips & Educational (4)",
+      ]
+    }
     if (type.includes("day") && type.includes("night")) return ["FEED - Day & Night (2)", "Day Image"]
     if (type.includes("collection")) return ["FEED - Collection Category (4)", "Styled Photo - Collection Category"]
     if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["FEED - 1 Product, 3 Styles (3)"]
-    if (type.includes("moodboard #2") || type.includes("moodboard 2") || type.includes("revised moodboard")) return ["FEED - Revised Moodboard (3)"]
-    if (type.includes("moodboard #1") || type.includes("moodboard 1") || type.includes("moodboard")) return ["FEED - Moodboard #1 Feed (3)", "Converted Moodboard"]
+    if (type.includes("moodboard #2") || type.includes("moodboard 2") || type.includes("revised moodboard")) {
+      return [
+        "FEED - Revised Moodboard (3)",
+        "FEED - Moodboard #2 Feed (3)",
+        "FEED - Moodboard #2 (3)",
+        "Moodboard #2 Feed (3)",
+        "Moodboard #2 (3)",
+        "FEED - Moodboard (3)",
+        "Revised Moodboard",
+        "Converted Moodboard",
+        "Moodboard Converted",
+        "Blended Image",
+      ]
+    }
+    if (type.includes("moodboard #1") || type.includes("moodboard 1") || type.includes("moodboard")) {
+      return [
+        "FEED - Moodboard #1 Feed (3)",
+        "FEED - Moodboard #1 (3)",
+        "Moodboard #1 Feed (3)",
+        "Converted Moodboard",
+        "Moodboard Converted",
+        "Blended Image",
+      ]
+    }
     if (type.includes("product showcase") || type.includes("showcase")) return ["FEED - Product Showcase Feed"]
     if (type.includes("closeup") || type.includes("carousel")) return ["FEED - Carousel Product Closeup (3)"]
   }

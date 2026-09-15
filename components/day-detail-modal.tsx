@@ -68,7 +68,23 @@ function buildSelectionsFromSchedules(
     const matched = schedules.find((s) => {
       if (claimed.has(s.recordId)) return false
       if (r.entry?.cid && s.foreignKeyId === r.entry.cid) return true
-      if (s.category === r.type && normalizeIdea(s.idea) === normalizeIdea(r.entry?.idea)) return true
+      if (
+        r.entry?.fixture &&
+        s.fixture &&
+        matchesFixture(s.fixture, r.entry.fixture) &&
+        s.category === r.type &&
+        normalizeIdea(s.idea) === normalizeIdea(r.entry?.idea)
+      ) {
+        return true
+      }
+      if (
+        !r.entry?.fixture &&
+        !r.entry?.cid &&
+        s.category === r.type &&
+        normalizeIdea(s.idea) === normalizeIdea(r.entry?.idea)
+      ) {
+        return true
+      }
       if (s.rowKey === r.key || s.recordId === r.key) return true
       return false
     })
@@ -135,8 +151,21 @@ export function DayDetailModal({
       ofType.forEach((entry, i) => {
         const matched = schedOfType.find((s) => {
           if (claimedSchedIds.has(s.recordId)) return false
-          if (entry.cid && s.foreignKeyId === entry.cid) return true
-          if (normalizeIdea(s.idea) === normalizeIdea(entry.idea)) return true
+          if (
+            entry.fixture &&
+            s.fixture &&
+            matchesFixture(s.fixture, entry.fixture) &&
+            normalizeIdea(s.idea) === normalizeIdea(entry.idea)
+          ) {
+            return true
+          }
+          if (
+            !entry.fixture &&
+            !entry.cid &&
+            normalizeIdea(s.idea) === normalizeIdea(entry.idea)
+          ) {
+            return true
+          }
           return false
         })
         if (matched) claimedSchedIds.add(matched.recordId)
@@ -283,6 +312,59 @@ export function DayDetailModal({
       }
     })
   }, [entries, outputsMap, loadingMap])
+
+  // Auto-select first available Fixture and CID if the row does not have a fixture yet
+  useEffect(() => {
+    setSelections((prev) => {
+      let changed = false
+      const next = { ...prev }
+
+      for (const r of rows) {
+        if (!r.entry || !isRealIdea(r.entry.idea)) continue
+        if (userModifiedKeys.current.has(r.key)) continue
+
+        const curSel = next[r.key] ?? {}
+        const curFixture = curSel.fixture ?? r.entry.fixture
+        const curCid = curSel.cid ?? r.entry.cid
+
+        if (!curFixture || !curCid) {
+          const pairKey = `${r.type}::${r.entry.idea}`
+          const items = outputsMap[pairKey] || []
+          if (items.length > 0) {
+            const availableItems = items.filter(
+              (it) =>
+                it.status !== "For Manual" &&
+                it.status !== "Discard" &&
+                it.status === "Completed"
+            )
+
+            if (availableItems.length > 0) {
+              const candidate = curFixture
+                ? availableItems.find((it) => matchesFixture(it.fixtureType, curFixture))
+                : availableItems[0]
+
+              if (candidate) {
+                const newFixture = curFixture || candidate.fixtureType || undefined
+                const newCid = curCid || candidate.foreignKeyId
+
+                if (newFixture !== curSel.fixture || newCid !== curSel.cid) {
+                  next[r.key] = {
+                    ...curSel,
+                    fixture: newFixture,
+                    cid: newCid,
+                    outputItem: candidate,
+                  }
+                  changed = true
+                }
+              }
+            }
+          }
+        }
+      }
+
+      return changed ? next : prev
+    })
+  }, [outputsMap, rows])
 
   // Ordered list of real (non-N/A) rows that can be previewed, with the
   // fixture/CID selections and full outputItem resolved.
@@ -680,8 +762,14 @@ function ContentRow({
         isOpen={openDropdown?.key === row.key && openDropdown.kind === "fixture"}
         onToggle={(open) => setOpenDropdown(open ? { key: row.key, kind: "fixture" } : null)}
         onPick={(v) => {
-          // Reset CID and outputItem whenever Fixture changes
-          onSelectFixture(v, undefined, undefined)
+          const firstMatch = items.find(
+            (it) =>
+              matchesFixture(it.fixtureType, v) &&
+              it.status !== "For Manual" &&
+              it.status !== "Discard" &&
+              it.status === "Completed"
+          )
+          onSelectFixture(v, firstMatch?.foreignKeyId, firstMatch)
           setOpenDropdown(null)
         }}
       />
