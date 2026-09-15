@@ -90,6 +90,15 @@ const STATUS_STYLES: Record<
   },
 }
 
+function getTodayPht(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date())
+}
+
 export function ContentPreviewModal({
   iso,
   items,
@@ -154,6 +163,10 @@ export function ContentPreviewModal({
   const currentSlides = slides
   const isReels = item.type === "Reels" || out?.category?.toLowerCase() === "reels"
   const isVideo = (out?.mediaType === "video" || isReels) && Boolean(out?.videoUrl)
+
+  const todayPht = getTodayPht()
+  const effectiveIso = item.isoDate || iso || ""
+  const isDayPassed = Boolean(effectiveIso && effectiveIso < todayPht)
 
   const isStoriesOrReels = item.type === "Stories" || item.type === "Reels"
   const isDayAndNight =
@@ -500,6 +513,13 @@ export function ContentPreviewModal({
           </button>
         </div>
 
+        {isDayPassed && (
+          <div className="mb-4 flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-center text-xs sm:text-sm font-semibold text-amber-300 shadow-sm">
+            <AlertCircle className="h-4 w-4 shrink-0 text-amber-400" />
+            <span>This scheduled date has passed ({formatLongDate(effectiveIso)}) — Viewing in Read-Only Mode.</span>
+          </div>
+        )}
+
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
           {/* Preview panel */}
           <div className="rounded-2xl bg-white p-3 sm:p-4">
@@ -681,8 +701,14 @@ export function ContentPreviewModal({
 
               <button
                 type="button"
+                disabled={isDayPassed}
                 onClick={() => setConfirmDiscard(true)}
-                className="flex items-center gap-1.5 rounded-full bg-red-100 px-4 py-1.5 text-sm font-semibold text-red-600 transition-colors hover:bg-red-200"
+                title={isDayPassed ? "Cannot discard: this date has already passed" : undefined}
+                className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+                  isDayPassed
+                    ? "bg-neutral-200 text-neutral-400 cursor-not-allowed opacity-60"
+                    : "bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer"
+                }`}
               >
                 <Trash2 className="h-4 w-4" strokeWidth={2.5} />
                 Discard
@@ -748,9 +774,13 @@ export function ContentPreviewModal({
                         <>
                           <button
                             type="button"
+                            disabled={isDayPassed}
                             onClick={() => setStatusOpen((o) => !o)}
                             aria-expanded={statusOpen}
-                            className={`flex w-full items-center justify-between rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-all shadow-sm ${currentStyle.bg} ${currentStyle.border} ${currentStyle.text}`}
+                            title={isDayPassed ? "Status is locked because date has passed" : undefined}
+                            className={`flex w-full items-center justify-between rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-all shadow-sm ${
+                              isDayPassed ? "opacity-60 cursor-not-allowed" : ""
+                            } ${currentStyle.bg} ${currentStyle.border} ${currentStyle.text}`}
                           >
                             <span className="flex items-center gap-2 truncate">
                               <span
@@ -843,14 +873,16 @@ export function ContentPreviewModal({
             <div className="rounded-2xl bg-black p-3 sm:p-4">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-base font-semibold text-white sm:text-lg">Generated Caption:</span>
-                <button
-                  type="button"
-                  onClick={() => setEditingCaption((e) => !e)}
-                  className="flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-200"
-                >
-                  <Pencil className="h-3.5 w-3.5" strokeWidth={2.5} />
-                  Edit Caption
-                </button>
+                {!isDayPassed && (
+                  <button
+                    type="button"
+                    onClick={() => setEditingCaption((e) => !e)}
+                    className="flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-200"
+                  >
+                    <Pencil className="h-3.5 w-3.5" strokeWidth={2.5} />
+                    Edit Caption
+                  </button>
+                )}
               </div>
               {editingCaption ? (
                 <textarea
@@ -872,9 +904,10 @@ export function ContentPreviewModal({
               {(status === "Scheduled" || out?.status === "Scheduled") && (
                 <button
                   type="button"
-                  disabled={isSubmitting || isPostingMeta}
+                  disabled={isSubmitting || isPostingMeta || isDayPassed}
+                  title={isDayPassed ? "This date has already passed" : undefined}
                   onClick={cancelSchedule}
-                  className="flex items-center gap-2 rounded-lg bg-red-500 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-red-600 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-red-500 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Trash2 className="h-4 w-4" />
                   {isSubmitting ? "REMOVING..." : "CANCEL SCHEDULE"}
@@ -883,9 +916,10 @@ export function ContentPreviewModal({
 
               <button
                 type="button"
-                disabled={isSubmitting || isPostingMeta}
+                disabled={isSubmitting || isPostingMeta || isDayPassed}
+                title={isDayPassed ? "This date has already passed" : undefined}
                 onClick={postNowToMeta}
-                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#f09433] via-[#e6683c] to-[#bc1888] px-5 py-2.5 text-sm font-bold text-white shadow-md transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#f09433] via-[#e6683c] to-[#bc1888] px-5 py-2.5 text-sm font-bold text-white shadow-md transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Share2 className="h-4 w-4" />
                 {isPostingMeta ? "PUBLISHING TO IG..." : "POST NOW TO INSTAGRAM"}
@@ -894,9 +928,10 @@ export function ContentPreviewModal({
               {status === "Scheduled" ? (
                 <button
                   type="button"
-                  disabled={isSubmitting || isPostingMeta}
+                  disabled={isSubmitting || isPostingMeta || isDayPassed}
+                  title={isDayPassed ? "This date has already passed" : undefined}
                   onClick={untagAsScheduled}
-                  className="flex items-center gap-2 rounded-lg bg-sky-100 px-5 py-2.5 text-sm font-bold text-sky-700 shadow-md transition-colors hover:bg-sky-200 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-sky-100 px-5 py-2.5 text-sm font-bold text-sky-700 shadow-md transition-colors hover:bg-sky-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <AlertCircle className="h-4 w-4" />
                   {isSubmitting ? "REVERTING..." : "UNTAG SCHEDULE"}
@@ -904,9 +939,10 @@ export function ContentPreviewModal({
               ) : (
                 <button
                   type="button"
-                  disabled={isSubmitting || isPostingMeta}
+                  disabled={isSubmitting || isPostingMeta || isDayPassed}
+                  title={isDayPassed ? "This date has already passed" : undefined}
                   onClick={tagAsScheduled}
-                  className="flex items-center gap-2 rounded-lg bg-sky-500 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-sky-600 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-sky-500 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <CalendarCheck className="h-4 w-4" />
                   {isSubmitting ? "TAGGING..." : "TAG AS SCHEDULED"}
@@ -916,10 +952,10 @@ export function ContentPreviewModal({
               {status === "Scheduled" ? (
                 <button
                   type="button"
-                  disabled={isSubmitting || isPostingMeta}
+                  disabled={isSubmitting || isPostingMeta || isDayPassed}
+                  title={isDayPassed ? "This date has already passed" : undefined}
                   onClick={schedulePost}
-                  className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-emerald-600 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition-colors hover:bg-emerald-500 disabled:opacity-50"
-                  title="Save changes and update scheduled post in queue"
+                  className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-emerald-600 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition-colors hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Check className="h-4 w-4" strokeWidth={2.5} />
                   <span>{isSubmitting ? "SAVING..." : "UPDATE SCHEDULE"}</span>
@@ -927,9 +963,10 @@ export function ContentPreviewModal({
               ) : (
                 <button
                   type="button"
-                  disabled={isSubmitting || isPostingMeta}
+                  disabled={isSubmitting || isPostingMeta || isDayPassed}
+                  title={isDayPassed ? "This date has already passed" : undefined}
                   onClick={confirmStatusChange}
-                  className="flex items-center gap-2 rounded-lg bg-green-400 px-6 py-2.5 text-sm font-bold text-black shadow-md transition-colors hover:bg-green-500 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-green-400 px-6 py-2.5 text-sm font-bold text-black shadow-md transition-colors hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Check className="h-4 w-4" strokeWidth={2.5} />
                   {isSubmitting ? "SAVING STATUS..." : "CONFIRM"}

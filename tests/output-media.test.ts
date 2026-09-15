@@ -28,6 +28,24 @@ describe("scheduler final media selection", () => {
     expect(extractMediaFromRecord({ "Converted Moodboard": img("https://media.example/mb2-converted") }, "Feeds", "Moodboard #2").slides)
       .toEqual(["https://media.example/mb2-converted"])
   })
+  it("combines cover thumbnail and feed slides for Tips & Educational Feeds", () => {
+    const record = {
+      "Thumbnail with Text": img("https://media.example/cover.jpg"),
+      "Tips and Edu Feeds": [
+        { url: "https://media.example/feed1.jpg", type: "image/jpeg" },
+        { url: "https://media.example/feed2.jpg", type: "image/jpeg" },
+        { url: "https://media.example/feed3.jpg", type: "image/jpeg" },
+      ],
+    }
+    const result = extractMediaFromRecord(record, "Feeds", "Tips & Educational")
+    expect(result.slides).toEqual([
+      "https://media.example/cover.jpg",
+      "https://media.example/feed1.jpg",
+      "https://media.example/feed2.jpg",
+      "https://media.example/feed3.jpg",
+    ])
+    expect(result.mediaUrl).toBe("https://media.example/cover.jpg")
+  })
 })
 
 describe("canonical Foreign Key ID derivation", () => {

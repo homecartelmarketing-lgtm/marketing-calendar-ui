@@ -68,7 +68,23 @@ function buildSelectionsFromSchedules(
     const matched = schedules.find((s) => {
       if (claimed.has(s.recordId)) return false
       if (r.entry?.cid && s.foreignKeyId === r.entry.cid) return true
-      if (s.category === r.type && normalizeIdea(s.idea) === normalizeIdea(r.entry?.idea)) return true
+      if (
+        r.entry?.fixture &&
+        s.fixture &&
+        matchesFixture(s.fixture, r.entry.fixture) &&
+        s.category === r.type &&
+        normalizeIdea(s.idea) === normalizeIdea(r.entry?.idea)
+      ) {
+        return true
+      }
+      if (
+        !r.entry?.fixture &&
+        !r.entry?.cid &&
+        s.category === r.type &&
+        normalizeIdea(s.idea) === normalizeIdea(r.entry?.idea)
+      ) {
+        return true
+      }
       if (s.rowKey === r.key || s.recordId === r.key) return true
       return false
     })
@@ -135,8 +151,21 @@ export function DayDetailModal({
       ofType.forEach((entry, i) => {
         const matched = schedOfType.find((s) => {
           if (claimedSchedIds.has(s.recordId)) return false
-          if (entry.cid && s.foreignKeyId === entry.cid) return true
-          if (normalizeIdea(s.idea) === normalizeIdea(entry.idea)) return true
+          if (
+            entry.fixture &&
+            s.fixture &&
+            matchesFixture(s.fixture, entry.fixture) &&
+            normalizeIdea(s.idea) === normalizeIdea(entry.idea)
+          ) {
+            return true
+          }
+          if (
+            !entry.fixture &&
+            !entry.cid &&
+            normalizeIdea(s.idea) === normalizeIdea(entry.idea)
+          ) {
+            return true
+          }
           return false
         })
         if (matched) claimedSchedIds.add(matched.recordId)

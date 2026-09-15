@@ -35,6 +35,10 @@ export function extractOutputMedia(fields: Record<string, unknown>, category: st
     const day = read("Day Image")[0]
     const night = read("Night Image")[0]
     selected = day && night ? [day, night] : read("FEED - Day & Night (2)")
+  } else if (cat === "feeds" && type.includes("tips")) {
+    const cover = read("Thumbnail with Text")[0] || read("Thumbnail")[0]
+    const feeds = read("Tips and Edu Feeds")
+    selected = cover ? [cover, ...feeds] : feeds.length ? feeds : read("Tips and Edu Blended Attach Item Name")
   } else {
     for (const candidate of getFinalOutputCandidates(category, idea)) {
       const attachments = read(candidate).filter(item => cat === "reels" ? attachmentType(item) === "video" : attachmentType(item) !== null)

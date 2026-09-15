@@ -99,6 +99,71 @@ describe("ScheduledPostsModal mutation handling", () => {
     expect(alertMock).toHaveBeenCalledWith(expect.stringContaining("Airtable connection timed out"))
     expect(onCancelMock).not.toHaveBeenCalled()
   })
+
+  it("renders 2 tabs and displays published/manual items with Instagram links in Publish History tab", () => {
+    const postedStory: ScheduledEntry = {
+      ...testScheduledEntry,
+      rowKey: "postedStoryKey",
+      recordId: "recPosted1",
+      foreignKeyId: "POSTED-STORY-1",
+      status: "Posted",
+      category: "Stories",
+    }
+    const postedFeed: ScheduledEntry = {
+      ...testScheduledEntry,
+      rowKey: "postedFeedKey",
+      recordId: "recPosted2",
+      foreignKeyId: "POSTED-FEED-2",
+      status: "Posted",
+      category: "Feeds",
+    }
+    const manualItem: ScheduledEntry = {
+      ...testScheduledEntry,
+      rowKey: "manualKey",
+      recordId: "recManual1",
+      foreignKeyId: "MANUAL-ITEM-3",
+      status: "For Manual",
+      category: "Reels",
+    }
+
+    render(
+      <ScheduledPostsModal
+        onClose={() => {}}
+        schedules={{
+          "2026-09-15": [testScheduledEntry, postedStory, postedFeed, manualItem],
+        }}
+        onScheduleCancelled={() => {}}
+        onJumpToDate={() => {}}
+      />
+    )
+
+    // Initial state: Active Queue tab shows 1 queued item
+    expect(screen.getByText("Active Queue")).toBeTruthy()
+    expect(screen.getByText("Publish History")).toBeTruthy()
+    expect(screen.getByText("cid123")).toBeTruthy()
+    expect(screen.queryByText("POSTED-STORY-1")).toBeNull()
+
+    // Switch to Publish History tab
+    fireEvent.click(screen.getByRole("button", { name: /publish history/i }))
+
+    // Active queue item is now hidden, history items are shown
+    expect(screen.queryByText("cid123")).toBeNull()
+    expect(screen.getByText("POSTED-STORY-1")).toBeTruthy()
+    expect(screen.getByText("POSTED-FEED-2")).toBeTruthy()
+    expect(screen.getByText("MANUAL-ITEM-3")).toBeTruthy()
+
+    // Verify badges
+    expect(screen.getAllByText("Published to IG").length).toBe(2)
+    expect(screen.getByText("Needs Manual Review")).toBeTruthy()
+
+    // Verify Instagram links
+    const igLinks = screen.getAllByRole("link", { name: /view on instagram/i })
+    expect(igLinks.length).toBe(2)
+    // Stories opens stories viewer
+    expect(igLinks[0].getAttribute("href")).toBe("https://www.instagram.com/stories/homecartel/")
+    // Feeds opens main profile
+    expect(igLinks[1].getAttribute("href")).toBe("https://www.instagram.com/homecartel/")
+  })
 })
 
 describe("POST /api/meta-post route behavior", () => {

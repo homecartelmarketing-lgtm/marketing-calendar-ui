@@ -160,8 +160,6 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
       ids.push(autoEnv.AIRTABLE_TABLE_ID_COLLECTION_CATEGORY_FEED)
     } else if (t.includes("1 product 3 styles") || t.includes("1 product three styles")) {
       ids.push(autoEnv.AIRTABLE_TABLE_ID_1_PRODUCT_3_STYLES_FEED)
-    } else if (t.includes("tips")) {
-      ids.push("tblQ65S51Dmauwx4c", "tblIhCP3Gjg09QFCK", "tblQuhvktqYB59Ofw", "tblwY6eGQCD5bJeF1")
     }
   } else if (cat === "stories") {
     if (t.includes("cta")) {

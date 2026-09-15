@@ -16,7 +16,15 @@ export function getFinalOutputCandidates(category: string, contentType: string):
   }
 
   if (cat === "feeds") {
-    if (type.includes("tips")) return ["Tips and Edu Blended Attach Item Name", "Tips and Edu Feeds"]
+    if (type.includes("tips")) {
+      return [
+        "Thumbnail with Text",
+        "Thumbnail",
+        "Tips and Edu Feeds",
+        "Tips and Edu Blended Attach Item Name",
+        "FEED - Tips & Educational (4)",
+      ]
+    }
     if (type.includes("day") && type.includes("night")) return ["FEED - Day & Night (2)", "Day Image"]
     if (type.includes("collection")) return ["FEED - Collection Category (4)", "Styled Photo - Collection Category"]
     if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["FEED - 1 Product, 3 Styles (3)"]
