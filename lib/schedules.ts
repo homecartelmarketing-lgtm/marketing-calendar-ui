@@ -143,7 +143,8 @@ export async function pullAirtableSchedulesWithDiagnostics(options?: { forceFres
                 token: AIRTABLE_TOKEN,
                 filterByFormula: "OR(Status='Scheduled', Status='Posted')",
               })
-          for (const r of records) {
+          for (let rIdx = 0; rIdx < records.length; rIdx++) {
+            const r = records[rIdx]
             const fields = r.fields || {}
             const dateVal =
               fields["Date and Time Scheduled"] ||
@@ -155,7 +156,7 @@ export async function pullAirtableSchedulesWithDiagnostics(options?: { forceFres
             const pht = parsePhtDateAndTime(dateVal)
             if (!pht) continue
 
-            const fkId = deriveForeignKeyId(fields, cfg.category, cfg.idea, cfg.fixtureType, r.id)
+            const fkId = deriveForeignKeyId(fields, cfg.category, cfg.idea, cfg.fixtureType, r.id, rIdx + 1)
 
             // Extract item names
             const itemNames: string[] = []

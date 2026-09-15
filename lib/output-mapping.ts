@@ -5,7 +5,9 @@ export function getFinalOutputCandidates(category: string, contentType: string):
   if (cat === "stories") {
     if (type.includes("collection")) return ["Collection Category Converted", "STORY - Collection Category (1)"]
     if (type.includes("myth") || type.includes("fact")) return ["STORY - Myth & Fact (4)"]
-    if (type.includes("description") || (type.includes("closeup") && !type.includes("spec"))) return ["Product Closeup Description Converted"]
+    if (type.includes("description") || (type.includes("closeup") && !type.includes("spec"))) {
+      return ["Product Closeup Description Converted", "Product Closeup Description Layout"]
+    }
     if (type.includes("tips")) return ["Tips and Edu Story Converted", "Tips and Edu Stories"]
     if (type.includes("day") && type.includes("night")) return ["STORY - Day & Night (2)"]
     if (type.includes("moodboard")) return ["Moodboard Converted", "Blended Image"]
@@ -26,8 +28,8 @@ export function getFinalOutputCandidates(category: string, contentType: string):
       ]
     }
     if (type.includes("day") && type.includes("night")) return ["FEED - Day & Night (2)", "Day Image"]
-    if (type.includes("collection")) return ["FEED - Collection Category (4)", "Styled Photo - Collection Category"]
-    if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["FEED - 1 Product, 3 Styles (3)"]
+    if (type.includes("collection")) return ["FEED - Collection Category (4)", "Styled Photo - Collection Category", "Collection Category Layout"]
+    if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["1 Product 3 Style Blended", "FEED - 1 Product, 3 Styles (3)"]
     if (type.includes("moodboard #2") || type.includes("moodboard 2") || type.includes("revised moodboard")) {
       return [
         "FEED - Revised Moodboard (3)",
@@ -36,6 +38,7 @@ export function getFinalOutputCandidates(category: string, contentType: string):
         "Moodboard #2 Feed (3)",
         "Moodboard #2 (3)",
         "FEED - Moodboard (3)",
+        "Moodboard #2 Converted",
         "Revised Moodboard",
         "Converted Moodboard",
         "Moodboard Converted",

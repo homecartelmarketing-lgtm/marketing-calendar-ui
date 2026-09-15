@@ -320,7 +320,8 @@ export async function GET(request: NextRequest) {
           baseId: AIRTABLE_BASE_ID, tableId, token: AIRTABLE_TOKEN, signal: request.signal,
         })
 
-        for (const rec of records) {
+        for (let recIndex = 0; recIndex < records.length; recIndex++) {
+          const rec = records[recIndex]
           const fields = rec.fields || {}
 
           const media = extractOutputMedia(fields, category, contentType)
@@ -353,7 +354,7 @@ export async function GET(request: NextRequest) {
           const date = generatedDate || ""
           const time = generatedTime || ""
 
-          const fkId = deriveForeignKeyId(fields, category, contentType, fixtureType, rec.id)
+          const fkId = deriveForeignKeyId(fields, category, contentType, fixtureType, rec.id, recIndex + 1)
 
           const itemNames: string[] = []
           for (let i = 1; i <= 4; i++) {
