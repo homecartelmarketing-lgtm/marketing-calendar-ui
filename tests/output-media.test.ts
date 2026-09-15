@@ -46,6 +46,14 @@ describe("scheduler final media selection", () => {
     ])
     expect(result.mediaUrl).toBe("https://media.example/cover.jpg")
   })
+  it("extracts Product Closeup w/ Description from both Converted and Layout fields without fallback to unrelated fields", () => {
+    expect(extractMediaFromRecord({ "Product Closeup Description Converted": img("https://media.example/pcd-conv.jpg") }, "Stories", "Product Closeup w/ description").mediaUrl)
+      .toBe("https://media.example/pcd-conv.jpg")
+    expect(extractMediaFromRecord({ "Product Closeup Description Layout": img("https://media.example/pcd-layout.jpg") }, "Stories", "Product Closeup w/ description").mediaUrl)
+      .toBe("https://media.example/pcd-layout.jpg")
+    expect(extractMediaFromRecord({ "Unrelated Attachment": img("https://media.example/random.jpg") }, "Stories", "Product Closeup w/ description").mediaUrl)
+      .toBe("")
+  })
 })
 
 describe("canonical Foreign Key ID derivation", () => {
@@ -72,7 +80,15 @@ describe("canonical Foreign Key ID derivation", () => {
   it("derives TNE-FEEDS prefix for Tips & Educational feeds", () => {
     expect(deriveForeignKeyId({ ID: 9 }, "Feeds", "Tips & Educational", "Pendant Light")).toBe("TNE-FEEDS-PE-9")
   })
-  it("falls back to recordId when no ID field exists", () => {
-    expect(deriveForeignKeyId({}, "Reels", "Before & After", "Pendant Light", "recFallback123")).toBe("recFallback123")
+  it("never falls back to raw recordId (rec...) and derives canonical Foreign Key ID instead", () => {
+    expect(deriveForeignKeyId({}, "Reels", "Before & After", "Pendant Light", "recFallback123")).toBe("BA-REEL-PE-1")
+    expect(deriveForeignKeyId({}, "Stories", "Collection Category", "Chandelier", "recp1JxFduXp1UqUk", 5)).toBe("CC-STORY-CH-5")
+  })
+  it("maps fixture abbreviations correctly according to Airtable conventions", () => {
+    expect(deriveForeignKeyId({ ID: 1 }, "Stories", "CTA Story", "Table Lamp")).toBe("CTA-STORY-TL-1")
+    expect(deriveForeignKeyId({ ID: 2 }, "Stories", "Collection Category", "Wall Light")).toBe("CC-STORY-WL-2")
+    expect(deriveForeignKeyId({ ID: 3 }, "Stories", "CTA Story", "Cluster Chandelier")).toBe("CTA-STORY-CL-3")
+    expect(deriveForeignKeyId({ ID: 4 }, "Stories", "Tips & Educational", "Ceiling Mounted")).toBe("TNE-STORY-CM-4")
+    expect(deriveForeignKeyId({ ID: 19 }, "Feeds", "Collection Category", "")).toBe("CC-FEEDS-SET-19")
   })
 })

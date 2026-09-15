@@ -39,6 +39,22 @@ export function extractOutputMedia(fields: Record<string, unknown>, category: st
     const cover = read("Thumbnail with Text")[0] || read("Thumbnail")[0]
     const feeds = read("Tips and Edu Feeds")
     selected = cover ? [cover, ...feeds] : feeds.length ? feeds : read("Tips and Edu Blended Attach Item Name")
+  } else if (cat === "feeds" && type.includes("collection")) {
+    const blendedSlides = [
+      ...read("Blended Image1"),
+      ...read("Blended Image2"),
+      ...read("Blended Image3"),
+      ...read("Blended Image4"),
+      ...read("Blended Image5"),
+    ]
+    if (blendedSlides.length > 0) {
+      selected = blendedSlides
+    } else {
+      for (const candidate of getFinalOutputCandidates(category, idea)) {
+        const attachments = read(candidate).filter(item => attachmentType(item) !== null)
+        if (attachments.length) { selected = attachments; break }
+      }
+    }
   } else {
     for (const candidate of getFinalOutputCandidates(category, idea)) {
       const attachments = read(candidate).filter(item => cat === "reels" ? attachmentType(item) === "video" : attachmentType(item) !== null)
@@ -52,13 +68,127 @@ export function extractOutputMedia(fields: Record<string, unknown>, category: st
   return { mediaUrl: slides[0], mediaType, slides }
 }
 
+export function getFixtureCode(fixtureType?: string): string {
+  if (!fixtureType) return "SET"
+  const norm = fixtureType.toLowerCase().trim()
+  if (norm.includes("table")) return "TL"
+  if (norm.includes("wall")) return "WL"
+  if (norm.includes("floor")) return "FL"
+  if (norm.includes("pendant")) return "PE"
+  if (norm.includes("cluster")) return "CL"
+  if (norm.includes("linear")) return "LC"
+  if (norm.includes("ceiling")) return "CM"
+  if (norm.includes("chandelier")) return "CH"
+  return fixtureType.slice(0, 2).toUpperCase() || "FX"
+}
+
+export function getForeignKeyPrefix(
+  category: string,
+  idea: string,
+  fixtureType?: string
+): string {
+  const cat = category.toLowerCase().trim()
+  const type = idea.toLowerCase().trim()
+  const fxCode = getFixtureCode(fixtureType)
+
+  // Reels
+  if (cat === "reels") {
+    if (type.includes("before") && type.includes("after")) {
+      return `BA-REEL-${fxCode}`
+    }
+    if (type.includes("day") && type.includes("night")) {
+      return `DN-REEL-${fxCode}`
+    }
+    if (type.includes("moodboard")) {
+      return `MB-REEL-${fxCode}`
+    }
+    if (type.includes("1 product") || type.includes("3 styles")) {
+      return `1P3S-REEL-${fxCode}`
+    }
+    if (type.includes("slideshow") || type.includes("style reel")) {
+      return `SR-REEL-${fxCode}`
+    }
+    if (type.includes("closeup")) {
+      return `PC-REEL-${fxCode}`
+    }
+    return `REEL-${fxCode}`
+  }
+
+  // Stories
+  if (cat === "stories") {
+    if (type.includes("cta")) {
+      return `CTA-STORY-${fxCode}`
+    }
+    if (type.includes("moodboard")) {
+      return `MB-STORY-${fxCode}`
+    }
+    if (type.includes("this or that")) {
+      return `TOT-STORY-${fxCode}`
+    }
+    if (type.includes("day") && type.includes("night")) {
+      return `DN-STORY-${fxCode}`
+    }
+    if (type.includes("myth") || type.includes("fact")) {
+      return `MF-STORY-${fxCode}`
+    }
+    if (type.includes("style this")) {
+      return `ST-STORY-${fxCode}`
+    }
+    if (type.includes("tips")) {
+      return `TNE-STORY-${fxCode}`
+    }
+    if (type.includes("collection")) {
+      return `CC-STORY-${fxCode}`
+    }
+    if (type.includes("description") || type.includes("pcd")) {
+      return `PCD-STORY-${fxCode}`
+    }
+    if (type.includes("spec") || type.includes("pcs")) {
+      return `PCS-STORY-${fxCode}`
+    }
+    if (type.includes("closeup")) {
+      return `PCD-STORY-${fxCode}`
+    }
+    return `STORY-${fxCode}`
+  }
+
+  // Feeds
+  if (cat === "feeds") {
+    if (type.includes("tips")) {
+      return `TNE-FEEDS-${fxCode}`
+    }
+    if (type.includes("day") && type.includes("night")) {
+      return `DN-FEEDS-${fxCode}`
+    }
+    if (type.includes("moodboard #2") || type.includes("moodboard 2")) {
+      return `MB2-FEEDS-${fxCode}`
+    }
+    if (type.includes("moodboard")) {
+      return `MB1-FEEDS-${fxCode}`
+    }
+    if (type.includes("1 product") || type.includes("3 styles")) {
+      return `1P3S-FEEDS-${fxCode}`
+    }
+    if (type.includes("collection")) {
+      return `CC-FEEDS-${fxCode}`
+    }
+    if (type.includes("showcase")) {
+      return `PS-FEEDS-${fxCode}`
+    }
+    return `FEED-${fxCode}`
+  }
+
+  return `CID-${fxCode}`
+}
+
 /** Canonical derivation of Foreign Key IDs (CIDs) across Feeds, Stories, and Reels. */
 export function deriveForeignKeyId(
   fields: Record<string, unknown>,
   category: string,
   idea: string,
   fixtureType?: string,
-  fallbackId?: string
+  fallbackId?: string,
+  fallbackIndex?: number
 ): string {
   if (typeof fields["Foreign Key ID"] === "string" && fields["Foreign Key ID"].trim()) {
     return fields["Foreign Key ID"].trim()
@@ -66,96 +196,41 @@ export function deriveForeignKeyId(
   if (typeof fields["CID"] === "string" && fields["CID"].trim()) {
     return fields["CID"].trim()
   }
+  if (typeof fields["Foreign Key"] === "string" && fields["Foreign Key"].trim()) {
+    return fields["Foreign Key"].trim()
+  }
 
-  const rawId = fields["ID"]
+  let rawId = fields["ID"]
   if (rawId === undefined || rawId === null || rawId === "") {
-    return fallbackId || ""
+    rawId = fields["ID (from Lighting Fixture)"]
+  }
+  if (Array.isArray(rawId)) {
+    rawId = rawId[0]
+  }
+  if (rawId === undefined || rawId === null || rawId === "") {
+    rawId = fields["Auto ID"] || fields["Item ID"] || fields["No."] || fields["Number"]
   }
 
-  const cat = category.toLowerCase().trim()
-  const type = idea.toLowerCase().trim()
-  const fxCode = fixtureType ? fixtureType.slice(0, 2).toUpperCase() : "FX"
+  const prefix = getForeignKeyPrefix(category, idea, fixtureType)
 
-  // Reels
-  if (cat === "reels") {
-    if (type.includes("before") && type.includes("after")) {
-      return `BA-REEL-${fxCode}-${rawId}`
-    }
-    if (type.includes("day") && type.includes("night")) {
-      return `DN-REEL-${fxCode}-${rawId}`
-    }
-    if (type.includes("moodboard")) {
-      return `MB-REEL-${fxCode}-${rawId}`
-    }
-    if (type.includes("1 product") || type.includes("3 styles")) {
-      return `1P3S-REEL-${fxCode}-${rawId}`
-    }
-    if (type.includes("closeup")) {
-      return `PC-REEL-${fxCode}-${rawId}`
-    }
-    return `REEL-${fxCode}-${rawId}`
+  if (rawId !== undefined && rawId !== null && rawId !== "") {
+    return `${prefix}-${rawId}`
   }
 
-  // Stories
-  if (cat === "stories") {
-    if (type.includes("cta")) {
-      return `CTA-STORY-${fxCode}-${rawId}`
-    }
-    if (type.includes("moodboard")) {
-      return `MB-STORY-${fxCode}-${rawId}`
-    }
-    if (type.includes("this or that")) {
-      return `TOT-STORY-${fxCode}-${rawId}`
-    }
-    if (type.includes("day") && type.includes("night")) {
-      return `DN-STORY-${fxCode}-${rawId}`
-    }
-    if (type.includes("myth") || type.includes("fact")) {
-      return `MF-STORY-${fxCode}-${rawId}`
-    }
-    if (type.includes("style this")) {
-      return `ST-STORY-${fxCode}-${rawId}`
-    }
-    if (type.includes("tips")) {
-      return `TNE-STORY-${fxCode}-${rawId}`
-    }
-    if (type.includes("collection")) {
-      return `CC-STORY-${fxCode}-${rawId}`
-    }
-    if (type.includes("description") || type.includes("closeup")) {
-      return `PCD-STORY-${fxCode}-${rawId}`
-    }
-    if (type.includes("spec")) {
-      return `PCS-STORY-${fxCode}-${rawId}`
-    }
-    return `STORY-${fxCode}-${rawId}`
+  if (fallbackIndex !== undefined && fallbackIndex !== null && fallbackIndex > 0) {
+    return `${prefix}-${fallbackIndex}`
   }
 
-  // Feeds
-  if (cat === "feeds") {
-    if (type.includes("tips")) {
-      return `TNE-FEEDS-${fxCode}-${rawId}`
+  // If fallbackId is provided and NOT a raw Airtable record ID (rec...), use it
+  if (fallbackId && typeof fallbackId === "string" && fallbackId.trim()) {
+    const trimmed = fallbackId.trim()
+    if (!/^rec[a-zA-Z0-9]{10,}$/.test(trimmed)) {
+      if (trimmed.includes("-")) return trimmed
+      return `${prefix}-${trimmed}`
     }
-    if (type.includes("day") && type.includes("night")) {
-      return `DN-FEEDS-${fxCode}-${rawId}`
-    }
-    if (type.includes("moodboard #2") || type.includes("moodboard 2")) {
-      return `MB2-FEEDS-${fxCode}-${rawId}`
-    }
-    if (type.includes("moodboard")) {
-      return `MB1-FEEDS-${fxCode}-${rawId}`
-    }
-    if (type.includes("1 product") || type.includes("3 styles")) {
-      return `1P3S-FEEDS-${fxCode}-${rawId}`
-    }
-    if (type.includes("collection")) {
-      return `CC-FEEDS-${fxCode}-${rawId}`
-    }
-    if (type.includes("showcase")) {
-      return `PS-FEEDS-${fxCode}-${rawId}`
-    }
-    return `FEED-${fxCode}-${rawId}`
   }
 
-  return `CID-${rawId}`
+  // Never fall back to a raw Airtable record ID (rec...)
+  return `${prefix}-1`
 }
+
