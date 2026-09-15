@@ -19,11 +19,14 @@ The overall automation goal is active. This record distinguishes implemented fix
 - Ensured non-OK responses from Airtable / Schedules API strictly block success toasts and prevent local state mutations.
 - Updated `/api/meta-post` to return `statusSyncWarning` when Meta succeeds but Airtable status update fails, alerting the operator while preventing duplicate writes.
 - Added regression test suite `tests/modal-mutations.test.tsx` (36 total tests passing across 7 test files).
+- Bounded scheduler-debug Meta, Airtable schedule, and candidate-media checks so a stalled provider cannot leave the page loading indefinitely; the UI now distinguishes checking, connected, and failed diagnostics without exposing a Cron secret preview.
 - Added the two implementation plans, root README, documentation index, Git workflow, and project AGENTS rules.
 
 ## Verification
 
-`npm test`: 36 passed across seven test files. `npm run typecheck`: passed. Production build must be checked against the latest source before committing. Provider requests in these tests are fixtures, not live integration evidence.
+`npm test`: 50 passed across nine test files. `npm run typecheck`: passed. `npm run build`: passed. Provider requests in these tests are fixtures, not live integration evidence.
+
+A read-only local diagnostics run with the operator's configured local environment verified Meta and Airtable connectivity and loaded the schedule/catalog. This does not verify the Vercel Production environment, a native Cron invocation, or an Instagram publication.
 
 ## Next work, in order
 

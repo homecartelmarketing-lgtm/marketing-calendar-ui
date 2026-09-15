@@ -25,6 +25,8 @@ import {
   Link2,
 } from "lucide-react"
 
+const DIAGNOSTICS_REQUEST_TIMEOUT_MS = 25_000
+
 function InstagramIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -39,9 +41,10 @@ interface SystemDiagnostics {
   serverUtc: string
   phtNow: string
   cronSecretConfigured: boolean
-  cronSecretPreview: string
   airtableConfigured: boolean
+  airtableStatus?: "not_configured" | "checking" | "connected" | "disconnected"
   airtableBaseId: string
+  scheduleScanStatus?: "complete" | "timed_out"
   metaStatus: {
     configured: boolean
     verified: boolean
@@ -94,6 +97,7 @@ export default function SchedulerDebugPage() {
   const [candidateFixtures, setCandidateFixtures] = useState<CandidateFixture[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [diagnosticsError, setDiagnosticsError] = useState<string | null>(null)
   const [runnerExecuting, setRunnerExecuting] = useState(false)
   const [runnerResult, setRunnerResult] = useState<any | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
@@ -161,24 +165,32 @@ export default function SchedulerDebugPage() {
     if (inFlightRef.current) return
     inFlightRef.current = true
     if (!isSilent) setRefreshing(true)
+    const controller = new AbortController()
+    const requestTimeout = setTimeout(() => controller.abort(), DIAGNOSTICS_REQUEST_TIMEOUT_MS)
     try {
-      const res = await fetch("/api/scheduler-debug", { cache: "no-store" })
-      if (res.ok) {
-        const data = await res.json()
-        setSystem(data.system)
-        setScheduledItems(data.scheduledItems || [])
-        setScheduledCount(data.scheduledCount || 0)
-        if (data.candidateFixtures && data.candidateFixtures.length > 0) {
-          setCandidateFixtures(data.candidateFixtures)
-          if (!selectedFixture) {
-            setSelectedFixture(data.candidateFixtures[0])
-          }
+      const res = await fetch("/api/scheduler-debug", {
+        cache: "no-store",
+        signal: controller.signal,
+      })
+      if (!res.ok) throw new Error(`Diagnostics request failed (${res.status})`)
+      const data = await res.json()
+      if (!data.success || !data.system) throw new Error("Diagnostics response was incomplete")
+      setDiagnosticsError(null)
+      setSystem(data.system)
+      setScheduledItems(data.scheduledItems || [])
+      setScheduledCount(data.scheduledCount || 0)
+      if (data.candidateFixtures && data.candidateFixtures.length > 0) {
+        setCandidateFixtures(data.candidateFixtures)
+        if (!selectedFixture) {
+          setSelectedFixture(data.candidateFixtures[0])
         }
-        setLastUpdated(new Date().toLocaleTimeString())
       }
+      setLastUpdated(new Date().toLocaleTimeString())
     } catch (err) {
       console.error("Failed to load scheduler debug data:", err)
+      setDiagnosticsError("Diagnostics check failed. Refresh to retry.")
     } finally {
+      clearTimeout(requestTimeout)
       inFlightRef.current = false
       setLoading(false)
       setRefreshing(false)
@@ -480,7 +492,7 @@ export default function SchedulerDebugPage() {
               }`}
             >
               <Activity className="h-3.5 w-3.5" />
-              Auto-sync: {autoRefresh ? "ON (10s)" : "OFF"}
+              Auto-sync: {autoRefresh ? "ON (20s)" : "OFF"}
             </button>
             <button
               type="button"
@@ -509,7 +521,11 @@ export default function SchedulerDebugPage() {
                 <InstagramIcon className="h-4 w-4 text-pink-500" />
                 Meta Graph API
               </span>
-              {loading && !system ? (
+              {diagnosticsError && !system ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-red-950/80 border border-red-700/50 px-2 py-0.5 text-[10px] font-semibold text-red-300">
+                  CHECK FAILED
+                </span>
+              ) : loading && !system ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-blue-950/80 border border-blue-700/50 px-2 py-0.5 text-[10px] font-semibold text-blue-300">
                   <RefreshCw className="h-3 w-3 animate-spin text-blue-400" />
                   CHECKING...
@@ -528,7 +544,9 @@ export default function SchedulerDebugPage() {
             </div>
 
             <div className="mt-3">
-              {loading && !system ? (
+              {diagnosticsError && !system ? (
+                <div className="text-xs text-red-300">{diagnosticsError}</div>
+              ) : loading && !system ? (
                 <div className="text-xs text-neutral-400">Verifying Meta Graph API connection...</div>
               ) : system?.metaStatus?.verified ? (
                 <div>
@@ -557,7 +575,11 @@ export default function SchedulerDebugPage() {
                 <Lock className="h-4 w-4 text-amber-500" />
                 Runner Security
               </span>
-              {loading && !system ? (
+              {diagnosticsError && !system ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-red-950/80 border border-red-700/50 px-2 py-0.5 text-[10px] font-semibold text-red-300">
+                  CHECK FAILED
+                </span>
+              ) : loading && !system ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-blue-950/80 border border-blue-700/50 px-2 py-0.5 text-[10px] font-semibold text-blue-300">
                   <RefreshCw className="h-3 w-3 animate-spin text-blue-400" />
                   CHECKING...
@@ -578,7 +600,13 @@ export default function SchedulerDebugPage() {
             <div className="mt-3">
               <div className="text-xs text-neutral-400">CRON_SECRET Token:</div>
               <div className="font-mono text-sm font-semibold text-amber-300 truncate mt-0.5">
-                {loading && !system ? "Checking..." : (system?.cronSecretPreview || "None")}
+                {diagnosticsError && !system
+                  ? "Unavailable"
+                  : loading && !system
+                    ? "Checking..."
+                    : system?.cronSecretConfigured
+                      ? "Configured"
+                      : "Not configured"}
               </div>
               <div className="mt-2 text-[11px] text-neutral-500">
                 Secured via Vercel Pro Cron
@@ -593,12 +621,21 @@ export default function SchedulerDebugPage() {
                 <Database className="h-4 w-4 text-sky-500" />
                 Airtable Base
               </span>
-              {loading && !system ? (
+              {diagnosticsError && !system ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-red-950/80 border border-red-700/50 px-2 py-0.5 text-[10px] font-semibold text-red-300">
+                  CHECK FAILED
+                </span>
+              ) : loading && !system ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-blue-950/80 border border-blue-700/50 px-2 py-0.5 text-[10px] font-semibold text-blue-300">
                   <RefreshCw className="h-3 w-3 animate-spin text-blue-400" />
                   CHECKING...
                 </span>
-              ) : system?.airtableConfigured ? (
+              ) : system?.airtableStatus === "checking" ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-blue-950/80 border border-blue-700/50 px-2 py-0.5 text-[10px] font-semibold text-blue-300">
+                  <RefreshCw className="h-3 w-3 animate-spin text-blue-400" />
+                  CHECKING...
+                </span>
+              ) : system?.airtableStatus === "connected" ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/80 border border-emerald-700/50 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
                   <CheckCircle2 className="h-3 w-3 text-emerald-400" />
                   CONNECTED
@@ -616,7 +653,9 @@ export default function SchedulerDebugPage() {
                 {loading && !system ? "Connecting..." : (system?.airtableBaseId || "None")}
               </div>
               <div className="mt-2 text-[11px] text-neutral-500">
-                79 verified table endpoints active
+                {system?.scheduleScanStatus === "timed_out"
+                  ? "Schedule scan is still running; auto-sync will retry"
+                  : "79 configured table endpoints"}
               </div>
             </div>
           </div>

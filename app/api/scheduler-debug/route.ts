@@ -7,6 +7,24 @@ export const dynamic = "force-dynamic"
 export const revalidate = 0
 export const maxDuration = 300
 
+const SCHEDULE_SCAN_TIMEOUT_MS = 8_000
+const CANDIDATE_LOOKUP_TIMEOUT_MS = 5_000
+const META_VERIFICATION_TIMEOUT_MS = 5_000
+
+async function settleWithin<T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<null>((resolve) => {
+        timeout = setTimeout(() => resolve(null), timeoutMs)
+      }),
+    ])
+  } finally {
+    if (timeout) clearTimeout(timeout)
+  }
+}
+
 export async function GET() {
   try {
     const metaConfig = getMetaConfig()
@@ -27,26 +45,48 @@ export async function GET() {
 
     if (metaStatus.configured) {
       try {
-        const testRes = await fetch(
-          `https://graph.facebook.com/${metaConfig.apiVersion || "v19.0"}/${metaConfig.instagramAccountId}?fields=id,username,name&access_token=${metaConfig.accessToken}`,
-          { next: { revalidate: 0 } }
+        const verification = await settleWithin(
+          (async () => {
+            const testRes = await fetch(
+              `https://graph.facebook.com/${metaConfig.apiVersion || "v19.0"}/${metaConfig.instagramAccountId}?fields=id,username,name&access_token=${metaConfig.accessToken}`,
+              { next: { revalidate: 0 } }
+            )
+            return { response: testRes, data: await testRes.json() }
+          })(),
+          META_VERIFICATION_TIMEOUT_MS
         )
-        const testData = await testRes.json()
-        if (testRes.ok && testData.id) {
+        if (!verification) {
+          metaStatus.error = "Meta verification timed out"
+        } else if (verification.response.ok && verification.data.id) {
           metaStatus.verified = true
-          metaStatus.username = testData.username
-          metaStatus.name = testData.name
-          metaStatus.id = testData.id
+          metaStatus.username = verification.data.username
+          metaStatus.name = verification.data.name
+          metaStatus.id = verification.data.id
         } else {
-          metaStatus.error = testData.error?.message || "Meta token invalid or missing Instagram permissions"
+          metaStatus.error = "Meta rejected the configured credentials or permissions"
         }
-      } catch (err: any) {
-        metaStatus.error = err?.message || "Failed to reach Meta Graph API"
+      } catch {
+        metaStatus.error = "Failed to reach Meta Graph API"
       }
     }
 
     // 2. Fetch all scheduled items from Airtable
-    const { schedules, failedTables } = await pullAirtableSchedulesWithDiagnostics()
+    const scheduleScan = await settleWithin(
+      pullAirtableSchedulesWithDiagnostics(),
+      SCHEDULE_SCAN_TIMEOUT_MS
+    )
+    const schedules = scheduleScan?.schedules || {}
+    const failedTables = scheduleScan?.failedTables || []
+    const scheduleScanStatus = scheduleScan ? "complete" : "timed_out"
+    const configuredTableCount = getAllConfiguredTables().length
+    const airtableConfigured = Boolean(AIRTABLE_TOKEN && AIRTABLE_BASE_ID)
+    const airtableStatus = !airtableConfigured
+      ? "not_configured"
+      : scheduleScanStatus === "timed_out"
+        ? "checking"
+        : failedTables.length >= configuredTableCount && configuredTableCount > 0
+          ? "disconnected"
+          : "connected"
     const now = new Date()
 
     const scheduledList: Array<ScheduledEntry & {
@@ -91,8 +131,8 @@ export async function GET() {
 
     try {
       const sampleTables = getAllConfiguredTables().slice(0, 4)
-      await Promise.all(
-        sampleTables.map(async (tbl) => {
+      await settleWithin(
+        Promise.all(sampleTables.map(async (tbl) => {
           try {
             const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tbl.tableId}?maxRecords=3`
             const res = await fetch(url, {
@@ -125,7 +165,8 @@ export async function GET() {
           } catch {
             // ignore individual fixture fetch failure
           }
-        })
+        })),
+        CANDIDATE_LOOKUP_TIMEOUT_MS
       )
     } catch {
       // Non-blocking fallback
@@ -153,10 +194,11 @@ export async function GET() {
         serverUtc: now.toISOString(),
         phtNow: `${phtDateStr} ${phtTimeStr} PHT (UTC+08:00)`,
         cronSecretConfigured: Boolean(cronSecret),
-        cronSecretPreview: cronSecret ? `${cronSecret.slice(0, 6)}...${cronSecret.slice(-4)}` : "NOT_CONFIGURED",
-        airtableConfigured: Boolean(AIRTABLE_TOKEN && AIRTABLE_BASE_ID),
+        airtableConfigured,
+        airtableStatus,
         airtableBaseId: AIRTABLE_BASE_ID,
         metaStatus,
+        scheduleScanStatus,
         failedTablesCount: failedTables.length,
         failedTables: failedTables.length > 0 ? failedTables : undefined,
       },
