@@ -227,97 +227,87 @@ export function ContentPreviewModal({
     }
   }
 
-  async function tagAsScheduled() {
+  async function schedulePost() {
+    if (isSubmitting) return
     setIsSubmitting(true)
+    let savedEntry: ScheduledEntry | undefined = undefined
     try {
-      const scheduledDate = item.isoDate || iso
-      const scheduledTime = item.time || "09:00"
+      const scheduledDate = item.isoDate || iso || out?.scheduledDate
+      const scheduledTime = item.time || out?.scheduledTime || "09:00"
 
-      if (out?.recordId) {
-        const patchRes = await fetch("/api/content-outputs", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            recordId: out.recordId,
-            tableId: out.tableId,
-            status: "Scheduled",
-            scheduledIso: scheduledDate,
-            time: scheduledTime,
-          }),
-        })
-        if (!patchRes.ok) {
-          const errText = await patchRes.text().catch(() => "")
-          throw new Error(errText || `Failed to tag as scheduled (HTTP ${patchRes.status})`)
-        }
+      if (!out?.recordId || !out?.tableId) {
+        throw new Error("Missing Airtable record or table identity for this item.")
       }
 
-      const scheduledEntry: ScheduledEntry = {
-        recordId: out?.recordId || item.key,
-        tableId: out?.tableId || "",
-        isoDate: scheduledDate,
-        rowKey: item.key,
-        category: item.type,
-        idea: item.idea,
-        time: scheduledTime,
-        fixture: item.fixture,
-        foreignKeyId: item.cid || out?.foreignKeyId || "",
-        status: "Scheduled",
-        caption: caption,
-        airtableUrl: out?.airtableUrl,
-        itemNames: out?.itemNames,
-        mediaUrl: currentSlides[0] || slides[0] || out?.videoUrl,
-        slides: currentSlides.length > 0 ? currentSlides : slides,
-        mediaType: isVideo ? "video" : "image",
-        updatedAt: new Date().toISOString(),
+      const mediaUrl = currentSlides[0] || slides[0] || out?.videoUrl
+      const effectiveSlides =
+        currentSlides.length > 0
+          ? currentSlides
+          : slides.length > 0
+          ? slides
+          : mediaUrl
+          ? [mediaUrl]
+          : []
+
+      if (!mediaUrl && effectiveSlides.length === 0) {
+        throw new Error("No image or video attachment found to schedule.")
       }
+
+      // Persist directly to Schedules API (validates future PHT time, locks snapshot in Postgres, updates Airtable)
+      const schedRes = await fetch("/api/schedules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recordId: out.recordId,
+          tableId: out.tableId,
+          isoDate: scheduledDate,
+          rowKey: item.key,
+          category: item.type,
+          idea: item.idea,
+          time: scheduledTime,
+          fixture: item.fixture,
+          foreignKeyId: item.cid || out.foreignKeyId || "",
+          status: "Scheduled",
+          caption: caption,
+          airtableUrl: out.airtableUrl,
+          itemNames: out.itemNames,
+          mediaUrl: mediaUrl,
+          slides: effectiveSlides,
+          mediaType: isVideo ? "video" : "image",
+        }),
+      })
+
+      if (!schedRes.ok) {
+        const errData = await schedRes.json().catch(() => ({}))
+        throw new Error(
+          errData.error || errData.message || `Failed to save schedule (HTTP ${schedRes.status})`
+        )
+      }
+
+      const schedData = await schedRes.json()
+      savedEntry = schedData.entry
 
       setStatusByKey((prev) => ({ ...prev, [item.key]: "Scheduled" }))
-      onScheduleSuccess?.(item.key, "Scheduled", scheduledEntry)
-      setSuccessTitle(`STATUS TAGGED AS "SCHEDULED"!`)
+      onScheduleSuccess?.(item.key, "Scheduled", savedEntry)
+      setSuccessTitle("SUCCESSFULLY UPDATED & SCHEDULED!")
       setShowSuccess(true)
       window.setTimeout(() => {
         setShowSuccess(false)
         onClose()
-      }, 1500)
+      }, 1600)
     } catch (err: any) {
-      alert(`Failed to tag as scheduled: ${err?.message || err}`)
+      console.error("Error scheduling:", err)
+      alert(`Scheduling Failed: ${err?.message || "Please verify your Airtable connection and permissions."}`)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  async function untagAsScheduled() {
-    setIsSubmitting(true)
-    try {
-      if (out?.recordId) {
-        const patchRes = await fetch("/api/content-outputs", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            recordId: out.recordId,
-            tableId: out.tableId,
-            status: "Completed",
-          }),
-        })
-        if (!patchRes.ok) {
-          const errText = await patchRes.text().catch(() => "")
-          throw new Error(errText || `Failed to untag scheduled status (HTTP ${patchRes.status})`)
-        }
-      }
+  const tagAsScheduled = schedulePost
+  const confirmSchedule = schedulePost
 
-      setStatusByKey((prev) => ({ ...prev, [item.key]: "Completed" }))
-      onScheduleSuccess?.(item.key, "Completed", undefined)
-      setSuccessTitle(`STATUS REVERTED TO "COMPLETED"!`)
-      setShowSuccess(true)
-      window.setTimeout(() => {
-        setShowSuccess(false)
-        onClose()
-      }, 1500)
-    } catch (err: any) {
-      alert(`Failed to untag: ${err?.message || err}`)
-    } finally {
-      setIsSubmitting(false)
-    }
+  async function untagAsScheduled() {
+    return cancelSchedule()
   }
 
   async function confirmStatusChange() {
@@ -327,54 +317,40 @@ export function ContentPreviewModal({
       return
     }
 
+    if (finalStatus === "Scheduled") {
+      return schedulePost()
+    }
+
     setIsSubmitting(true)
     try {
-      const scheduledDate = finalStatus === "Scheduled" ? (item.isoDate || iso) : undefined
-      const scheduledTime = finalStatus === "Scheduled" ? (item.time || "09:00") : undefined
-
-      if (out?.recordId) {
-        const patchRes = await fetch("/api/content-outputs", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            recordId: out.recordId,
-            tableId: out.tableId,
-            status: finalStatus,
-            scheduledIso: scheduledDate,
-            time: scheduledTime,
-          }),
-        })
-        if (!patchRes.ok) {
-          const errText = await patchRes.text().catch(() => "")
-          throw new Error(errText || `Failed to update status (HTTP ${patchRes.status})`)
-        }
-      }
-
-      let scheduledEntry: ScheduledEntry | undefined = undefined
-      if (finalStatus === "Scheduled") {
-        scheduledEntry = {
-          recordId: out?.recordId || item.key,
-          tableId: out?.tableId || "",
-          isoDate: scheduledDate!,
-          rowKey: item.key,
-          category: item.type,
-          idea: item.idea,
-          time: scheduledTime || null,
-          fixture: item.fixture,
-          foreignKeyId: item.cid || out?.foreignKeyId || "",
-          status: "Scheduled",
-          caption: caption,
-          airtableUrl: out?.airtableUrl,
-          itemNames: out?.itemNames,
-          mediaUrl: currentSlides[0] || slides[0] || out?.videoUrl,
-          slides: currentSlides.length > 0 ? currentSlides : slides,
-          mediaType: isVideo ? "video" : "image",
-          updatedAt: new Date().toISOString(),
+      if (out?.recordId && out?.tableId) {
+        // If resetting back to Completed, cancel any active scheduled job
+        if (finalStatus === "Completed") {
+          await fetch(
+            `/api/schedules?tableId=${encodeURIComponent(out.tableId)}&recordId=${encodeURIComponent(
+              out.recordId
+            )}`,
+            { method: "DELETE" }
+          )
+        } else {
+          const patchRes = await fetch("/api/content-outputs", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              recordId: out.recordId,
+              tableId: out.tableId,
+              status: finalStatus,
+            }),
+          })
+          if (!patchRes.ok) {
+            const errText = await patchRes.text().catch(() => "")
+            throw new Error(errText || `Failed to update status (HTTP ${patchRes.status})`)
+          }
         }
       }
 
       setStatusByKey((prev) => ({ ...prev, [item.key]: finalStatus }))
-      onScheduleSuccess?.(item.key, finalStatus, scheduledEntry)
+      onScheduleSuccess?.(item.key, finalStatus, undefined)
       setSuccessTitle(`STATUS UPDATED TO "${finalStatus.toUpperCase()}"!`)
       setShowSuccess(true)
       window.setTimeout(() => {
@@ -385,60 +361,6 @@ export function ContentPreviewModal({
       }, 1500)
     } catch (err: any) {
       alert(`Failed to update status: ${err?.message || err}`)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  async function confirmSchedule() {
-    setIsSubmitting(true)
-    let savedEntry: ScheduledEntry | undefined = undefined
-    try {
-      const finalStatus = status || "Scheduled"
-
-      // Persist directly to Schedules API (which validates PHT time and updates Airtable)
-      const schedRes = await fetch("/api/schedules", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          recordId: out?.recordId,
-          tableId: out?.tableId,
-          isoDate: iso,
-          rowKey: item.key,
-          category: item.type,
-          idea: item.idea,
-          time: item.time,
-          fixture: item.fixture,
-          foreignKeyId: item.cid || out?.foreignKeyId || "",
-          status: finalStatus,
-          caption: caption,
-          airtableUrl: out?.airtableUrl,
-          itemNames: out?.itemNames,
-          mediaUrl: currentSlides[0] || slides[0] || out?.videoUrl,
-          slides: currentSlides.length > 0 ? currentSlides : slides,
-          mediaType: isVideo ? "video" : "image",
-        }),
-      })
-
-      if (!schedRes.ok) {
-        const errData = await schedRes.json().catch(() => ({}))
-        throw new Error(errData.error || errData.message || `Failed to save schedule (HTTP ${schedRes.status})`)
-      }
-
-      const schedData = await schedRes.json()
-      savedEntry = schedData.entry
-
-      setStatusByKey((prev) => ({ ...prev, [item.key]: finalStatus }))
-      onScheduleSuccess?.(item.key, finalStatus, savedEntry)
-      setSuccessTitle("SUCCESSFULLY UPDATED & SCHEDULED!")
-      setShowSuccess(true)
-      window.setTimeout(() => {
-        setShowSuccess(false)
-        onClose()
-      }, 1600)
-    } catch (err: any) {
-      console.error("Error scheduling:", err)
-      alert(`Scheduling Failed: ${err?.message || "Please verify your Airtable connection and permissions."}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -992,28 +914,16 @@ export function ContentPreviewModal({
               )}
 
               {status === "Scheduled" ? (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    disabled={isSubmitting || isPostingMeta}
-                    onClick={tagAsScheduled}
-                    className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-emerald-600 px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition-colors hover:bg-emerald-500 disabled:opacity-50"
-                    title="Save schedule directly to Airtable without Meta posting"
-                  >
-                    <Check className="h-4 w-4" strokeWidth={2.5} />
-                    <span>{isSubmitting ? "SAVING..." : "SAVE SCHEDULE (AIRTABLE ONLY)"}</span>
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isSubmitting || isPostingMeta}
-                    onClick={confirmSchedule}
-                    className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-green-400 px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-black shadow-md transition-colors hover:bg-green-500 disabled:opacity-50"
-                    title="Schedule post via Meta Graph API"
-                  >
-                    <CalendarCheck className="h-4 w-4" />
-                    <span>{isSubmitting ? "SAVING TO META API..." : "SAVE META SCHEDULE"}</span>
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  disabled={isSubmitting || isPostingMeta}
+                  onClick={schedulePost}
+                  className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-emerald-600 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition-colors hover:bg-emerald-500 disabled:opacity-50"
+                  title="Save changes and update scheduled post in queue"
+                >
+                  <Check className="h-4 w-4" strokeWidth={2.5} />
+                  <span>{isSubmitting ? "SAVING..." : "UPDATE SCHEDULE"}</span>
+                </button>
               ) : (
                 <button
                   type="button"
