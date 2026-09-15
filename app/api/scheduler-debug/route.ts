@@ -5,6 +5,7 @@ import { getMetaConfig, publishToInstagram } from "@/lib/meta-api"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
+export const maxDuration = 300
 
 export async function GET() {
   try {
@@ -89,38 +90,43 @@ export async function GET() {
     }> = []
 
     try {
-      const sampleTables = getAllConfiguredTables().slice(0, 8)
-      for (const tbl of sampleTables) {
-        if (candidateFixtures.length >= 12) break
-        const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tbl.tableId}?maxRecords=3`
-        const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
-          next: { revalidate: 60 },
-        })
-        if (!res.ok) continue
-        const data = await res.json()
-        for (const r of data.records || []) {
-          const fields = r.fields || {}
-          let mediaUrl = ""
-          for (const val of Object.values(fields)) {
-            if (Array.isArray(val) && val[0]?.url) {
-              mediaUrl = val[0].url
-              break
-            }
-          }
-          if (mediaUrl) {
-            candidateFixtures.push({
-              recordId: r.id,
-              tableId: tbl.tableId,
-              category: tbl.category,
-              idea: tbl.idea,
-              itemName: fields["Item Name"] || fields["ID"] || fields["Foreign Key ID"] || tbl.idea,
-              mediaUrl,
-              status: fields["Status"] || "Completed",
+      const sampleTables = getAllConfiguredTables().slice(0, 4)
+      await Promise.all(
+        sampleTables.map(async (tbl) => {
+          try {
+            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tbl.tableId}?maxRecords=3`
+            const res = await fetch(url, {
+              headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
+              next: { revalidate: 60 },
             })
+            if (!res.ok) return
+            const data = await res.json()
+            for (const r of data.records || []) {
+              const fields = r.fields || {}
+              let mediaUrl = ""
+              for (const val of Object.values(fields)) {
+                if (Array.isArray(val) && val[0]?.url) {
+                  mediaUrl = val[0].url
+                  break
+                }
+              }
+              if (mediaUrl && candidateFixtures.length < 12) {
+                candidateFixtures.push({
+                  recordId: r.id,
+                  tableId: tbl.tableId,
+                  category: tbl.category,
+                  idea: tbl.idea,
+                  itemName: fields["Item Name"] || fields["ID"] || fields["Foreign Key ID"] || tbl.idea,
+                  mediaUrl,
+                  status: fields["Status"] || "Completed",
+                })
+              }
+            }
+          } catch {
+            // ignore individual fixture fetch failure
           }
-        }
-      }
+        })
+      )
     } catch {
       // Non-blocking fallback
     }

@@ -156,7 +156,10 @@ export default function SchedulerDebugPage() {
     setScheduledTime(time)
   }
 
+  const inFlightRef = useRef(false)
   const loadDiagnostics = useCallback(async (isSilent = false) => {
+    if (inFlightRef.current) return
+    inFlightRef.current = true
     if (!isSilent) setRefreshing(true)
     try {
       const res = await fetch("/api/scheduler-debug", { cache: "no-store" })
@@ -176,6 +179,7 @@ export default function SchedulerDebugPage() {
     } catch (err) {
       console.error("Failed to load scheduler debug data:", err)
     } finally {
+      inFlightRef.current = false
       setLoading(false)
       setRefreshing(false)
     }
@@ -189,7 +193,7 @@ export default function SchedulerDebugPage() {
     if (!autoRefresh) return
     const timer = setInterval(() => {
       loadDiagnostics(true)
-    }, 10000)
+    }, 20000)
     return () => clearInterval(timer)
   }, [autoRefresh, loadDiagnostics])
 
@@ -505,7 +509,12 @@ export default function SchedulerDebugPage() {
                 <InstagramIcon className="h-4 w-4 text-pink-500" />
                 Meta Graph API
               </span>
-              {system?.metaStatus?.verified ? (
+              {loading && !system ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-blue-950/80 border border-blue-700/50 px-2 py-0.5 text-[10px] font-semibold text-blue-300">
+                  <RefreshCw className="h-3 w-3 animate-spin text-blue-400" />
+                  CHECKING...
+                </span>
+              ) : system?.metaStatus?.verified ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/80 border border-emerald-700/50 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
                   <CheckCircle2 className="h-3 w-3 text-emerald-400" />
                   VERIFIED LIVE
@@ -519,7 +528,9 @@ export default function SchedulerDebugPage() {
             </div>
 
             <div className="mt-3">
-              {system?.metaStatus?.verified ? (
+              {loading && !system ? (
+                <div className="text-xs text-neutral-400">Verifying Meta Graph API connection...</div>
+              ) : system?.metaStatus?.verified ? (
                 <div>
                   <div className="text-base font-bold text-white flex items-center gap-1.5">
                     @{system.metaStatus.username}
@@ -546,7 +557,12 @@ export default function SchedulerDebugPage() {
                 <Lock className="h-4 w-4 text-amber-500" />
                 Runner Security
               </span>
-              {system?.cronSecretConfigured ? (
+              {loading && !system ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-blue-950/80 border border-blue-700/50 px-2 py-0.5 text-[10px] font-semibold text-blue-300">
+                  <RefreshCw className="h-3 w-3 animate-spin text-blue-400" />
+                  CHECKING...
+                </span>
+              ) : system?.cronSecretConfigured ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/80 border border-emerald-700/50 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
                   <CheckCircle2 className="h-3 w-3 text-emerald-400" />
                   ACTIVE
@@ -562,10 +578,10 @@ export default function SchedulerDebugPage() {
             <div className="mt-3">
               <div className="text-xs text-neutral-400">CRON_SECRET Token:</div>
               <div className="font-mono text-sm font-semibold text-amber-300 truncate mt-0.5">
-                {system?.cronSecretPreview || "None"}
+                {loading && !system ? "Checking..." : (system?.cronSecretPreview || "None")}
               </div>
               <div className="mt-2 text-[11px] text-neutral-500">
-                Matches Bearer header in cron-job.org
+                Secured via Vercel Pro Cron
               </div>
             </div>
           </div>
@@ -577,7 +593,12 @@ export default function SchedulerDebugPage() {
                 <Database className="h-4 w-4 text-sky-500" />
                 Airtable Base
               </span>
-              {system?.airtableConfigured ? (
+              {loading && !system ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-blue-950/80 border border-blue-700/50 px-2 py-0.5 text-[10px] font-semibold text-blue-300">
+                  <RefreshCw className="h-3 w-3 animate-spin text-blue-400" />
+                  CHECKING...
+                </span>
+              ) : system?.airtableConfigured ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/80 border border-emerald-700/50 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
                   <CheckCircle2 className="h-3 w-3 text-emerald-400" />
                   CONNECTED
@@ -592,7 +613,7 @@ export default function SchedulerDebugPage() {
             <div className="mt-3">
               <div className="text-xs text-neutral-400">Base ID:</div>
               <div className="font-mono text-sm font-semibold text-sky-300 truncate mt-0.5">
-                {system?.airtableBaseId}
+                {loading && !system ? "Connecting..." : (system?.airtableBaseId || "None")}
               </div>
               <div className="mt-2 text-[11px] text-neutral-500">
                 79 verified table endpoints active

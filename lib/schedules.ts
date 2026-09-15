@@ -89,36 +89,60 @@ export function getLockedForeignKeys(schedules: Record<string, ScheduledEntry[]>
   return locked
 }
 
+let schedulesCache: {
+  data: {
+    schedules: Record<string, ScheduledEntry[]>
+    failedTables: TableFetchError[]
+  }
+  timestamp: number
+} | null = null
+
+let inFlightPull: Promise<{
+  schedules: Record<string, ScheduledEntry[]>
+  failedTables: TableFetchError[]
+}> | null = null
+
+export function clearSchedulesCache() {
+  schedulesCache = null
+  inFlightPull = null
+}
+
 export async function pullAirtableSchedules(): Promise<Record<string, ScheduledEntry[]>> {
   const { schedules } = await pullAirtableSchedulesWithDiagnostics()
   return schedules
 }
 
-export async function pullAirtableSchedulesWithDiagnostics(): Promise<{
+export async function pullAirtableSchedulesWithDiagnostics(options?: { forceFresh?: boolean }): Promise<{
   schedules: Record<string, ScheduledEntry[]>
   failedTables: TableFetchError[]
 }> {
-  const tables = getAllConfiguredTables()
-  const out: Record<string, ScheduledEntry[]> = {}
-  const failedTables: TableFetchError[] = []
+  if (!options?.forceFresh && schedulesCache && Date.now() - schedulesCache.timestamp < 30_000) {
+    return schedulesCache.data
+  }
+  if (!options?.forceFresh && inFlightPull) {
+    return inFlightPull
+  }
 
-  // Bound concurrent work; the shared reader paces every page per base within this instance.
-  const BATCH_SIZE = 5
-  for (let i = 0; i < tables.length; i += BATCH_SIZE) {
-    if (i > 0) {
-      await new Promise((resolve) => setTimeout(resolve, 220))
-    }
-    const batch = tables.slice(i, i + BATCH_SIZE)
-    await Promise.all(
-      batch.map(async (cfg) => {
-        try {
-          // Fetch both Scheduled and Posted records so calendar renders locked foreign keys accurately
-          const records = await readAirtableRecords({
-            baseId: AIRTABLE_BASE_ID,
-            tableId: cfg.tableId,
-            token: AIRTABLE_TOKEN,
-            filterByFormula: "OR(Status='Scheduled', Status='Posted')",
-          })
+  const pullPromise = (async () => {
+    try {
+      const tables = getAllConfiguredTables()
+      const out: Record<string, ScheduledEntry[]> = {}
+      const failedTables: TableFetchError[] = []
+
+      // Bound concurrent work; the shared reader paces every page per base within this instance.
+      const BATCH_SIZE = 10
+      for (let i = 0; i < tables.length; i += BATCH_SIZE) {
+        const batch = tables.slice(i, i + BATCH_SIZE)
+        await Promise.all(
+          batch.map(async (cfg) => {
+            try {
+              // Fetch both Scheduled and Posted records so calendar renders locked foreign keys accurately
+              const records = await readAirtableRecords({
+                baseId: AIRTABLE_BASE_ID,
+                tableId: cfg.tableId,
+                token: AIRTABLE_TOKEN,
+                filterByFormula: "OR(Status='Scheduled', Status='Posted')",
+              })
           for (const r of records) {
             const fields = r.fields || {}
             const dateVal =
@@ -181,11 +205,18 @@ export async function pullAirtableSchedulesWithDiagnostics(): Promise<{
             error: err instanceof AirtableReadError ? err.code : "READ_FAILED",
           })
         }
-      })
-    )
+      }))
+    }
+    const result = { schedules: out, failedTables }
+    schedulesCache = { data: result, timestamp: Date.now() }
+    return result
+  } finally {
+    inFlightPull = null
   }
+})()
 
-  return { schedules: out, failedTables }
+  inFlightPull = pullPromise
+  return pullPromise
 }
 
 export { syncAirtableRecord } from "@/server/airtable/write-schedule"
