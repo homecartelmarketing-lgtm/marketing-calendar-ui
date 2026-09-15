@@ -1,4 +1,10 @@
-# HomeCartel Scheduler Repair — revision 3
+# HomeCartel Scheduler Repair — revision 3 (historical)
+
+> Archived on 2026-09-15. This document records an earlier code audit and is not
+> the current implementation plan. Use
+> [`../operations/implementation-progress.md`](../operations/implementation-progress.md)
+> and the active plans under [`../superpowers/plans/`](../superpowers/plans/) for
+> current status and remaining work.
 
 *Reviewed against the code after commit `2630494`.*
 

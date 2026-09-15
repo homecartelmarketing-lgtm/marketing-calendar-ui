@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { publishToInstagram } from "@/lib/meta-api"
-import { pullAirtableSchedules, ScheduledEntry } from "@/lib/schedules"
-import { AIRTABLE_BASE_ID, AIRTABLE_TOKEN } from "@/lib/tables-config"
+import { syncAirtableRecord } from "@/lib/schedules"
+import {
+  claimDueJobs,
+  recordJobSuccess,
+  recordJobFailure,
+} from "@/server/automation/jobs"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 300
-
-const activePublishLocks = new Set<string>()
 
 function isAuthorized(request: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET?.trim()
@@ -16,194 +18,25 @@ function isAuthorized(request: NextRequest): boolean {
     return false
   }
 
-  // Check Authorization: Bearer <secret>
+  // Accept Bearer <secret> only; query parameters are disabled for safety
   const authHeader = request.headers.get("authorization")
   if (authHeader) {
     const token = authHeader.replace(/^Bearer\s+/i, "").trim()
     if (token === cronSecret) return true
   }
 
-  // Check query parameter ?secret=<secret> or ?key=<secret>
-  const { searchParams } = new URL(request.url)
-  const querySecret = searchParams.get("secret") || searchParams.get("key")
-  if (querySecret === cronSecret) return true
-
   return false
 }
 
-async function updateAirtableRecordStatus(tableId: string, recordId: string, status: string): Promise<void> {
-  const res = await fetch(
-    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}/${recordId}`,
-    {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ fields: { Status: status } }),
-    }
-  )
-
-  if (!res.ok) {
-    const errBody = await res.text().catch(() => "")
-    throw new Error(`Failed to update Airtable record ${recordId} to status '${status}': HTTP ${res.status} ${errBody}`)
-  }
+function isKillSwitchActive(): boolean {
+  return process.env.AUTOMATION_KILL_SWITCH === "true"
 }
 
-async function runScheduledJobs(originUrl: string) {
-  // 1. Fetch live schedules directly from Airtable (Single Source of Truth)
-  const schedules = await pullAirtableSchedules()
-  const now = new Date()
-  const results: {
-    key: string
-    isoDate: string
-    time: string | null
-    category: string
-    idea: string
-    action: "published" | "pending_future" | "error"
-    timeDiffMinutes?: number
-    details?: any
-  }[] = []
-
-  for (const [isoDate, entries] of Object.entries(schedules)) {
-    for (const entry of entries) {
-      if (entry.status !== "Scheduled") continue
-
-      // Parse scheduled time strictly in Philippine Time (PHT: UTC+08:00)
-      const timePart = (entry.time || "00:00").padStart(5, "0")
-      const scheduledDatePht = new Date(`${isoDate}T${timePart}:00+08:00`)
-      const timeDiffMinutes = Math.round((scheduledDatePht.getTime() - now.getTime()) / 60000)
-
-      // If scheduled time has arrived or already passed
-      if (now.getTime() >= scheduledDatePht.getTime()) {
-        try {
-          let mediaUrl = entry.mediaUrl || ""
-
-          // Fallback: If mediaUrl wasn't directly found in record, query content-outputs
-          if (!mediaUrl) {
-            try {
-              const outRes = await fetch(
-                new URL(
-                  `/api/content-outputs?category=${encodeURIComponent(entry.category)}&type=${encodeURIComponent(entry.idea)}`,
-                  originUrl
-                ).toString()
-              )
-              if (outRes.ok) {
-                const outData = await outRes.json()
-                const matchedItem = (outData.items || []).find(
-                  (it: any) => it.recordId === entry.recordId || it.foreignKeyId === entry.foreignKeyId
-                )
-                mediaUrl = matchedItem?.slides?.[0] || matchedItem?.videoUrl || ""
-              }
-            } catch (fetchErr) {
-              console.warn("Could not retrieve mediaUrl from outputs fallback:", fetchErr)
-            }
-          }
-
-          if (!mediaUrl) {
-            results.push({
-              key: entry.rowKey,
-              isoDate,
-              time: entry.time,
-              category: entry.category,
-              idea: entry.idea,
-              action: "error",
-              details: "No image or video URL found for this fixture",
-            })
-            continue
-          }
-
-          // Concurrency lock: In-memory lock + best-effort Airtable status update
-          if (activePublishLocks.has(entry.recordId)) {
-            continue
-          }
-          activePublishLocks.add(entry.recordId)
-
-          try {
-            await updateAirtableRecordStatus(entry.tableId, entry.recordId, "Publishing")
-          } catch (lockErr: any) {
-            // If Airtable schema doesn't have 'Publishing' option (HTTP 422), log warning and proceed with memory lock
-            console.warn(`[Runner Lock] Could not set 'Publishing' status on Airtable (proceeding with memory lock): ${lockErr?.message || lockErr}`)
-          }
-
-          // Publish to Instagram (Stories as STORIES, Reels as REELS, Feeds as VIDEO/image)
-          const publishRes = await publishToInstagram({
-            category: entry.category,
-            mediaUrl,
-            mediaUrls: entry.slides && entry.slides.length > 0 ? entry.slides : [mediaUrl],
-            mediaType: entry.category === "Reels" ? "video" : (entry.mediaType || "image"),
-            caption: entry.caption,
-          })
-
-          if (publishRes.success) {
-            // Flip Airtable status to 'Posted' and verify successful write
-            try {
-              await updateAirtableRecordStatus(entry.tableId, entry.recordId, "Posted")
-            } catch (postErr: any) {
-              console.error(`[Runner Status Error] Meta succeeded but failed to update status to Posted on ${entry.recordId}:`, postErr)
-            }
-
-            results.push({
-              key: entry.rowKey,
-              isoDate,
-              time: entry.time,
-              category: entry.category,
-              idea: entry.idea,
-              action: "published",
-              details: publishRes,
-            })
-          } else {
-            // Update status to 'For Manual' to prevent infinite publish loop on failing items
-            try {
-              await updateAirtableRecordStatus(entry.tableId, entry.recordId, "For Manual")
-            } catch {
-              await updateAirtableRecordStatus(entry.tableId, entry.recordId, "Completed").catch(() => {})
-            }
-
-            results.push({
-              key: entry.rowKey,
-              isoDate,
-              time: entry.time,
-              category: entry.category,
-              idea: entry.idea,
-              action: "error",
-              details: publishRes.error,
-            })
-          }
-        } catch (err: any) {
-          // On unhandled exception, release lock to 'For Manual'
-          await updateAirtableRecordStatus(entry.tableId, entry.recordId, "For Manual").catch(() => {
-            updateAirtableRecordStatus(entry.tableId, entry.recordId, "Completed").catch(() => {})
-          })
-
-          results.push({
-            key: entry.rowKey,
-            isoDate,
-            time: entry.time,
-            category: entry.category,
-            idea: entry.idea,
-            action: "error",
-            details: err?.message || err,
-          })
-        } finally {
-          activePublishLocks.delete(entry.recordId)
-        }
-      } else {
-        // Pending future schedule
-        results.push({
-          key: entry.rowKey,
-          isoDate,
-          time: entry.time,
-          category: entry.category,
-          idea: entry.idea,
-          action: "pending_future",
-          timeDiffMinutes,
-        })
-      }
-    }
-  }
-
-  return results
+function isLivePublishAllowed(): boolean {
+  // Safe default: live publishing is disabled outside Production unless explicitly enabled
+  if (process.env.NODE_ENV === "production") return true
+  if (process.env.ENABLE_AUTOMATION_SCHEDULING === "true") return true
+  return false
 }
 
 export async function GET(request: NextRequest) {
@@ -211,28 +44,187 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: "Unauthorized: Invalid or missing secret token",
+        message: "Unauthorized: Invalid or missing Bearer authorization token",
       },
       { status: 401 }
     )
   }
 
-  try {
-    const originUrl = request.nextUrl.origin
-    const results = await runScheduledJobs(originUrl)
+  if (isKillSwitchActive()) {
+    return NextResponse.json({
+      success: true,
+      paused: true,
+      message: "Automation runner paused by AUTOMATION_KILL_SWITCH",
+      summary: { claimed: 0, published: 0, retrying: 0, manual: 0, errors: 0 },
+      results: [],
+    })
+  }
 
-    const publishedCount = results.filter((r) => r.action === "published").length
-    const pendingCount = results.filter((r) => r.action === "pending_future").length
-    const errorCount = results.filter((r) => r.action === "error").length
+  try {
+    const liveAllowed = isLivePublishAllowed()
+    const allowlistRecords = process.env.AUTOMATION_ALLOWLIST_RECORDS
+      ? process.env.AUTOMATION_ALLOWLIST_RECORDS.split(",").map((s) => s.trim()).filter(Boolean)
+      : null
+
+    // Atomically claim due jobs from Postgres
+    const dueJobs = await claimDueJobs({ limit: 10, leaseMinutes: 5 })
+
+    const results: {
+      jobId: string
+      recordId: string
+      category: string
+      action: "published" | "simulated" | "retry_scheduled" | "manual_required" | "skipped_allowlist"
+      details?: any
+    }[] = []
+
+    for (const job of dueJobs) {
+      // Check allowlist if configured
+      if (allowlistRecords && !allowlistRecords.includes(job.record_id)) {
+        results.push({
+          jobId: job.id,
+          recordId: job.record_id,
+          category: job.category,
+          action: "skipped_allowlist",
+          details: "Record not in AUTOMATION_ALLOWLIST_RECORDS",
+        })
+        continue
+      }
+
+      // Parse media URLs safely
+      let mediaUrls: string[] = []
+      if (Array.isArray(job.media_urls)) {
+        mediaUrls = job.media_urls
+      } else if (typeof job.media_urls === "string") {
+        try {
+          mediaUrls = JSON.parse(job.media_urls)
+        } catch {
+          mediaUrls = [job.media_url]
+        }
+      }
+      if (mediaUrls.length === 0 && job.media_url) {
+        mediaUrls = [job.media_url]
+      }
+
+      // Content validation
+      if (mediaUrls.length === 0 || !job.media_url) {
+        await recordJobFailure(job.id, {
+          message: "No media URL provided for scheduled job",
+          isPermanent: true,
+        })
+        try {
+          await syncAirtableRecord(job.table_id, job.record_id, "For Manual", job.scheduled_iso, job.time_pht)
+        } catch {}
+        results.push({
+          jobId: job.id,
+          recordId: job.record_id,
+          category: job.category,
+          action: "manual_required",
+          details: "Missing media URL",
+        })
+        continue
+      }
+
+      // Execute Instagram publish (or simulate if outside production without explicit flag)
+      if (!liveAllowed && process.env.SIMULATE !== "0") {
+        // Safe simulation outside production
+        const simId = `simulated_meta_${Date.now()}`
+        await recordJobSuccess(job.id, [simId])
+        try {
+          await syncAirtableRecord(job.table_id, job.record_id, "Posted", job.scheduled_iso, job.time_pht)
+        } catch (syncErr: any) {
+          console.warn("[Runner Simulation Sync Warning]", syncErr?.message)
+        }
+        results.push({
+          jobId: job.id,
+          recordId: job.record_id,
+          category: job.category,
+          action: "simulated",
+          details: { id: simId, isSimulated: true },
+        })
+        continue
+      }
+
+      // Live publish to Meta
+      const publishRes = await publishToInstagram({
+        category: job.category,
+        mediaUrl: job.media_url,
+        mediaUrls,
+        mediaType: job.category === "Reels" ? "video" : job.media_type === "video" ? "video" : "image",
+        caption: job.caption,
+      })
+
+      if (publishRes.success) {
+        const publicationId = publishRes.id || "published"
+
+        // 1. Persist publication ID in Postgres BEFORE updating Airtable status
+        await recordJobSuccess(job.id, [publicationId])
+
+        // 2. Update Airtable status to Posted
+        try {
+          await syncAirtableRecord(job.table_id, job.record_id, "Posted", job.scheduled_iso, job.time_pht)
+        } catch (postErr: any) {
+          console.error(
+            `[Runner Status Error] Meta succeeded (${publicationId}) but failed to update Airtable status to Posted on ${job.record_id}:`,
+            postErr
+          )
+        }
+
+        results.push({
+          jobId: job.id,
+          recordId: job.record_id,
+          category: job.category,
+          action: "published",
+          details: publishRes,
+        })
+      } else {
+        // Determine if error is permanent (invalid media, missing token) or temporary (timeout, rate limit)
+        const errMsg = publishRes.error || "Unknown Meta publish error"
+        const isPermanent =
+          errMsg.toLowerCase().includes("permission") ||
+          errMsg.toLowerCase().includes("invalid") ||
+          errMsg.toLowerCase().includes("unsupported")
+
+        const failureResult = await recordJobFailure(job.id, {
+          message: errMsg,
+          isPermanent,
+        })
+
+        if (failureResult.nextStatus === "For Manual") {
+          try {
+            await syncAirtableRecord(job.table_id, job.record_id, "For Manual", job.scheduled_iso, job.time_pht)
+          } catch {}
+          results.push({
+            jobId: job.id,
+            recordId: job.record_id,
+            category: job.category,
+            action: "manual_required",
+            details: errMsg,
+          })
+        } else {
+          results.push({
+            jobId: job.id,
+            recordId: job.record_id,
+            category: job.category,
+            action: "retry_scheduled",
+            details: `Retry in ${failureResult.retryInMinutes}m: ${errMsg}`,
+          })
+        }
+      }
+    }
+
+    const publishedCount = results.filter((r) => r.action === "published" || r.action === "simulated").length
+    const retryCount = results.filter((r) => r.action === "retry_scheduled").length
+    const manualCount = results.filter((r) => r.action === "manual_required").length
 
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
       summary: {
+        claimed: dueJobs.length,
         published: publishedCount,
-        pending: pendingCount,
-        errors: errorCount,
-        totalEvaluated: results.length,
+        retrying: retryCount,
+        manual: manualCount,
+        errors: manualCount,
       },
       results,
     })

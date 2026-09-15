@@ -25,7 +25,7 @@
 **Files:** root deployment/setup guides, duplicate scheduler plans, `docs/deployment/`, `docs/integrations/`, `docs/archive/`.
 
 - [ ] Read and sanitize each guide; migrate active Vercel/Zoho guides to their canonical folders.
-- [ ] Preserve a single historical scheduler repair plan after comparing duplicates.
+- [x] Preserve a single historical scheduler repair plan after comparing duplicates.
 - [ ] Label Catalyst and local Cloudflare deployment status explicitly; retain configuration until support is resolved.
 - [ ] Update every internal link, including archive provenance and companion specs/plans.
 - [ ] Keep one package manager after a clean npm install/build; document why the second lockfile is removed.
