@@ -21,6 +21,7 @@ The overall automation goal is active. This record distinguishes implemented fix
 - Added regression test suite `tests/modal-mutations.test.tsx` (36 total tests passing across 7 test files).
 - Bounded scheduler-debug Meta, Airtable schedule, and candidate-media checks so a stalled provider cannot leave the page loading indefinitely; the UI now distinguishes checking, connected, and failed diagnostics without exposing a Cron secret preview.
 - Added the two implementation plans, root README, documentation index, Git workflow, and project AGENTS rules.
+- Archived the historical scheduler repair audit and removed its byte-for-byte duplicate from `Claude outputs/`.
 
 ## Verification
 
