@@ -2,15 +2,26 @@ import { AIRTABLE_BASE_ID, AIRTABLE_TOKEN } from "@/lib/tables-config"
 
 export class ScheduleValidationError extends Error {}
 
+export function normalizePhtTime(time?: string | null): string {
+  if (!time) return ""
+  const trimmed = time.trim()
+  const match = trimmed.match(/^(\d{1,2}):([0-5]\d)$/)
+  if (!match) return trimmed
+  const hour = Number(match[1])
+  if (hour < 0 || hour > 23) return trimmed
+  return `${String(hour).padStart(2, "0")}:${match[2]}`
+}
+
 export function phtScheduleTimestamp(isoDate?: string, time?: string | null): string {
-  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate) || !time || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) {
+  const effectiveTime = normalizePhtTime(time)
+  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate) || !effectiveTime || !/^([01]\d|2[0-3]):[0-5]\d$/.test(effectiveTime)) {
     throw new ScheduleValidationError("A valid date and time (YYYY-MM-DD, HH:mm PHT) are required")
   }
   const day = new Date(`${isoDate}T00:00:00Z`)
   if (!Number.isFinite(day.getTime()) || day.toISOString().slice(0, 10) !== isoDate) {
     throw new ScheduleValidationError("The scheduled calendar date does not exist")
   }
-  return `${isoDate}T${time}:00+08:00`
+  return `${isoDate}T${effectiveTime}:00+08:00`
 }
 
 /** A successful schedule write must include its timestamp; never downgrade to status-only. */

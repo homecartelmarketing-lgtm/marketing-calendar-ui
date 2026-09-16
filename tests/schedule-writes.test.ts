@@ -41,6 +41,16 @@ it("writes Philippine wall-clock time with an explicit UTC offset", async () => 
   expect(saved).toEqual({ Status: "Scheduled", "Date and Time Scheduled": "2026-09-20T14:30:00+08:00" })
 })
 
+it("normalizes single-digit hour like '9:00' to '09:00' when writing schedule timestamp", async () => {
+  let saved: unknown
+  vi.stubGlobal("fetch", vi.fn(async (_url: string, init: RequestInit) => {
+    saved = JSON.parse(init.body as string).fields
+    return Response.json({ id: "recTest", fields: saved })
+  }))
+  await syncAirtableRecord("tblTest", "recTest", "Scheduled", "2026-09-20", "9:00")
+  expect(saved).toEqual({ Status: "Scheduled", "Date and Time Scheduled": "2026-09-20T09:00:00+08:00" })
+})
+
 it("cancels schedules with the legacy date column without leaving the old timestamp", async () => {
   let saved: unknown
   vi.stubGlobal("fetch", vi.fn(async (_url: string, init: RequestInit) => {

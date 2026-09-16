@@ -30,6 +30,13 @@ describe("Durable Scheduling & Queue Tests", () => {
       expect(result.scheduledTime.toISOString()).toBe("2026-09-15T02:30:00.000Z")
     })
 
+    it("normalizes and accepts single-digit hour PHT times like '9:00'", () => {
+      const result = validateFuturePhtSchedule("2026-09-15", "9:00", referenceNow)
+      expect(result.scheduledIso).toBe("2026-09-15")
+      expect(result.timePht).toBe("09:00")
+      expect(result.scheduledTime.toISOString()).toBe("2026-09-15T01:00:00.000Z")
+    })
+
     it("rejects a past PHT timestamp on the same day", () => {
       expect(() =>
         validateFuturePhtSchedule("2026-09-15", "07:30", referenceNow)
