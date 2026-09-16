@@ -224,3 +224,185 @@ describe("POST /api/meta-post route behavior", () => {
     expect(json.message).toContain("Media URL is required")
   })
 })
+
+describe("DayDetailModal Day & Night output handling", () => {
+  it("populates and enables Posted outputs with their Foreign Key ID", async () => {
+    const { DayDetailModal } = await import("@/components/day-detail-modal")
+    const mockOutput = {
+      recordId: "recqD0jcA15fGGgLI",
+      tableId: "tblSceuLVvLMQ6wWp",
+      category: "Feeds",
+      contentType: "Day & Night",
+      foreignKeyId: "DN-FEEDS-CH-1",
+      status: "Posted",
+      rawStatus: "Posted",
+      date: "2026-07-02",
+      time: "10:00",
+      mediaType: "image",
+      slides: ["https://media.example/day.jpg", "https://media.example/night.jpg"],
+      caption: "Day and Night Chandelier",
+      airtableUrl: "https://airtable.com/appTest/tblSceuLVvLMQ6wWp/recqD0jcA15fGGgLI",
+      itemNames: ["Danka Deux | Modern Chandelier"],
+      fixtureType: "Chandelier",
+    }
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (String(url).includes("/api/content-outputs")) {
+          return new Response(JSON.stringify({ items: [mockOutput] }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          })
+        }
+        return new Response(JSON.stringify({ error: "not found" }), { status: 404 })
+      })
+    )
+
+    render(
+      <DayDetailModal
+        iso="2026-07-02"
+        entries={[
+          {
+            type: "Feeds",
+            idea: "Day & Night",
+            time: "10:00",
+            status: "Posted",
+          },
+        ]}
+        onClose={() => {}}
+      />
+    )
+
+    // Wait for the fetch and auto-selection to populate the Foreign Key ID
+    await vi.waitFor(() => {
+      expect(screen.getByText("DN-FEEDS-CH-1")).toBeDefined()
+      expect(screen.getByText("Chandelier")).toBeDefined()
+    })
+  })
+
+  it("populates and enables Style Reel Slideshow with derived Chandelier and Foreign Key ID", async () => {
+    const { DayDetailModal } = await import("@/components/day-detail-modal")
+    const mockOutput = {
+      recordId: "rec2wToEWsPNOPoIF",
+      tableId: "tblFFEvkHb3jLKrcv",
+      category: "Reels",
+      contentType: "Styled Reel Slideshow",
+      foreignKeyId: "SR-REEL-CH-11",
+      status: "Completed",
+      rawStatus: "Done",
+      date: "2026-07-02",
+      time: "18:00",
+      mediaType: "video",
+      videoUrl: "https://media.example/reel.mp4",
+      slides: [],
+      caption: "Style Reel Slideshow caption",
+      airtableUrl: "https://airtable.com/appTest/tblFFEvkHb3jLKrcv/rec2wToEWsPNOPoIF",
+      itemNames: ["Nordic Chandelier", "Linear Glow"],
+      fixtureType: "Chandelier",
+    }
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (String(url).includes("/api/content-outputs")) {
+          return new Response(JSON.stringify({ items: [mockOutput] }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          })
+        }
+        return new Response(JSON.stringify({ error: "not found" }), { status: 404 })
+      })
+    )
+
+    render(
+      <DayDetailModal
+        iso="2026-07-02"
+        entries={[
+          {
+            type: "Reels",
+            idea: "Styled Reel Slideshow",
+            time: "18:00",
+            status: "Posted",
+          },
+        ]}
+        onClose={() => {}}
+      />
+    )
+
+    // Wait for auto-selection to populate SR-REEL-CH-11 under Chandelier
+    await vi.waitFor(() => {
+      expect(screen.getByText("SR-REEL-CH-11")).toBeDefined()
+      expect(screen.getByText("Chandelier")).toBeDefined()
+    })
+  })
+
+  it("derives Chandelier for Style Reel Slideshow when existing schedule has SR-REEL-CH-11 but fixture is undefined", async () => {
+    const { DayDetailModal } = await import("@/components/day-detail-modal")
+    const mockSchedule = {
+      recordId: "recSched123",
+      tableId: "tblFFEvkHb3jLKrcv",
+      category: "Reels",
+      idea: "Styled Reel Slideshow",
+      time: "18:00",
+      status: "Posted",
+      foreignKeyId: "SR-REEL-CH-11",
+      isoDate: "2026-09-21",
+      fixture: "", // deliberately empty, simulating missing fixture field in Airtable
+    }
+
+    const mockOutput = {
+      recordId: "rec2wToEWsPNOPoIF",
+      tableId: "tblFFEvkHb3jLKrcv",
+      category: "Reels",
+      contentType: "Styled Reel Slideshow",
+      foreignKeyId: "SR-REEL-CH-11",
+      status: "Completed",
+      rawStatus: "Done",
+      date: "2026-09-21",
+      time: "18:00",
+      mediaType: "video",
+      videoUrl: "https://media.example/reel.mp4",
+      slides: [],
+      caption: "Style Reel Slideshow caption",
+      airtableUrl: "https://airtable.com/appTest/tblFFEvkHb3jLKrcv/rec2wToEWsPNOPoIF",
+      itemNames: ["Nordic Chandelier"],
+      fixtureType: "Chandelier",
+    }
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (String(url).includes("/api/content-outputs")) {
+          return new Response(JSON.stringify({ items: [mockOutput] }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          })
+        }
+        return new Response(JSON.stringify({ error: "not found" }), { status: 404 })
+      })
+    )
+
+    render(
+      <DayDetailModal
+        iso="2026-09-21"
+        entries={[
+          {
+            type: "Reels",
+            idea: "Styled Reel Slideshow",
+            time: "18:00",
+            status: "To Do",
+          },
+        ]}
+        existingSchedules={[mockSchedule as any]}
+        onClose={() => {}}
+      />
+    )
+
+    // Should immediately show Chandelier derived from SR-REEL-CH-11 and the CID
+    await vi.waitFor(() => {
+      expect(screen.getByText("SR-REEL-CH-11")).toBeDefined()
+      expect(screen.getByText("Chandelier")).toBeDefined()
+    })
+  })
+})

@@ -34,7 +34,20 @@ export function extractOutputMedia(fields: Record<string, unknown>, category: st
   } else if (cat === "feeds" && ((type.includes("day") && type.includes("night")) || type.includes("d&n"))) {
     const day = read("Day Image")[0]
     const night = read("Night Image")[0]
-    selected = day && night ? [day, night] : read("FEED - Day & Night (2)")
+    if (day && night) {
+      selected = [day, night]
+    } else {
+      const feed2 = read("FEED - Day & Night (2)")
+      if (feed2.length) {
+        selected = feed2
+      } else if (day) {
+        selected = [day]
+      } else if (night) {
+        selected = [night]
+      } else {
+        selected = read("STORY - Day & Night (2)")
+      }
+    }
   } else if (cat === "feeds" && type.includes("tips")) {
     const cover = read("Thumbnail with Text")[0] || read("Thumbnail")[0]
     const feeds = read("Tips and Edu Feeds")
@@ -80,6 +93,22 @@ export function getFixtureCode(fixtureType?: string): string {
   if (norm.includes("ceiling")) return "CM"
   if (norm.includes("chandelier")) return "CH"
   return fixtureType.slice(0, 2).toUpperCase() || "FX"
+}
+
+export function deriveFixtureFromForeignKeyId(foreignKeyId?: string): string | undefined {
+  if (!foreignKeyId || typeof foreignKeyId !== "string") return undefined
+  const parts = foreignKeyId.trim().toUpperCase().split("-")
+  for (const part of parts) {
+    if (part === "CH") return "Chandelier"
+    if (part === "PE") return "Pendant Light"
+    if (part === "FL") return "Floor Lamp"
+    if (part === "TL") return "Table Lamp"
+    if (part === "WL") return "Wall Light"
+    if (part === "CL") return "Cluster Chandelier"
+    if (part === "CM") return "Ceiling Mounted"
+    if (part === "LC") return "Linear Chandelier"
+  }
+  return undefined
 }
 
 export function getForeignKeyPrefix(

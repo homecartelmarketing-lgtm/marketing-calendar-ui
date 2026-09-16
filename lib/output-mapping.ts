@@ -27,7 +27,9 @@ export function getFinalOutputCandidates(category: string, contentType: string):
         "FEED - Tips & Educational (4)",
       ]
     }
-    if (type.includes("day") && type.includes("night")) return ["FEED - Day & Night (2)", "Day Image"]
+    if ((type.includes("day") && type.includes("night")) || type.includes("d&n")) {
+      return ["FEED - Day & Night (2)", "Day Image", "Night Image", "STORY - Day & Night (2)"]
+    }
     if (type.includes("collection")) return ["FEED - Collection Category (4)", "Styled Photo - Collection Category", "Collection Category Layout"]
     if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["1 Product 3 Style Blended", "FEED - 1 Product, 3 Styles (3)"]
     if (type.includes("moodboard #2") || type.includes("moodboard 2") || type.includes("revised moodboard")) {

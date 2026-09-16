@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { extractMediaFromRecord } from "@/lib/schedules"
-import { deriveForeignKeyId } from "@/lib/output-media"
+import { deriveForeignKeyId, deriveFixtureFromForeignKeyId } from "@/lib/output-media"
 
 const img = (url: string) => [{ url, type: "image/jpeg", filename: "image.jpg" }]
 describe("scheduler final media selection", () => {
@@ -54,6 +54,23 @@ describe("scheduler final media selection", () => {
     expect(extractMediaFromRecord({ "Unrelated Attachment": img("https://media.example/random.jpg") }, "Stories", "Product Closeup w/ description").mediaUrl)
       .toBe("")
   })
+  it("extracts Day & Night feed media across dual, single, and alternate candidate fields", () => {
+    // Both Day and Night
+    expect(extractMediaFromRecord({ "Night Image": img("https://media.example/n.jpg"), "Day Image": img("https://media.example/d.jpg") }, "Feeds", "Day & Night").slides)
+      .toEqual(["https://media.example/d.jpg", "https://media.example/n.jpg"])
+    // Only Day Image
+    expect(extractMediaFromRecord({ "Day Image": img("https://media.example/d-only.jpg") }, "Feeds", "Day & Night").slides)
+      .toEqual(["https://media.example/d-only.jpg"])
+    // Only Night Image
+    expect(extractMediaFromRecord({ "Night Image": img("https://media.example/n-only.jpg") }, "Feeds", "Day & Night").slides)
+      .toEqual(["https://media.example/n-only.jpg"])
+    // FEED - Day & Night (2)
+    expect(extractMediaFromRecord({ "FEED - Day & Night (2)": img("https://media.example/feed2.jpg") }, "Feeds", "Day & Night").slides)
+      .toEqual(["https://media.example/feed2.jpg"])
+    // STORY - Day & Night (2) fallback
+    expect(extractMediaFromRecord({ "STORY - Day & Night (2)": img("https://media.example/story2.jpg") }, "Feeds", "Day & Night").slides)
+      .toEqual(["https://media.example/story2.jpg"])
+  })
 })
 
 describe("canonical Foreign Key ID derivation", () => {
@@ -90,5 +107,21 @@ describe("canonical Foreign Key ID derivation", () => {
     expect(deriveForeignKeyId({ ID: 3 }, "Stories", "CTA Story", "Cluster Chandelier")).toBe("CTA-STORY-CL-3")
     expect(deriveForeignKeyId({ ID: 4 }, "Stories", "Tips & Educational", "Ceiling Mounted")).toBe("TNE-STORY-CM-4")
     expect(deriveForeignKeyId({ ID: 19 }, "Feeds", "Collection Category", "")).toBe("CC-FEEDS-SET-19")
+  })
+})
+
+describe("deriveFixtureFromForeignKeyId", () => {
+  it("derives proper lighting fixture names from canonical Foreign Key ID codes", () => {
+    expect(deriveFixtureFromForeignKeyId("SR-REEL-CH-11")).toBe("Chandelier")
+    expect(deriveFixtureFromForeignKeyId("BA-REEL-PE-10")).toBe("Pendant Light")
+    expect(deriveFixtureFromForeignKeyId("DN-FEEDS-FL-3")).toBe("Floor Lamp")
+    expect(deriveFixtureFromForeignKeyId("CTA-STORY-TL-1")).toBe("Table Lamp")
+    expect(deriveFixtureFromForeignKeyId("CC-STORY-WL-2")).toBe("Wall Light")
+    expect(deriveFixtureFromForeignKeyId("TNE-FEEDS-CL-4")).toBe("Cluster Chandelier")
+    expect(deriveFixtureFromForeignKeyId("TNE-STORY-CM-5")).toBe("Ceiling Mounted")
+    expect(deriveFixtureFromForeignKeyId("MB-REEL-LC-6")).toBe("Linear Chandelier")
+    expect(deriveFixtureFromForeignKeyId("UNKNOWN-ID")).toBeUndefined()
+    expect(deriveFixtureFromForeignKeyId("")).toBeUndefined()
+    expect(deriveFixtureFromForeignKeyId(undefined)).toBeUndefined()
   })
 })

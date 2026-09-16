@@ -2,7 +2,10 @@ import fs from "fs"
 import path from "path"
 
 export const MARKETING_AUTOMATION_DIR =
-  process.env.MARKETING_AUTOMATION_DIR || "C:\\Users\\User\\marketing-automation"
+  process.env.MARKETING_AUTOMATION_DIR ||
+  (fs.existsSync("C:\\Users\\User\\Desktop\\marketing-automation")
+    ? "C:\\Users\\User\\Desktop\\marketing-automation"
+    : "C:\\Users\\User\\marketing-automation")
 
 export function loadAutomationEnv(): Record<string, string> {
   const out: Record<string, string> = {}
@@ -178,7 +181,7 @@ export function getAllConfiguredTables(): TableTarget[] {
     { tableId: "tblF3ot4fdHN2VCQn", category: "Reels", idea: "Moodboard Reel", fixtureType: "Floor Lamp" },
 
     // Style Reel Slideshow
-    { tableId: env.AIRTABLE_TABLE_ID_STYLE_REEL_SLIDESHOW || "tblFFEvkHb3jLKrcv", category: "Reels", idea: "Style Reel Slideshow" },
+    { tableId: env.AIRTABLE_TABLE_ID_STYLE_REEL_SLIDESHOW || "tblFFEvkHb3jLKrcv", category: "Reels", idea: "Style Reel Slideshow", fixtureType: "Chandelier" },
 
     // Product Closeup Reel
     { tableId: "tblqBZ946hVdOpmDV", category: "Reels", idea: "Product Closeup", fixtureType: "Table Lamp" },
