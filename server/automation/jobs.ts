@@ -5,7 +5,7 @@ import {
   getMockDb,
   isMockDb,
 } from "@/server/db/client"
-import { ScheduleValidationError } from "@/server/airtable/write-schedule"
+import { ScheduleValidationError, normalizePhtTime } from "@/server/airtable/write-schedule"
 
 export interface CreateJobInput {
   recordId: string
@@ -31,7 +31,7 @@ export function validateFuturePhtSchedule(
   if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) {
     throw new ScheduleValidationError("A valid scheduled date (YYYY-MM-DD) is required")
   }
-  const effectiveTime = (time || "").trim()
+  const effectiveTime = normalizePhtTime(time)
   if (!effectiveTime || !/^([01]\d|2[0-3]):[0-5]\d$/.test(effectiveTime)) {
     throw new ScheduleValidationError("A valid scheduled time (HH:mm in PHT) is required")
   }

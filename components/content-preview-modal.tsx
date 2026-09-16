@@ -92,6 +92,16 @@ const STATUS_STYLES: Record<
   },
 }
 
+function normalizePhtTime(time?: string | null): string {
+  if (!time) return ""
+  const trimmed = time.trim()
+  const match = trimmed.match(/^(\d{1,2}):([0-5]\d)$/)
+  if (!match) return trimmed
+  const hour = Number(match[1])
+  if (hour < 0 || hour > 23) return trimmed
+  return `${String(hour).padStart(2, "0")}:${match[2]}`
+}
+
 function getTodayPht(): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Manila",
@@ -248,7 +258,7 @@ export function ContentPreviewModal({
     let savedEntry: ScheduledEntry | undefined = undefined
     try {
       const scheduledDate = item.isoDate || iso || out?.scheduledDate
-      const scheduledTime = item.time || out?.scheduledTime || "09:00"
+      const scheduledTime = normalizePhtTime(item.time || out?.scheduledTime) || "09:00"
 
       if (!out?.recordId || !out?.tableId) {
         throw new Error("Missing Airtable record or table identity for this item.")
@@ -746,7 +756,7 @@ export function ContentPreviewModal({
                 />
                 <DetailRow
                   label="Scheduled Time"
-                  value={out?.scheduledTime || item.time || "—"}
+                  value={normalizePhtTime(out?.scheduledTime || item.time) || "—"}
                 />
                 <DetailRow
                   label="Date of Generation"
