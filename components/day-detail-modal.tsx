@@ -330,18 +330,22 @@ export function DayDetailModal({
         if (!curFixture || !curCid) {
           const pairKey = `${r.type}::${r.entry.idea}`
           const items = outputsMap[pairKey] || []
-          if (items.length > 0) {
-            const availableItems = items.filter(
-              (it) =>
-                it.status !== "For Manual" &&
-                it.status !== "Discard" &&
-                it.status === "Completed"
+            const isEntryPosted = Boolean(r.entry.status?.toLowerCase().includes("post"))
+            const validItems = items.filter(
+              (it) => it.status !== "For Manual" && it.status !== "Discard"
             )
+            const completedItems = validItems.filter((it) => it.status === "Completed")
+            const postedItems = validItems.filter((it) => it.status === "Posted")
 
-            if (availableItems.length > 0) {
+            // If calendar entry is marked 'Posted', prioritize posted items; otherwise prioritize completed items
+            const pool = isEntryPosted
+              ? (postedItems.length > 0 ? postedItems : completedItems)
+              : (completedItems.length > 0 ? completedItems : postedItems)
+
+            if (pool.length > 0) {
               const candidate = curFixture
-                ? availableItems.find((it) => matchesFixture(it.fixtureType, curFixture))
-                : availableItems[0]
+                ? pool.find((it) => matchesFixture(it.fixtureType, curFixture))
+                : pool[0]
 
               if (candidate) {
                 const newFixture = curFixture || candidate.fixtureType || undefined
@@ -360,7 +364,6 @@ export function DayDetailModal({
             }
           }
         }
-      }
 
       return changed ? next : prev
     })
@@ -692,22 +695,23 @@ function ContentRow({
   } else if (isLoading) {
     cidOptions = [{ label: "Loading Foreign Keys...", disabled: true }]
   } else {
-    // Strictly filter items: fixture match AND status === "Completed" (strictly exclude For Manual & Discard)
+    // Filter items: fixture match AND (Completed OR Posted OR currently selected cid), strictly excluding For Manual & Discard
     const matching = items.filter(
       (it) =>
         matchesFixture(it.fixtureType, fixture) &&
         it.status !== "For Manual" &&
         it.status !== "Discard" &&
-        (it.status === "Completed" || (Boolean(cid) && it.foreignKeyId === cid))
+        (it.status === "Completed" || it.status === "Posted" || (Boolean(cid) && it.foreignKeyId === cid))
     )
 
     if (matching.length > 0) {
       cidOptions = matching.map((it) => {
         const lockedInfo = lockedForeignKeys[it.foreignKeyId]
         const isLockedOnOtherDate = Boolean(lockedInfo && lockedInfo.isoDate !== iso)
+        const statusTag = it.status === "Posted" ? " [Posted]" : ""
 
         return {
-          label: it.foreignKeyId,
+          label: `${it.foreignKeyId}${statusTag}`,
           subLabel: isLockedOnOtherDate
             ? `(Already scheduled on ${formatLongDate(lockedInfo.isoDate)})`
             : (it.itemNames?.[0] || it.fixtureType),
@@ -719,18 +723,18 @@ function ContentRow({
         }
       })
     } else {
-      cidOptions = [{ label: "No Completed CIDs available (0)", disabled: true }]
+      cidOptions = [{ label: "No Available CIDs (0)", disabled: true }]
     }
   }
 
-  // Generate Fixture dropdown options with real counts of available items (strictly excluding For Manual & Discard)
+  // Generate Fixture dropdown options with real counts of available items (Completed + Posted, strictly excluding For Manual & Discard)
   const fixtureOptions: DropdownOption[] = FIXTURES.map((f) => {
     const count = items.filter(
       (it) =>
         matchesFixture(it.fixtureType, f.name) &&
         it.status !== "For Manual" &&
         it.status !== "Discard" &&
-        (it.status === "Completed" || (Boolean(cid) && it.foreignKeyId === cid))
+        (it.status === "Completed" || it.status === "Posted" || (Boolean(cid) && it.foreignKeyId === cid))
     ).length
     return {
       label: count > 0 ? `${f.name} (${count})` : `${f.name} (0)`,
@@ -762,13 +766,15 @@ function ContentRow({
         isOpen={openDropdown?.key === row.key && openDropdown.kind === "fixture"}
         onToggle={(open) => setOpenDropdown(open ? { key: row.key, kind: "fixture" } : null)}
         onPick={(v) => {
-          const firstMatch = items.find(
+          const matchingItems = items.filter(
             (it) =>
               matchesFixture(it.fixtureType, v) &&
               it.status !== "For Manual" &&
-              it.status !== "Discard" &&
-              it.status === "Completed"
+              it.status !== "Discard"
           )
+          const firstMatch =
+            matchingItems.find((it) => it.status === "Completed") ||
+            matchingItems.find((it) => it.status === "Posted")
           onSelectFixture(v, firstMatch?.foreignKeyId, firstMatch)
           setOpenDropdown(null)
         }}

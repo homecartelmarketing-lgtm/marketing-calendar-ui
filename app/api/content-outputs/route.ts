@@ -7,7 +7,7 @@ import {
   autoEnv,
   getAllConfiguredTables,
 } from "@/lib/tables-config"
-import { extractOutputMedia, deriveForeignKeyId } from "@/lib/output-media"
+import { extractOutputMedia, deriveForeignKeyId, deriveFixtureFromForeignKeyId } from "@/lib/output-media"
 import { AirtableReadError, readAirtableRecords } from "@/server/airtable/records"
 import { ScheduleValidationError, syncAirtableRecord } from "@/server/airtable/write-schedule"
 
@@ -138,10 +138,10 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
       )
     } else if (t.includes("day & night") || t.includes("day and night") || t.includes("d&n") || t.includes("day (") || t.includes("night (")) {
       ids.push(
-        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_AND_NIGHT_4_5,
-        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_NIGHT_FEED,
-        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_DAY_NIGHT_FEED,
-        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_DAY_NIGHT_FEED
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_AND_NIGHT_4_5 || "tblSceuLVvLMQ6wWp",
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_NIGHT_FEED || "tblIgRlTtO7Y2EGIo",
+        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_DAY_NIGHT_FEED || "tblcKHAVYgzIcmabT",
+        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_DAY_NIGHT_FEED || "tbljsKOEhc0618qbM"
       )
     } else if (t.includes("showcase")) {
       ids.push(
@@ -154,12 +154,12 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
         autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_1_FEED || "tbl9u5vjgx8kuE44R",
         autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_1_FEED || "tblOvvYdgsNTXh2zK",
         autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_1_FEED || "tbl6uTmwM23KK9ocO",
-        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_MOODBOARD_1_FEED || "tbljsKOEhc0618qbM"
+        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_MOODBOARD_1_FEED
       )
     } else if (t.includes("collection category")) {
-      ids.push(autoEnv.AIRTABLE_TABLE_ID_COLLECTION_CATEGORY_FEED)
+      ids.push(autoEnv.AIRTABLE_TABLE_ID_COLLECTION_CATEGORY_FEED || "tbl5o1j3XvUaUqmjs", "tbl0R6o61lGJmt44n")
     } else if (t.includes("1 product 3 styles") || t.includes("1 product three styles")) {
-      ids.push(autoEnv.AIRTABLE_TABLE_ID_1_PRODUCT_3_STYLES_FEED)
+      ids.push(autoEnv.AIRTABLE_TABLE_ID_1_PRODUCT_3_STYLES_FEED, "tblrlfqBGe5EjS5PI", "tblRy52kCasisCWzd", "tbl9GIq2QeYCwMhWU")
     }
   } else if (cat === "stories") {
     if (t.includes("cta")) {
@@ -172,36 +172,37 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
       )
     } else if (t.includes("tips")) {
       ids.push(
-        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_TIPS_EDU_STORY,
-        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_TIPS_EDU_STORY,
-        autoEnv.AIRTABLE_TABLE_ID_CHANDELIERS_TIPS_EDU_STORY,
-        autoEnv.AIRTABLE_TABLE_ID_CEILING_MOUNTED_TIPS_EDU_STORY,
-        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_TIPS_EDU_STORY,
-        autoEnv.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIERS_TIPS_EDU_STORY
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_TIPS_EDU_STORY || "tblwnFN5a8fLzKuP4",
+        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_TIPS_EDU_STORY || "tblJxWwZexgBHl26B",
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIERS_TIPS_EDU_STORY || "tblpFiaNn1Ym9fTTk",
+        autoEnv.AIRTABLE_TABLE_ID_CEILING_MOUNTED_TIPS_EDU_STORY || "tblGlRibUZXB9R3Gt",
+        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_TIPS_EDU_STORY || "tblZtENqILDAekLv2",
+        autoEnv.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIERS_TIPS_EDU_STORY || "tbllzkE2prSyj9BaD"
       )
     } else if (t.includes("myth")) {
       ids.push(
-        autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_CHANDELIER,
-        autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_FLOOR_LAMPS,
-        autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_PENDANT_LIGHTS
+        autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_CHANDELIER || "tbl3OI7crWvN2Q7u6",
+        autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_FLOOR_LAMPS || "tblf5Yaki4ktwiLtx",
+        autoEnv.AIRTABLE_TABLE_ID_MYTH_AND_FACT_PENDANT_LIGHTS || "tblwBnWYRGcV6as45"
       )
     } else if (t.includes("style this")) {
       ids.push(
-        autoEnv.AIRTABLE_TABLE_ID_STYLE_THIS_CHANDELIER,
-        autoEnv.AIRTABLE_TABLE_ID_STYLE_THIS_FLOOR_LAMPS
+        autoEnv.AIRTABLE_TABLE_ID_STYLE_THIS_CHANDELIER || "tblYge5R7LwTJkEHC",
+        autoEnv.AIRTABLE_TABLE_ID_STYLE_THIS_FLOOR_LAMPS || "tblvSAzXasTVI85r9"
       )
     } else if (t.includes("day & night") || t.includes("day and night") || t.includes("d&n") || t.includes("day (") || t.includes("night (")) {
       ids.push(
-        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_NIGHT_STORY,
-        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_NIGHT_STORY,
-        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_DAY_NIGHT_STORY,
-        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_DAY_NIGHT_STORY,
-        autoEnv.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIER_DAY_NIGHT_STORY
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_NIGHT_STORY || "tblKkCf88UVQ3Yu07",
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_NIGHT_STORY || "tblaNyYZCR7E6TXtv",
+        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_DAY_NIGHT_STORY || "tblr1hlsjGcs9QKCy",
+        autoEnv.AIRTABLE_TABLE_ID_TABLE_LAMPS_DAY_NIGHT_STORY || "tblhvM9Saq18YqONB",
+        autoEnv.AIRTABLE_TABLE_ID_CLUSTER_CHANDELIER_DAY_NIGHT_STORY || "tblgcvB4WFKOpSIQl"
       )
     } else if (t.includes("moodboard")) {
       ids.push(
-        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_STORY,
-        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_STORY
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MOODBOARD_STORY || "tblHQrci8d1K9ws2M",
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_MOODBOARD_STORY || "tblkm119i48y0M1IQ",
+        autoEnv.AIRTABLE_TABLE_ID_FLOOR_LAMPS_MOODBOARD_STORY || "tblBaNeiSZeYrUawW"
       )
     } else if (t.includes("specification") || t.includes("specs")) {
       ids.push("tblEGTB6BodRVDqBV")
@@ -213,9 +214,11 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
   } else if (cat === "reels") {
     if (t.includes("day & night") || t.includes("day and night") || t.includes("d&n") || t.includes("day (") || t.includes("night (")) {
       ids.push(
-        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_AND_NIGHT_REEL,
-        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_AND_NIGHT_REEL,
-        autoEnv.AIRTABLE_TABLE_ID_FLOORLAMP_DAY_AND_NIGHT_REEL
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_DAY_AND_NIGHT_REEL || "tbl35JySlNuWh61tL",
+        autoEnv.AIRTABLE_TABLE_ID_PENDANT_LIGHTS_DAY_AND_NIGHT_REEL || "tblkTuM627s2f0FTN",
+        autoEnv.AIRTABLE_TABLE_ID_FLOORLAMP_DAY_AND_NIGHT_REEL || "tblVPgI4C6HEFcKW9",
+        "tblAuIP2MveUzsOub",
+        "tblDuIakWYYTJRrtv"
       )
     } else if (t.includes("before") && t.includes("after")) {
       ids.push(
@@ -224,8 +227,14 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
       )
     } else if (t.includes("moodboard")) {
       ids.push(autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_MODERN_MOODBOARDREEL)
+    } else if (t.includes("slideshow") || t.includes("style reel")) {
+      ids.push(autoEnv.AIRTABLE_TABLE_ID_STYLE_REEL_SLIDESHOW || "tblFFEvkHb3jLKrcv")
     } else if (t.includes("style") || t.includes("3 styles")) {
-      ids.push(autoEnv.AIRTABLE_TABLE_ID_STYLE_REEL_SLIDESHOW)
+      ids.push(
+        autoEnv.AIRTABLE_TABLE_ID_CHANDELIER_ONE_PRODUCT_THREE_STYLES_REEL || "tbl6ls4AWcEcynBpZ",
+        "tblRy52kCasisCWzd",
+        "tbl9GIq2QeYCwMhWU"
+      )
     } else if (t.includes("closeup")) {
       ids.push("tblqBZ946hVdOpmDV")
     }
@@ -250,6 +259,7 @@ function matchIdeaTarget(requestIdea: string, targetIdea: string): boolean {
   if (req.includes("desc") && tgt.includes("spec")) return false
   if (req.includes("spec") && tgt.includes("desc")) return false
   if (tgt.includes("slideshow") && !req.includes("slideshow")) return false
+  if (req.includes("slideshow") && !tgt.includes("slideshow")) return false
 
   // Canonical semantic matching
   if (req.includes("cta") && tgt.includes("cta")) return true
@@ -357,9 +367,9 @@ export async function GET(request: NextRequest) {
           const fkId = deriveForeignKeyId(fields, category, contentType, fixtureType, rec.id, recIndex + 1)
 
           const itemNames: string[] = []
-          for (let i = 1; i <= 4; i++) {
-            const key = i === 1 ? "Item Name" : `Item Name${i}`
-            if (fields[key]) itemNames.push(String(fields[key]))
+          for (let i = 1; i <= 5; i++) {
+            const val = fields[`Item Name${i}`] || (i === 1 ? fields["Item Name"] : undefined)
+            if (val) itemNames.push(String(val))
           }
 
           const caption = extractCaption(fields)
@@ -369,6 +379,7 @@ export async function GET(request: NextRequest) {
             fields["Fixture"] ||
             fields["Category"] ||
             fields["Fixture Type"] ||
+            deriveFixtureFromForeignKeyId(fkId) ||
             undefined
 
           allItems.push({

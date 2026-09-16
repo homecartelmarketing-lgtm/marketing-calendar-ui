@@ -15,6 +15,9 @@ The overall automation goal is active. This record distinguishes implemented fix
 - Gallery requests abort/ignore stale category responses; refresh resets pagination; partial warnings retain successful cards.
 - Gallery and scheduler share final-media extraction. Moodboard and Day & Night slide order is explicit; input drafts and non-video Reel attachments are excluded.
 - Moodboard #2 feed output lookup now targets its own Airtable tables, accepts alternate final-media field names, and derives fixture-specific foreign keys. The day detail modal can preselect a completed output for an unmodified fixture/CID row. This is locally tested, not yet verified against live Airtable data.
+- Day & Night feed lookup verified against live Airtable tables (`tblSceuLVvLMQ6wWp`, `tblIgRlTtO7Y2EGIo`, `tblcKHAVYgzIcmabT`, `tbljsKOEhc0618qbM`), explicit pipeline fallback table IDs added, duplicate Table Lamp fallback removed from Moodboard #1, and media extraction resilience extended for dual/single Day & Night and candidate attachments.
+- Day detail modal now accepts both `Completed` and `Posted` outputs in fixture counts and CID dropdowns (excluding `For Manual` and `Discard`), auto-preselecting matching `Completed` outputs first or `Posted` outputs if calendar row is marked posted, displaying canonical Foreign Key IDs in calendar rows.
+- Style Reel Slideshow lookup verified against live Airtable table `tblFFEvkHb3jLKrcv` with fixture type derived from Foreign Key ID (`SR-REEL-CH-*` -> `Chandelier`), bidirectional isolated pipeline matcher preventing cross-matching with "1 Product, 3 Styles", `Item Name 1..5` extraction, and added to `NAV_MENUS.Reels`.
 - Removed duplicated media extraction and schedule-writing code while preserving route paths and output fields.
 - Fixed UI modal mutation handlers (`content-preview-modal.tsx`, `scheduled-posts-modal.tsx`) to eliminate duplicate Airtable writes across scheduling, cancellation, and Post Now flows.
 - Ensured non-OK responses from Airtable / Schedules API strictly block success toasts and prevent local state mutations.
@@ -35,7 +38,7 @@ The overall automation goal is active. This record distinguishes implemented fix
 
 ## Verification
 
-Latest local run: `npm test`: 72 passed across ten test files. `npm run typecheck`: passed. `npm run build`: passed. `git diff --check`: passed. Provider requests in these tests are fixtures, not live integration evidence.
+Latest local run: `npm test`: 83 passed across ten test files. `npm run typecheck`: passed. `npm run build`: passed. `git diff --check`: passed. Provider requests in these tests are fixtures, not live integration evidence.
 
 A read-only local diagnostics run with the operator's configured local environment verified Meta and Airtable connectivity and loaded the schedule/catalog. This does not verify the Vercel Production environment, a native Cron invocation, or an Instagram publication.
 

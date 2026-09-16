@@ -163,4 +163,62 @@ describe("output data completeness", () => {
     expect(body.items[0].fixtureType).toBe("Chandelier")
     expect(body.items[0].slides.length).toBe(4)
   })
+
+  it("extracts Day & Night Feed records and derives canonical foreign keys with fixture", async () => {
+    targets.mockReturnValue([{ tableId: "tblSceuLVvLMQ6wWp", category: "Feeds", idea: "Day & Night", fixtureType: "Chandelier" }])
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      records: [{
+        id: "recqD0jcA15fGGgLI",
+        fields: {
+          ID: 1,
+          "Foreign Key ID": "DN-FEEDS-CH-1",
+          Status: "Posted",
+          "Day Image": [{ id: "attDay", url: "https://media.example/day.jpg", type: "image/jpeg" }],
+          "Night Image": [{ id: "attNight", url: "https://media.example/night.jpg", type: "image/jpeg" }],
+        },
+      }],
+    })))
+    const response = await GET(new NextRequest("http://localhost/api/content-outputs?category=Feeds&type=Day%20%26%20Night"))
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body.items.length).toBe(1)
+    expect(body.items[0].foreignKeyId).toBe("DN-FEEDS-CH-1")
+    expect(body.items[0].fixtureType).toBe("Chandelier")
+    expect(body.items[0].status).toBe("Posted")
+    expect(body.items[0].slides).toEqual(["https://media.example/day.jpg", "https://media.example/night.jpg"])
+  })
+
+  it("extracts Style Reel Slideshow records and derives Chandelier from SR-REEL-CH-11", async () => {
+    targets.mockReturnValue([
+      { tableId: "tblFFEvkHb3jLKrcv", category: "Reels", idea: "Style Reel Slideshow", fixtureType: "Chandelier" },
+      { tableId: "tbl6ls4AWcEcynBpZ", category: "Reels", idea: "1 Product, 3 Styles", fixtureType: "Chandelier" },
+    ])
+    vi.stubGlobal("fetch", vi.fn(async (url: string | URL) => {
+      if (String(url).includes("tblFFEvkHb3jLKrcv")) {
+        return Response.json({
+          records: [{
+            id: "rec2wToEWsPNOPoIF",
+            fields: {
+              ID: 11,
+              "Foreign Key ID": "SR-REEL-CH-11",
+              Status: "Done",
+              "Item Name1": "Nordic Chandelier",
+              "Item Name2": "Linear Glow",
+              "Style Reel Slideshow": [{ id: "attVideo", url: "https://media.example/reel.mp4", type: "video/mp4" }],
+            },
+          }],
+        })
+      }
+      return Response.json({ records: [] })
+    }))
+    const response = await GET(new NextRequest("http://localhost/api/content-outputs?category=Reels&type=Styled%20Reel%20Slideshow"))
+    const body = await response.json()
+    expect(response.status).toBe(200)
+    expect(body.items.length).toBe(1)
+    expect(body.items[0].foreignKeyId).toBe("SR-REEL-CH-11")
+    expect(body.items[0].fixtureType).toBe("Chandelier")
+    expect(body.items[0].status).toBe("Completed")
+    expect(body.items[0].videoUrl).toBe("https://media.example/reel.mp4")
+    expect(body.items[0].itemNames).toEqual(["Nordic Chandelier", "Linear Glow"])
+  })
 })
