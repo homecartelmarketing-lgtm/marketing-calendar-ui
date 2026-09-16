@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { pullAirtableSchedulesWithDiagnostics, syncAirtableRecord, ScheduledEntry } from "@/lib/schedules"
 import { AIRTABLE_BASE_ID, AIRTABLE_TOKEN, getAllConfiguredTables } from "@/lib/tables-config"
 import { getMetaConfig, publishToInstagram } from "@/lib/meta-api"
+import { createOrReplaceScheduledJob, cancelScheduledJob } from "@/server/automation/jobs"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -284,11 +285,30 @@ export async function POST(request: NextRequest) {
 
       await syncAirtableRecord(tableId, recordId, "Scheduled", isoDate, time)
 
+      let queued = false
+      try {
+        await createOrReplaceScheduledJob({
+          recordId,
+          tableId,
+          category: (category as "Stories" | "Feeds" | "Reels") || "Stories",
+          isoDate,
+          time,
+          caption: caption || "Home Cartel Scheduled Post",
+          mediaUrl: mediaUrl || "",
+          mediaUrls: mediaUrl ? [mediaUrl] : [],
+          mediaType: category === "Reels" ? "video" : "image",
+        })
+        queued = true
+      } catch (queueErr: any) {
+        console.warn("[Scheduler Debug Queue Warning]:", queueErr?.message)
+      }
+
       return NextResponse.json({
         success: true,
-        message: `Scheduled successfully for ${isoDate} at ${time} PHT`,
+        message: `Scheduled successfully for ${isoDate} at ${time} PHT${queued ? " (Enqueued in database)" : ""}`,
         isoDate,
         time,
+        queued,
       })
     }
 
@@ -331,6 +351,10 @@ export async function POST(request: NextRequest) {
       }
 
       await syncAirtableRecord(tableId, recordId, status)
+
+      if (status !== "Scheduled") {
+        await cancelScheduledJob(recordId).catch(() => {})
+      }
 
       return NextResponse.json({
         success: true,

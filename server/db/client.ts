@@ -137,8 +137,17 @@ class MockDatabase {
 
 const mockDb = new MockDatabase()
 
+function getDatabaseUrl(): string | undefined {
+  return (
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.NEON_DATABASE_URL ||
+    process.env.NEON_URL
+  )
+}
+
 export function isMockDb(): boolean {
-  return !process.env.DATABASE_URL || process.env.NODE_ENV === "test" || Boolean(process.env.VITEST)
+  return !getDatabaseUrl() || process.env.NODE_ENV === "test" || Boolean(process.env.VITEST)
 }
 
 export function getMockDb(): MockDatabase {
@@ -154,7 +163,7 @@ export function resetMockDb(): void {
  * otherwise throws an error unless in mock mode.
  */
 export async function executeSql<T = any>(queryText: string, params: any[] = []): Promise<T[]> {
-  const dbUrl = process.env.DATABASE_URL
+  const dbUrl = getDatabaseUrl()
   if (!dbUrl || isMockDb()) {
     throw new Error("executeSql called in mock mode: use high-level automation methods")
   }
@@ -173,7 +182,7 @@ export async function initDbSchema(): Promise<{ success: boolean; message: strin
     return { success: true, message: "Initialized in-memory mock schema" }
   }
 
-  const dbUrl = process.env.DATABASE_URL
+  const dbUrl = getDatabaseUrl()
   if (!dbUrl) {
     return { success: false, message: "DATABASE_URL not configured" }
   }
