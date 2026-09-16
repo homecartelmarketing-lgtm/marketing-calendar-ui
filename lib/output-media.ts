@@ -68,6 +68,20 @@ export function extractOutputMedia(fields: Record<string, unknown>, category: st
         if (attachments.length) { selected = attachments; break }
       }
     }
+  } else if (cat === "feeds" && (type.includes("moodboard #2") || type.includes("moodboard 2"))) {
+    const mb2Converted =
+      read("Moodboard #2 Converted")[0] ||
+      read("Moodboard 2 Converted")[0] ||
+      read("Moodboard Converted")[0] ||
+      read("Converted Moodboard")[0]
+    const blended =
+      read("Blended Image")[0] ||
+      read("Blended Image1")[0] ||
+      read("Blended")[0]
+
+    if (mb2Converted && blended) {
+      selected = [mb2Converted, blended]
+    }
   } else {
     for (const candidate of getFinalOutputCandidates(category, idea)) {
       const attachments = read(candidate).filter(item => cat === "reels" ? attachmentType(item) === "video" : attachmentType(item) !== null)

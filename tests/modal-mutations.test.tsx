@@ -234,8 +234,8 @@ describe("DayDetailModal Day & Night output handling", () => {
       category: "Feeds",
       contentType: "Day & Night",
       foreignKeyId: "DN-FEEDS-CH-1",
-      status: "Posted",
-      rawStatus: "Posted",
+      status: "Completed",
+      rawStatus: "Completed",
       date: "2026-07-02",
       time: "10:00",
       mediaType: "image",
@@ -404,5 +404,67 @@ describe("DayDetailModal Day & Night output handling", () => {
       expect(screen.getByText("SR-REEL-CH-11")).toBeDefined()
       expect(screen.getByText("Chandelier")).toBeDefined()
     })
+  })
+
+  it("prevents duplicate rows in DayDetailModal when multiple schedules exist for the same idea on a date", async () => {
+    const { DayDetailModal } = await import("@/components/day-detail-modal")
+    const mockSchedule1 = {
+      recordId: "rec1",
+      tableId: "tblStory",
+      category: "Stories",
+      idea: "CTA Story",
+      time: "13:26",
+      status: "Scheduled",
+      foreignKeyId: "CTA-STORY-TL-1",
+      isoDate: "2026-09-16",
+      fixture: "Table Lamp",
+    }
+    const mockSchedule2 = {
+      recordId: "rec2",
+      tableId: "tblStory",
+      category: "Stories",
+      idea: "CTA Story",
+      time: "13:41",
+      status: "Scheduled",
+      foreignKeyId: "CTA-STORY-TL-2",
+      isoDate: "2026-09-16",
+      fixture: "Table Lamp",
+    }
+    const mockSchedule3 = {
+      recordId: "rec3",
+      tableId: "tblStory",
+      category: "Stories",
+      idea: "CTA Story",
+      time: "13:43",
+      status: "Scheduled",
+      foreignKeyId: "CTA-STORY-CH-12",
+      isoDate: "2026-09-16",
+      fixture: "Chandelier",
+    }
+
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ items: [] })))
+
+    render(
+      <DayDetailModal
+        iso="2026-09-16"
+        entries={[
+          {
+            type: "Stories",
+            idea: "CTA",
+            time: "21:00",
+            status: "To Do",
+          },
+        ]}
+        existingSchedules={[mockSchedule1 as any, mockSchedule2 as any, mockSchedule3 as any]}
+        onClose={() => {}}
+      />
+    )
+
+    // The modal should only render ONE row for CTA Story, not 3 duplicate rows
+    expect(screen.getByRole("button", { name: "CTA" })).toBeDefined()
+    expect(screen.queryByRole("button", { name: "CTA Story" })).toBeNull()
+    // It should pick the latest scheduled item (mockSchedule3: 13:43 and CTA-STORY-CH-12)
+    expect(screen.getByText("13:43")).toBeDefined()
+    expect(screen.getByText("CTA-STORY-CH-12")).toBeDefined()
   })
 })
