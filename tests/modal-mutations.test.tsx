@@ -100,7 +100,7 @@ describe("ScheduledPostsModal mutation handling", () => {
     expect(onCancelMock).not.toHaveBeenCalled()
   })
 
-  it("renders 2 tabs and displays published/manual items with Instagram links in Publish History tab", () => {
+  it("renders scheduled queue and excludes posted/manual items from the modal", () => {
     const postedStory: ScheduledEntry = {
       ...testScheduledEntry,
       rowKey: "postedStoryKey",
@@ -137,32 +137,13 @@ describe("ScheduledPostsModal mutation handling", () => {
       />
     )
 
-    // Initial state: Active Queue tab shows 1 queued item
-    expect(screen.getByText("Active Queue")).toBeTruthy()
-    expect(screen.getByText("Publish History")).toBeTruthy()
+    // Scheduled item is rendered in queue
     expect(screen.getByText("cid123")).toBeTruthy()
+    // Posted and manual items are completely excluded from the content calendar modal
     expect(screen.queryByText("POSTED-STORY-1")).toBeNull()
-
-    // Switch to Publish History tab
-    fireEvent.click(screen.getByRole("button", { name: /publish history/i }))
-
-    // Active queue item is now hidden, history items are shown
-    expect(screen.queryByText("cid123")).toBeNull()
-    expect(screen.getByText("POSTED-STORY-1")).toBeTruthy()
-    expect(screen.getByText("POSTED-FEED-2")).toBeTruthy()
-    expect(screen.getByText("MANUAL-ITEM-3")).toBeTruthy()
-
-    // Verify badges
-    expect(screen.getAllByText("Published to IG").length).toBe(2)
-    expect(screen.getByText("Needs Manual Review")).toBeTruthy()
-
-    // Verify Instagram links
-    const igLinks = screen.getAllByRole("link", { name: /view on instagram/i })
-    expect(igLinks.length).toBe(2)
-    // Stories opens stories viewer
-    expect(igLinks[0].getAttribute("href")).toBe("https://www.instagram.com/stories/homecartel/")
-    // Feeds opens main profile
-    expect(igLinks[1].getAttribute("href")).toBe("https://www.instagram.com/homecartel/")
+    expect(screen.queryByText("POSTED-FEED-2")).toBeNull()
+    expect(screen.queryByText("MANUAL-ITEM-3")).toBeNull()
+    expect(screen.queryByText("Publish History")).toBeNull()
   })
 })
 

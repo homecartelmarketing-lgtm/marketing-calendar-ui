@@ -40,6 +40,11 @@ The overall automation goal is active. This record distinguishes implemented fix
   - `app/api/content-outputs/route.ts`: added `isCompletedOrDoneStatus` filter, strictly requiring Airtable status `Completed`, `Complete`, or `Done` (case-insensitive) for candidate outputs.
   - `components/day-detail-modal.tsx`: deduplicated planned slot rows so an idea only appears once per day. When multiple schedules share an idea, the latest one is matched and duplicate extra rows are suppressed. Dropdown candidates strictly require `Completed` status.
   - `components/content-preview-modal.tsx` & `app/api/schedules/route.ts`: when rescheduling a slot that already had an active scheduled record, the previous record is automatically released back to `Completed` in Airtable and its queue job cancelled to prevent stale duplicate schedules.
+  - Completely removed "Posted" status across the Content Calendar UI:
+    - `lib/schedules.ts`: queries Airtable with `filterByFormula: "Status='Scheduled'"` so only active scheduled posts load into the calendar, locking only scheduled foreign keys.
+    - `components/calendar-grid.tsx`: filters `daySchedules` strictly by `status === "Scheduled"`, completely eliminating "Posted" pills from calendar day cells.
+    - `components/day-detail-modal.tsx`: converts legacy posted entries to `Completed`, restricts candidate dropdowns strictly to `Completed` items, and strips any `[Posted]` labels.
+    - `components/scheduled-posts-modal.tsx`: removed "Publish History" tab and `historyList`, displaying only the active upcoming queue.
   - Updated unit tests (`tests/output-media.test.ts`, `tests/content-outputs.test.ts`, `tests/modal-mutations.test.tsx`): 86 tests passing across 10 test files.
 
 ## Verification

@@ -140,7 +140,7 @@ export function DayDetailModal({
 
     for (const type of CONTENT_TYPES) {
       const ofType = entries.filter((e) => e.type === type)
-      const schedOfType = (existingSchedules || []).filter((s) => s.category === type)
+      const schedOfType = (existingSchedules || []).filter((s) => s.category === type && s.status === "Scheduled")
 
       const claimedSchedIds = new Set<string>()
       const rowList: { key: string; entry: ContentEntry }[] = []
@@ -187,8 +187,8 @@ export function DayDetailModal({
           key: `${type}-${i}`,
           entry: {
             ...entry,
-            status: matched?.status || entry.status,
-            cid: matched?.foreignKeyId || entry.cid,
+            status: matched?.status || (entry.status === "Posted" ? "Completed" : entry.status),
+            cid: matched?.foreignKeyId || (entry.status === "Posted" ? "" : entry.cid),
             fixture: resolvedFixture,
             time: matched?.time || entry.time,
           },
@@ -346,17 +346,10 @@ export function DayDetailModal({
         if (!curFixture || !curCid) {
           const pairKey = `${r.type}::${r.entry.idea}`
           const items = outputsMap[pairKey] || []
-            const isEntryPosted = Boolean(r.entry.status?.toLowerCase().includes("post"))
-            const validItems = items.filter(
-              (it) => it.status !== "For Manual" && it.status !== "Discard"
-            )
-            const completedItems = validItems.filter((it) => it.status === "Completed")
-            const postedItems = validItems.filter((it) => it.status === "Posted")
-
-            // If calendar entry is marked 'Posted', prioritize posted items; otherwise prioritize completed items
-            const pool = isEntryPosted
-              ? (postedItems.length > 0 ? postedItems : completedItems)
-              : (completedItems.length > 0 ? completedItems : postedItems)
+          const validItems = items.filter(
+            (it) => it.status !== "For Manual" && it.status !== "Discard"
+          )
+          const pool = validItems.filter((it) => it.status === "Completed")
 
             if (pool.length > 0) {
               const candidate = curCid
@@ -733,10 +726,8 @@ function ContentRow({
       cidOptions = matching.map((it) => {
         const lockedInfo = lockedForeignKeys[it.foreignKeyId]
         const isLockedOnOtherDate = Boolean(lockedInfo && lockedInfo.isoDate !== iso)
-        const statusTag = it.status === "Posted" ? " [Posted]" : ""
-
         return {
-          label: `${it.foreignKeyId}${statusTag}`,
+          label: it.foreignKeyId,
           subLabel: isLockedOnOtherDate
             ? `(Already scheduled on ${formatLongDate(lockedInfo.isoDate)})`
             : (it.itemNames?.[0] || it.fixtureType),
@@ -797,9 +788,7 @@ function ContentRow({
               it.status !== "For Manual" &&
               it.status !== "Discard"
           )
-          const firstMatch =
-            matchingItems.find((it) => it.status === "Completed") ||
-            matchingItems.find((it) => it.status === "Posted")
+          const firstMatch = matchingItems.find((it) => it.status === "Completed")
           onSelectFixture(v, firstMatch?.foreignKeyId, firstMatch)
           setOpenDropdown(null)
         }}
