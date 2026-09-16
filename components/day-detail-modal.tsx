@@ -11,6 +11,7 @@ import {
   type ContentType,
 } from "@/lib/content"
 import { ContentPreviewModal, type PreviewItem } from "@/components/content-preview-modal"
+import { deriveFixtureFromForeignKeyId } from "@/lib/output-media"
 import type { OutputItem } from "@/app/api/content-outputs/route"
 import type { ScheduledEntry } from "@/app/api/schedules/route"
 
@@ -91,8 +92,9 @@ function buildSelectionsFromSchedules(
 
     if (matched) {
       claimed.add(matched.recordId)
+      const resolvedFixture = matched.fixture || deriveFixtureFromForeignKeyId(matched.foreignKeyId)
       init[r.key] = {
-        fixture: matched.fixture,
+        fixture: resolvedFixture,
         cid: matched.foreignKeyId,
         outputItem: {
           recordId: matched.recordId,
@@ -109,7 +111,7 @@ function buildSelectionsFromSchedules(
           caption: matched.caption || "",
           airtableUrl: matched.airtableUrl || "",
           itemNames: matched.itemNames || [],
-          fixtureType: matched.fixture,
+          fixtureType: resolvedFixture,
         },
       }
     }
@@ -133,9 +135,9 @@ export function DayDetailModal({
   existingSchedules?: ScheduledEntry[]
   onScheduleSaved?: (entry: ScheduledEntry) => void
 }) {
-  // Build one row per entry, grouping by content type. Also dynamically incorporate extra scheduled records.
-  const rows = useMemo<FlatRow[]>(() => {
+  const rows = useMemo(() => {
     const out: FlatRow[] = []
+
     for (const type of CONTENT_TYPES) {
       const ofType = entries.filter((e) => e.type === type)
       const schedOfType = (existingSchedules || []).filter((s) => s.category === type)
@@ -170,13 +172,15 @@ export function DayDetailModal({
         })
         if (matched) claimedSchedIds.add(matched.recordId)
 
+        const resolvedFixture = matched?.fixture || entry.fixture || deriveFixtureFromForeignKeyId(matched?.foreignKeyId || entry.cid)
+
         rowList.push({
           key: `${type}-${i}`,
           entry: {
             ...entry,
             status: matched?.status || entry.status,
             cid: matched?.foreignKeyId || entry.cid,
-            fixture: matched?.fixture || entry.fixture,
+            fixture: resolvedFixture,
             time: matched?.time || entry.time,
           },
         })
@@ -193,7 +197,7 @@ export function DayDetailModal({
               idea: sched.idea,
               time: sched.time,
               status: sched.status,
-              fixture: sched.fixture,
+              fixture: sched.fixture || deriveFixtureFromForeignKeyId(sched.foreignKeyId),
               cid: sched.foreignKeyId,
             },
           })
@@ -343,12 +347,14 @@ export function DayDetailModal({
               : (completedItems.length > 0 ? completedItems : postedItems)
 
             if (pool.length > 0) {
-              const candidate = curFixture
-                ? pool.find((it) => matchesFixture(it.fixtureType, curFixture))
-                : pool[0]
+              const candidate = curCid
+                ? pool.find((it) => it.foreignKeyId === curCid) || (curFixture ? pool.find((it) => matchesFixture(it.fixtureType, curFixture)) : pool[0])
+                : curFixture
+                  ? pool.find((it) => matchesFixture(it.fixtureType, curFixture))
+                  : pool[0]
 
               if (candidate) {
-                const newFixture = curFixture || candidate.fixtureType || undefined
+                const newFixture = curFixture || candidate.fixtureType || deriveFixtureFromForeignKeyId(candidate.foreignKeyId) || undefined
                 const newCid = curCid || candidate.foreignKeyId
 
                 if (newFixture !== curSel.fixture || newCid !== curSel.cid) {
@@ -680,8 +686,8 @@ function ContentRow({
     )
   }
 
-  const fixture = selection.fixture ?? entry.fixture
   const cid = selection.cid !== undefined ? selection.cid : entry.cid
+  const fixture = selection.fixture ?? entry.fixture ?? deriveFixtureFromForeignKeyId(cid)
 
   const pairKey = `${row.type}::${entry.idea}`
   const items = outputsMap[pairKey] || []
@@ -787,7 +793,8 @@ function ContentRow({
         onToggle={(open) => setOpenDropdown(open ? { key: row.key, kind: "cid" } : null)}
         onPick={(v) => {
           const matched = items.find((it) => it.foreignKeyId === v)
-          onSelectCid(v, matched, fixture)
+          const derived = deriveFixtureFromForeignKeyId(v)
+          onSelectCid(v, matched, fixture || derived)
           setOpenDropdown(null)
         }}
       />

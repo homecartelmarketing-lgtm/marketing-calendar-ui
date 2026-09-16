@@ -336,4 +336,73 @@ describe("DayDetailModal Day & Night output handling", () => {
       expect(screen.getByText("Chandelier")).toBeDefined()
     })
   })
+
+  it("derives Chandelier for Style Reel Slideshow when existing schedule has SR-REEL-CH-11 but fixture is undefined", async () => {
+    const { DayDetailModal } = await import("@/components/day-detail-modal")
+    const mockSchedule = {
+      recordId: "recSched123",
+      tableId: "tblFFEvkHb3jLKrcv",
+      category: "Reels",
+      idea: "Styled Reel Slideshow",
+      time: "18:00",
+      status: "Posted",
+      foreignKeyId: "SR-REEL-CH-11",
+      isoDate: "2026-09-21",
+      fixture: "", // deliberately empty, simulating missing fixture field in Airtable
+    }
+
+    const mockOutput = {
+      recordId: "rec2wToEWsPNOPoIF",
+      tableId: "tblFFEvkHb3jLKrcv",
+      category: "Reels",
+      contentType: "Styled Reel Slideshow",
+      foreignKeyId: "SR-REEL-CH-11",
+      status: "Completed",
+      rawStatus: "Done",
+      date: "2026-09-21",
+      time: "18:00",
+      mediaType: "video",
+      videoUrl: "https://media.example/reel.mp4",
+      slides: [],
+      caption: "Style Reel Slideshow caption",
+      airtableUrl: "https://airtable.com/appTest/tblFFEvkHb3jLKrcv/rec2wToEWsPNOPoIF",
+      itemNames: ["Nordic Chandelier"],
+      fixtureType: "Chandelier",
+    }
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (String(url).includes("/api/content-outputs")) {
+          return new Response(JSON.stringify({ items: [mockOutput] }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          })
+        }
+        return new Response(JSON.stringify({ error: "not found" }), { status: 404 })
+      })
+    )
+
+    render(
+      <DayDetailModal
+        iso="2026-09-21"
+        entries={[
+          {
+            type: "Reels",
+            idea: "Styled Reel Slideshow",
+            time: "18:00",
+            status: "To Do",
+          },
+        ]}
+        existingSchedules={[mockSchedule as any]}
+        onClose={() => {}}
+      />
+    )
+
+    // Should immediately show Chandelier derived from SR-REEL-CH-11 and the CID
+    await vi.waitFor(() => {
+      expect(screen.getByText("SR-REEL-CH-11")).toBeDefined()
+      expect(screen.getByText("Chandelier")).toBeDefined()
+    })
+  })
 })
