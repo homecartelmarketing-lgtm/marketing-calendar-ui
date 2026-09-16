@@ -39,7 +39,10 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as ScheduledEntry
+    const body = (await request.json()) as ScheduledEntry & {
+      previousRecordId?: string
+      previousTableId?: string
+    }
     const {
       isoDate,
       recordId,
@@ -51,6 +54,8 @@ export async function POST(request: NextRequest) {
       mediaUrl,
       slides,
       mediaType,
+      previousRecordId,
+      previousTableId,
     } = body
 
     if (!recordId || !tableId) {
@@ -72,6 +77,16 @@ export async function POST(request: NextRequest) {
           { success: false, message: "Media URL or slides are required to schedule a post" },
           { status: 400 }
         )
+      }
+
+      // If replacing an existing schedule on this slot with a different record, release the previous record
+      if (previousRecordId && previousTableId && previousRecordId !== recordId) {
+        try {
+          await cancelScheduledJob(previousRecordId)
+          await syncAirtableRecord(previousTableId, previousRecordId, "Completed", undefined, undefined)
+        } catch (prevErr) {
+          console.warn("Could not release previous schedule:", prevErr)
+        }
       }
 
       // 1. Create durable automation job (validates future PHT timestamp)

@@ -47,6 +47,12 @@ export type TableTarget = {
 }
 
 
+export function isCompletedOrDoneStatus(raw?: unknown): boolean {
+  if (typeof raw !== "string") return false
+  const s = raw.trim().toLowerCase()
+  return s === "completed" || s === "complete" || s === "done"
+}
+
 function normalizeStatus(
   raw?: string | null
 ): "Completed" | "Scheduled" | "Posted" | "For Manual" | "Discard" {
@@ -333,14 +339,15 @@ export async function GET(request: NextRequest) {
         for (let recIndex = 0; recIndex < records.length; recIndex++) {
           const rec = records[recIndex]
           const fields = rec.fields || {}
+          const rawStatus = fields["Status"]
+          if (!isCompletedOrDoneStatus(rawStatus)) continue
 
           const media = extractOutputMedia(fields, category, contentType)
           if (!media.mediaUrl) continue
           const slides = media.mediaType === "image" ? media.slides : []
           const videoUrl = media.mediaType === "video" ? media.mediaUrl : undefined
 
-          const rawStatus = fields["Status"] || "Completed"
-          const status = normalizeStatus(rawStatus)
+          const status = normalizeStatus(typeof rawStatus === "string" ? rawStatus : "Completed")
 
           // Extract Date and Time Generated (when the asset was created by automation)
           const genDateField =

@@ -126,7 +126,8 @@ describe("output data completeness", () => {
         fields: {
           ID: 4,
           Status: "Completed",
-          "FEED - Moodboard #2 Feed (3)": [{ id: "attMb2", url: "https://media.example/mb2.jpg", type: "image/jpeg" }],
+          "Moodboard #2 Converted": [{ id: "attMb2", url: "https://media.example/mb2-conv.jpg", type: "image/jpeg" }],
+          "Blended Image": [{ id: "attBlended", url: "https://media.example/mb2-blend.jpg", type: "image/jpeg" }],
         },
       }],
     })))
@@ -136,6 +137,27 @@ describe("output data completeness", () => {
     expect(body.items.length).toBe(1)
     expect(body.items[0].foreignKeyId).toBe("MB2-FEEDS-CH-4")
     expect(body.items[0].fixtureType).toBe("Chandelier")
+    expect(body.items[0].slides).toEqual([
+      "https://media.example/mb2-conv.jpg",
+      "https://media.example/mb2-blend.jpg",
+    ])
+  })
+
+  it("strictly excludes records that do not have Completed, Complete, or Done status", async () => {
+    targets.mockReturnValue([table("tblStatus")])
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      records: [
+        { id: "rec1", fields: { Status: "Draft", "CTA Converted Image": [{ url: "https://media.example/1.jpg" }] } },
+        { id: "rec2", fields: { Status: "In Progress", "CTA Converted Image": [{ url: "https://media.example/2.jpg" }] } },
+        { id: "rec3", fields: { Status: "Posted", "CTA Converted Image": [{ url: "https://media.example/3.jpg" }] } },
+        { id: "rec4", fields: { Status: "Completed", "CTA Converted Image": [{ url: "https://media.example/4.jpg" }] } },
+        { id: "rec5", fields: { Status: "Done", "CTA Converted Image": [{ url: "https://media.example/5.jpg" }] } },
+      ],
+    })))
+    const response = await GET(request())
+    const body = await response.json()
+    expect(body.items.length).toBe(2)
+    expect(body.items.map((it: any) => it.recordId)).toEqual(["rec4", "rec5"])
   })
 
   it("extracts Tips & Educational Feed records and derives canonical foreign keys with fixture", async () => {
@@ -172,7 +194,7 @@ describe("output data completeness", () => {
         fields: {
           ID: 1,
           "Foreign Key ID": "DN-FEEDS-CH-1",
-          Status: "Posted",
+          Status: "Completed",
           "Day Image": [{ id: "attDay", url: "https://media.example/day.jpg", type: "image/jpeg" }],
           "Night Image": [{ id: "attNight", url: "https://media.example/night.jpg", type: "image/jpeg" }],
         },
@@ -184,7 +206,7 @@ describe("output data completeness", () => {
     expect(body.items.length).toBe(1)
     expect(body.items[0].foreignKeyId).toBe("DN-FEEDS-CH-1")
     expect(body.items[0].fixtureType).toBe("Chandelier")
-    expect(body.items[0].status).toBe("Posted")
+    expect(body.items[0].status).toBe("Completed")
     expect(body.items[0].slides).toEqual(["https://media.example/day.jpg", "https://media.example/night.jpg"])
   })
 

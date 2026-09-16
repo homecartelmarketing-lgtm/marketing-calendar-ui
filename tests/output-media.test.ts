@@ -22,11 +22,51 @@ describe("scheduler final media selection", () => {
     expect(extractMediaFromRecord({ "Final Video": [{ url: "https://media.example/signed?token=fixture", type: "video/mp4" }] }, "Reels", "Product Closeup"))
       .toEqual({ mediaUrl: "https://media.example/signed?token=fixture", mediaType: "video", slides: ["https://media.example/signed?token=fixture"] })
   })
-  it("extracts Moodboard #2 feed slides from alternative candidate field names", () => {
-    expect(extractMediaFromRecord({ "FEED - Moodboard #2 Feed (3)": img("https://media.example/mb2-feed") }, "Feeds", "Moodboard #2").slides)
-      .toEqual(["https://media.example/mb2-feed"])
-    expect(extractMediaFromRecord({ "Converted Moodboard": img("https://media.example/mb2-converted") }, "Feeds", "Moodboard #2").slides)
-      .toEqual(["https://media.example/mb2-converted"])
+  it("extracts Moodboard #2 feed slides as 2-photo carousel (Moodboard #2 Converted then Blended Image)", () => {
+    expect(
+      extractMediaFromRecord(
+        {
+          "Blended Image": img("https://media.example/blended.jpg"),
+          "Moodboard #2 Converted": img("https://media.example/mb2-converted.jpg"),
+        },
+        "Feeds",
+        "Moodboard #2"
+      ).slides
+    ).toEqual([
+      "https://media.example/mb2-converted.jpg",
+      "https://media.example/blended.jpg",
+    ])
+
+    // Resilient alias names
+    expect(
+      extractMediaFromRecord(
+        {
+          "Converted Moodboard": img("https://media.example/alias-converted.jpg"),
+          "Blended Image1": img("https://media.example/alias-blended.jpg"),
+        },
+        "Feeds",
+        "Moodboard #2"
+      ).slides
+    ).toEqual([
+      "https://media.example/alias-converted.jpg",
+      "https://media.example/alias-blended.jpg",
+    ])
+
+    // Strict requirement: returns empty slides if either photo is missing
+    expect(
+      extractMediaFromRecord(
+        { "Moodboard #2 Converted": img("https://media.example/mb2-only.jpg") },
+        "Feeds",
+        "Moodboard #2"
+      ).slides
+    ).toEqual([])
+    expect(
+      extractMediaFromRecord(
+        { "Blended Image": img("https://media.example/blended-only.jpg") },
+        "Feeds",
+        "Moodboard #2"
+      ).slides
+    ).toEqual([])
   })
   it("combines cover thumbnail and feed slides for Tips & Educational Feeds", () => {
     const record = {

@@ -36,7 +36,7 @@ export function CalendarGrid({
           const isDay = cell.day !== null
           const clickable = isDay && cell.iso !== null
           const iso = cell.iso || ""
-          const daySchedules = schedules[iso] || []
+          const daySchedules = (schedules[iso] || []).filter((s) => s.status === "Scheduled")
           const scheduledCategories = new Set(daySchedules.map((s) => s.category))
           // Unscheduled types on this day that should still display their category tag
           const unscheduledTypes = cell.types.filter((t) => !scheduledCategories.has(t))

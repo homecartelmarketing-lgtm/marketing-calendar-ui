@@ -34,17 +34,17 @@ export function getFinalOutputCandidates(category: string, contentType: string):
     if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["1 Product 3 Style Blended", "FEED - 1 Product, 3 Styles (3)"]
     if (type.includes("moodboard #2") || type.includes("moodboard 2") || type.includes("revised moodboard")) {
       return [
+        "Moodboard #2 Converted",
+        "Blended Image",
         "FEED - Revised Moodboard (3)",
         "FEED - Moodboard #2 Feed (3)",
         "FEED - Moodboard #2 (3)",
         "Moodboard #2 Feed (3)",
         "Moodboard #2 (3)",
         "FEED - Moodboard (3)",
-        "Moodboard #2 Converted",
         "Revised Moodboard",
         "Converted Moodboard",
         "Moodboard Converted",
-        "Blended Image",
       ]
     }
     if (type.includes("moodboard #1") || type.includes("moodboard 1") || type.includes("moodboard")) {

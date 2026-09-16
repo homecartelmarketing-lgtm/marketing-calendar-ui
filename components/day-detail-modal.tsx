@@ -140,7 +140,7 @@ export function DayDetailModal({
 
     for (const type of CONTENT_TYPES) {
       const ofType = entries.filter((e) => e.type === type)
-      const schedOfType = (existingSchedules || []).filter((s) => s.category === type)
+      const schedOfType = (existingSchedules || []).filter((s) => s.category === type && s.status === "Scheduled")
 
       const claimedSchedIds = new Set<string>()
       const rowList: { key: string; entry: ContentEntry }[] = []
@@ -151,7 +151,7 @@ export function DayDetailModal({
       }
 
       ofType.forEach((entry, i) => {
-        const matched = schedOfType.find((s) => {
+        const matchingSchedules = schedOfType.filter((s) => {
           if (claimedSchedIds.has(s.recordId)) return false
           if (
             entry.fixture &&
@@ -170,7 +170,16 @@ export function DayDetailModal({
           }
           return false
         })
-        if (matched) claimedSchedIds.add(matched.recordId)
+
+        // Pick the latest scheduled record for this planned slot
+        const matched = matchingSchedules[matchingSchedules.length - 1] || undefined
+
+        // Claim ALL scheduled records matching this idea so they are not appended as duplicate extra rows
+        schedOfType.forEach((s) => {
+          if (normalizeIdea(s.idea) === normalizeIdea(entry.idea)) {
+            claimedSchedIds.add(s.recordId)
+          }
+        })
 
         const resolvedFixture = matched?.fixture || entry.fixture || deriveFixtureFromForeignKeyId(matched?.foreignKeyId || entry.cid)
 
@@ -178,18 +187,21 @@ export function DayDetailModal({
           key: `${type}-${i}`,
           entry: {
             ...entry,
-            status: matched?.status || entry.status,
-            cid: matched?.foreignKeyId || entry.cid,
+            status: matched?.status || (entry.status === "Posted" ? "Completed" : entry.status),
+            cid: matched?.foreignKeyId || (entry.status === "Posted" ? "" : entry.cid),
             fixture: resolvedFixture,
             time: matched?.time || entry.time,
           },
         })
       })
 
-      // Append any extra scheduled items for this category not already represented
+      // Append any extra scheduled items for this category not already represented (at most once per distinct idea)
+      const appendedIdeas = new Set<string>()
       schedOfType.forEach((sched) => {
-        if (!claimedSchedIds.has(sched.recordId)) {
+        const normIdea = normalizeIdea(sched.idea)
+        if (!claimedSchedIds.has(sched.recordId) && !appendedIdeas.has(normIdea)) {
           claimedSchedIds.add(sched.recordId)
+          appendedIdeas.add(normIdea)
           rowList.push({
             key: `${type}-${sched.recordId}`,
             entry: {
@@ -334,17 +346,10 @@ export function DayDetailModal({
         if (!curFixture || !curCid) {
           const pairKey = `${r.type}::${r.entry.idea}`
           const items = outputsMap[pairKey] || []
-            const isEntryPosted = Boolean(r.entry.status?.toLowerCase().includes("post"))
-            const validItems = items.filter(
-              (it) => it.status !== "For Manual" && it.status !== "Discard"
-            )
-            const completedItems = validItems.filter((it) => it.status === "Completed")
-            const postedItems = validItems.filter((it) => it.status === "Posted")
-
-            // If calendar entry is marked 'Posted', prioritize posted items; otherwise prioritize completed items
-            const pool = isEntryPosted
-              ? (postedItems.length > 0 ? postedItems : completedItems)
-              : (completedItems.length > 0 ? completedItems : postedItems)
+          const validItems = items.filter(
+            (it) => it.status !== "For Manual" && it.status !== "Discard"
+          )
+          const pool = validItems.filter((it) => it.status === "Completed")
 
             if (pool.length > 0) {
               const candidate = curCid
@@ -386,6 +391,11 @@ export function DayDetailModal({
         const items = outputsMap[pairKey] || []
         const currentCid = sel.cid ?? r.entry!.cid
         const matchedItem = sel.outputItem ?? items.find((it) => it.foreignKeyId === currentCid)
+        const originalScheduled = existingSchedules?.find((s) => {
+          if (s.category !== r.type) return false
+          if (r.entry?.cid && s.foreignKeyId === r.entry.cid) return true
+          return normalizeIdea(s.idea) === normalizeIdea(r.entry?.idea)
+        })
 
         return {
           key: r.key,
@@ -395,10 +405,12 @@ export function DayDetailModal({
           fixture: sel.fixture ?? matchedItem?.fixtureType ?? r.entry!.fixture,
           cid: currentCid,
           outputItem: matchedItem,
+          previousRecordId: originalScheduled?.recordId,
+          previousTableId: originalScheduled?.tableId,
           isoDate: iso,
         }
       })
-  }, [rows, selections, outputsMap, iso])
+  }, [rows, selections, outputsMap, iso, existingSchedules])
 
   const openPreview = (key: string) => {
     const idx = previewItems.findIndex((p) => p.key === key)
@@ -701,23 +713,21 @@ function ContentRow({
   } else if (isLoading) {
     cidOptions = [{ label: "Loading Foreign Keys...", disabled: true }]
   } else {
-    // Filter items: fixture match AND (Completed OR Posted OR currently selected cid), strictly excluding For Manual & Discard
+    // Filter items: fixture match AND (Completed OR currently selected cid), strictly excluding For Manual & Discard
     const matching = items.filter(
       (it) =>
         matchesFixture(it.fixtureType, fixture) &&
         it.status !== "For Manual" &&
         it.status !== "Discard" &&
-        (it.status === "Completed" || it.status === "Posted" || (Boolean(cid) && it.foreignKeyId === cid))
+        (it.status === "Completed" || (Boolean(cid) && it.foreignKeyId === cid))
     )
 
     if (matching.length > 0) {
       cidOptions = matching.map((it) => {
         const lockedInfo = lockedForeignKeys[it.foreignKeyId]
         const isLockedOnOtherDate = Boolean(lockedInfo && lockedInfo.isoDate !== iso)
-        const statusTag = it.status === "Posted" ? " [Posted]" : ""
-
         return {
-          label: `${it.foreignKeyId}${statusTag}`,
+          label: it.foreignKeyId,
           subLabel: isLockedOnOtherDate
             ? `(Already scheduled on ${formatLongDate(lockedInfo.isoDate)})`
             : (it.itemNames?.[0] || it.fixtureType),
@@ -733,14 +743,14 @@ function ContentRow({
     }
   }
 
-  // Generate Fixture dropdown options with real counts of available items (Completed + Posted, strictly excluding For Manual & Discard)
+  // Generate Fixture dropdown options with real counts of available items (Completed or currently selected CID)
   const fixtureOptions: DropdownOption[] = FIXTURES.map((f) => {
     const count = items.filter(
       (it) =>
         matchesFixture(it.fixtureType, f.name) &&
         it.status !== "For Manual" &&
         it.status !== "Discard" &&
-        (it.status === "Completed" || it.status === "Posted" || (Boolean(cid) && it.foreignKeyId === cid))
+        (it.status === "Completed" || (Boolean(cid) && it.foreignKeyId === cid))
     ).length
     return {
       label: count > 0 ? `${f.name} (${count})` : `${f.name} (0)`,
@@ -778,9 +788,7 @@ function ContentRow({
               it.status !== "For Manual" &&
               it.status !== "Discard"
           )
-          const firstMatch =
-            matchingItems.find((it) => it.status === "Completed") ||
-            matchingItems.find((it) => it.status === "Posted")
+          const firstMatch = matchingItems.find((it) => it.status === "Completed")
           onSelectFixture(v, firstMatch?.foreignKeyId, firstMatch)
           setOpenDropdown(null)
         }}

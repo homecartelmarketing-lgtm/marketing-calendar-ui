@@ -100,7 +100,7 @@ describe("ScheduledPostsModal mutation handling", () => {
     expect(onCancelMock).not.toHaveBeenCalled()
   })
 
-  it("renders 2 tabs and displays published/manual items with Instagram links in Publish History tab", () => {
+  it("renders scheduled queue and excludes posted/manual items from the modal", () => {
     const postedStory: ScheduledEntry = {
       ...testScheduledEntry,
       rowKey: "postedStoryKey",
@@ -137,32 +137,13 @@ describe("ScheduledPostsModal mutation handling", () => {
       />
     )
 
-    // Initial state: Active Queue tab shows 1 queued item
-    expect(screen.getByText("Active Queue")).toBeTruthy()
-    expect(screen.getByText("Publish History")).toBeTruthy()
+    // Scheduled item is rendered in queue
     expect(screen.getByText("cid123")).toBeTruthy()
+    // Posted and manual items are completely excluded from the content calendar modal
     expect(screen.queryByText("POSTED-STORY-1")).toBeNull()
-
-    // Switch to Publish History tab
-    fireEvent.click(screen.getByRole("button", { name: /publish history/i }))
-
-    // Active queue item is now hidden, history items are shown
-    expect(screen.queryByText("cid123")).toBeNull()
-    expect(screen.getByText("POSTED-STORY-1")).toBeTruthy()
-    expect(screen.getByText("POSTED-FEED-2")).toBeTruthy()
-    expect(screen.getByText("MANUAL-ITEM-3")).toBeTruthy()
-
-    // Verify badges
-    expect(screen.getAllByText("Published to IG").length).toBe(2)
-    expect(screen.getByText("Needs Manual Review")).toBeTruthy()
-
-    // Verify Instagram links
-    const igLinks = screen.getAllByRole("link", { name: /view on instagram/i })
-    expect(igLinks.length).toBe(2)
-    // Stories opens stories viewer
-    expect(igLinks[0].getAttribute("href")).toBe("https://www.instagram.com/stories/homecartel/")
-    // Feeds opens main profile
-    expect(igLinks[1].getAttribute("href")).toBe("https://www.instagram.com/homecartel/")
+    expect(screen.queryByText("POSTED-FEED-2")).toBeNull()
+    expect(screen.queryByText("MANUAL-ITEM-3")).toBeNull()
+    expect(screen.queryByText("Publish History")).toBeNull()
   })
 })
 
@@ -234,8 +215,8 @@ describe("DayDetailModal Day & Night output handling", () => {
       category: "Feeds",
       contentType: "Day & Night",
       foreignKeyId: "DN-FEEDS-CH-1",
-      status: "Posted",
-      rawStatus: "Posted",
+      status: "Completed",
+      rawStatus: "Completed",
       date: "2026-07-02",
       time: "10:00",
       mediaType: "image",
@@ -404,5 +385,67 @@ describe("DayDetailModal Day & Night output handling", () => {
       expect(screen.getByText("SR-REEL-CH-11")).toBeDefined()
       expect(screen.getByText("Chandelier")).toBeDefined()
     })
+  })
+
+  it("prevents duplicate rows in DayDetailModal when multiple schedules exist for the same idea on a date", async () => {
+    const { DayDetailModal } = await import("@/components/day-detail-modal")
+    const mockSchedule1 = {
+      recordId: "rec1",
+      tableId: "tblStory",
+      category: "Stories",
+      idea: "CTA Story",
+      time: "13:26",
+      status: "Scheduled",
+      foreignKeyId: "CTA-STORY-TL-1",
+      isoDate: "2026-09-16",
+      fixture: "Table Lamp",
+    }
+    const mockSchedule2 = {
+      recordId: "rec2",
+      tableId: "tblStory",
+      category: "Stories",
+      idea: "CTA Story",
+      time: "13:41",
+      status: "Scheduled",
+      foreignKeyId: "CTA-STORY-TL-2",
+      isoDate: "2026-09-16",
+      fixture: "Table Lamp",
+    }
+    const mockSchedule3 = {
+      recordId: "rec3",
+      tableId: "tblStory",
+      category: "Stories",
+      idea: "CTA Story",
+      time: "13:43",
+      status: "Scheduled",
+      foreignKeyId: "CTA-STORY-CH-12",
+      isoDate: "2026-09-16",
+      fixture: "Chandelier",
+    }
+
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ items: [] })))
+
+    render(
+      <DayDetailModal
+        iso="2026-09-16"
+        entries={[
+          {
+            type: "Stories",
+            idea: "CTA",
+            time: "21:00",
+            status: "To Do",
+          },
+        ]}
+        existingSchedules={[mockSchedule1 as any, mockSchedule2 as any, mockSchedule3 as any]}
+        onClose={() => {}}
+      />
+    )
+
+    // The modal should only render ONE row for CTA Story, not 3 duplicate rows
+    expect(screen.getByRole("button", { name: "CTA" })).toBeDefined()
+    expect(screen.queryByRole("button", { name: "CTA Story" })).toBeNull()
+    // It should pick the latest scheduled item (mockSchedule3: 13:43 and CTA-STORY-CH-12)
+    expect(screen.getByText("13:43")).toBeDefined()
+    expect(screen.getByText("CTA-STORY-CH-12")).toBeDefined()
   })
 })

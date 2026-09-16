@@ -75,7 +75,7 @@ export function getLockedForeignKeys(schedules: Record<string, ScheduledEntry[]>
 
   for (const [isoDate, entries] of Object.entries(schedules)) {
     for (const entry of entries) {
-      if (entry.foreignKeyId && (entry.status === "Scheduled" || entry.status === "Posted")) {
+      if (entry.foreignKeyId && entry.status === "Scheduled") {
         locked[entry.foreignKeyId] = {
           isoDate,
           category: entry.category,
@@ -136,12 +136,12 @@ export async function pullAirtableSchedulesWithDiagnostics(options?: { forceFres
         await Promise.all(
           batch.map(async (cfg) => {
             try {
-              // Fetch both Scheduled and Posted records so calendar renders locked foreign keys accurately
+              // Fetch only Scheduled records for the content calendar
               const records = await readAirtableRecords({
                 baseId: AIRTABLE_BASE_ID,
                 tableId: cfg.tableId,
                 token: AIRTABLE_TOKEN,
-                filterByFormula: "OR(Status='Scheduled', Status='Posted')",
+                filterByFormula: "Status='Scheduled'",
               })
           for (let rIdx = 0; rIdx < records.length; rIdx++) {
             const r = records[rIdx]
@@ -167,9 +167,7 @@ export async function pullAirtableSchedulesWithDiagnostics(options?: { forceFres
 
             const { mediaUrl, mediaType, slides } = extractMediaFromRecord(fields, cfg.category, cfg.idea)
 
-            const rawStatus = fields["Status"] || "Scheduled"
-            const status: ScheduledEntry["status"] =
-              rawStatus === "Posted" ? "Posted" : "Scheduled"
+            const status: ScheduledEntry["status"] = "Scheduled"
 
             const entry: ScheduledEntry = {
               recordId: r.id,

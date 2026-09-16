@@ -35,10 +35,21 @@ The overall automation goal is active. This record distinguishes implemented fix
   - Updated `components/content-preview-modal.tsx`: unified "Tag as Scheduled" and "Confirm" flows through `POST /api/schedules`, eliminating unvalidated direct PATCH calls to `/api/content-outputs`.
   - Added 19 provider-isolated regression tests in `tests/durable-scheduling.test.ts` (69 total tests passing across 10 test files).
   - Synchronized `package-lock.json` and `pnpm-lock.yaml` for Vercel deployment compatibility.
+- Implemented Moodboard #2 Feed 2-photo carousel, strict status filtering, and modal deduplication on `codex/moodboard-2-feed-two-photos`:
+  - `lib/output-media.ts` & `lib/output-mapping.ts`: Moodboard #2 Feed extracts Slide 1 (`Moodboard #2 Converted` with resilient aliases) and Slide 2 (`Blended Image` with resilient aliases). Both photos are strictly required; records missing either photo return empty media and are omitted from outputs.
+  - `app/api/content-outputs/route.ts`: added `isCompletedOrDoneStatus` filter, strictly requiring Airtable status `Completed`, `Complete`, or `Done` (case-insensitive) for candidate outputs.
+  - `components/day-detail-modal.tsx`: deduplicated planned slot rows so an idea only appears once per day. When multiple schedules share an idea, the latest one is matched and duplicate extra rows are suppressed. Dropdown candidates strictly require `Completed` status.
+  - `components/content-preview-modal.tsx` & `app/api/schedules/route.ts`: when rescheduling a slot that already had an active scheduled record, the previous record is automatically released back to `Completed` in Airtable and its queue job cancelled to prevent stale duplicate schedules.
+  - Completely removed "Posted" status across the Content Calendar UI:
+    - `lib/schedules.ts`: queries Airtable with `filterByFormula: "Status='Scheduled'"` so only active scheduled posts load into the calendar, locking only scheduled foreign keys.
+    - `components/calendar-grid.tsx`: filters `daySchedules` strictly by `status === "Scheduled"`, completely eliminating "Posted" pills from calendar day cells.
+    - `components/day-detail-modal.tsx`: converts legacy posted entries to `Completed`, restricts candidate dropdowns strictly to `Completed` items, and strips any `[Posted]` labels.
+    - `components/scheduled-posts-modal.tsx`: removed "Publish History" tab and `historyList`, displaying only the active upcoming queue.
+  - Updated unit tests (`tests/output-media.test.ts`, `tests/content-outputs.test.ts`, `tests/modal-mutations.test.tsx`): 86 tests passing across 10 test files.
 
 ## Verification
 
-Latest local run: `npm test`: 83 passed across ten test files. `npm run typecheck`: passed. `npm run build`: passed. `git diff --check`: passed. Provider requests in these tests are fixtures, not live integration evidence.
+Latest local run: `npm test`: 86 passed across ten test files. `npm run typecheck`: passed (0 errors). `npm run build`: passed (clean production compile). `git diff --check`: passed. Provider requests in these tests are fixtures, not live integration evidence.
 
 A read-only local diagnostics run with the operator's configured local environment verified Meta and Airtable connectivity and loaded the schedule/catalog. This does not verify the Vercel Production environment, a native Cron invocation, or an Instagram publication.
 

@@ -32,6 +32,8 @@ export type PreviewItem = {
   fixture?: string
   cid?: string
   outputItem?: OutputItem
+  previousRecordId?: string
+  previousTableId?: string
   isoDate?: string
 }
 
@@ -273,6 +275,8 @@ export function ContentPreviewModal({
         body: JSON.stringify({
           recordId: out.recordId,
           tableId: out.tableId,
+          previousRecordId: item.previousRecordId,
+          previousTableId: item.previousTableId,
           isoDate: scheduledDate,
           rowKey: item.key,
           category: item.type,
