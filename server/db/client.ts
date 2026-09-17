@@ -177,6 +177,24 @@ export async function executeSql<T = any>(queryText: string, params: any[] = [])
 }
 
 /**
+ * Splits a .sql file's text into individual executable statements. Neon's
+ * HTTP driver only accepts one statement per query, so full-line comments
+ * are stripped first, then the remainder is split on statement boundaries
+ * (safe here: no semicolons occur inside string literals, function bodies,
+ * or dollar-quoted blocks in this project's schema files).
+ */
+export function splitSqlStatements(sqlText: string): string[] {
+  const withoutComments = sqlText
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("--"))
+    .join("\n")
+  return withoutComments
+    .split(";")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+}
+
+/**
  * Initializes database schema by applying server/db/schema.sql to Neon Postgres.
  */
 export async function initDbSchema(): Promise<{ success: boolean; message: string }> {
@@ -194,13 +212,7 @@ export async function initDbSchema(): Promise<{ success: boolean; message: strin
     const schemaPath = join(process.cwd(), "server", "db", "schema.sql")
     const schemaSql = readFileSync(schemaPath, "utf-8")
     const sql = neon(dbUrl)
-    // Neon's HTTP driver only accepts one statement per query, so split the
-    // schema file into individual statements (safe here: no semicolons occur
-    // inside string literals, function bodies, or dollar-quoted blocks).
-    const statements = schemaSql
-      .split(";")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0 && !s.startsWith("--"))
+    const statements = splitSqlStatements(schemaSql)
     for (const statement of statements) {
       await sql.query(statement)
     }

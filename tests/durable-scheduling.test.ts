@@ -9,11 +9,13 @@ import {
   recordJobFailure,
   cancelScheduledJob,
 } from "@/server/automation/jobs"
-import { resetMockDb, getMockDb } from "@/server/db/client"
+import { resetMockDb, getMockDb, splitSqlStatements } from "@/server/db/client"
 import { POST as runnerPost, GET as runnerGet } from "@/app/api/schedules/runner/route"
 import { POST as schedulesPost, DELETE as schedulesDelete } from "@/app/api/schedules/route"
 import { POST as schedulesTriggerPost } from "@/app/api/schedules/trigger/route"
 import { NextRequest } from "next/server"
+import { readFileSync } from "fs"
+import { join } from "path"
 
 describe("Durable Scheduling & Queue Tests", () => {
   beforeEach(() => {
@@ -369,6 +371,27 @@ describe("Durable Scheduling & Queue Tests", () => {
       const body = await res.json()
       expect(body.paused).toBe(true)
       expect(body.message).toMatch(/kill[ _]?switch/i)
+    })
+  })
+
+  describe("splitSqlStatements (schema.sql bootstrap parsing)", () => {
+    it("keeps every statement that has a preceding comment line, dropping only the comment itself", () => {
+      const sample = `-- header comment\nCREATE TABLE a (id TEXT);\n\n-- comment for b\nCREATE INDEX idx_b ON a (id);\n\nCREATE INDEX idx_c ON a (id);`
+      const statements = splitSqlStatements(sample)
+      expect(statements).toEqual([
+        "CREATE TABLE a (id TEXT)",
+        "CREATE INDEX idx_b ON a (id)",
+        "CREATE INDEX idx_c ON a (id)",
+      ])
+    })
+
+    it("extracts all 5 statements from the real server/db/schema.sql", () => {
+      const schemaSql = readFileSync(join(process.cwd(), "server", "db", "schema.sql"), "utf-8")
+      const statements = splitSqlStatements(schemaSql)
+      expect(statements.length).toBe(5)
+      expect(statements[0]).toMatch(/^CREATE TABLE IF NOT EXISTS automation_jobs/)
+      expect(statements.some((s) => s.includes("automation_runs"))).toBe(true)
+      expect(statements.every((s) => !s.startsWith("--"))).toBe(true)
     })
   })
 
