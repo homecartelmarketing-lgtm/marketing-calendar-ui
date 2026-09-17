@@ -139,6 +139,9 @@ const mockDb = new MockDatabase()
 
 function getDatabaseUrl(): string | undefined {
   return (
+    // Prefer the Neon Vercel-integration variable (known-live, pooled) over a
+    // possibly stale hand-set DATABASE_URL from before the integration existed.
+    process.env.POSTGRES_DATABASE_URL ||
     process.env.DATABASE_URL ||
     process.env.POSTGRES_URL ||
     process.env.NEON_DATABASE_URL ||
@@ -174,6 +177,24 @@ export async function executeSql<T = any>(queryText: string, params: any[] = [])
 }
 
 /**
+ * Splits a .sql file's text into individual executable statements. Neon's
+ * HTTP driver only accepts one statement per query, so full-line comments
+ * are stripped first, then the remainder is split on statement boundaries
+ * (safe here: no semicolons occur inside string literals, function bodies,
+ * or dollar-quoted blocks in this project's schema files).
+ */
+export function splitSqlStatements(sqlText: string): string[] {
+  const withoutComments = sqlText
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("--"))
+    .join("\n")
+  return withoutComments
+    .split(";")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+}
+
+/**
  * Initializes database schema by applying server/db/schema.sql to Neon Postgres.
  */
 export async function initDbSchema(): Promise<{ success: boolean; message: string }> {
@@ -191,9 +212,11 @@ export async function initDbSchema(): Promise<{ success: boolean; message: strin
     const schemaPath = join(process.cwd(), "server", "db", "schema.sql")
     const schemaSql = readFileSync(schemaPath, "utf-8")
     const sql = neon(dbUrl)
-    // Run DDL statements
-    await sql.query(schemaSql)
-    return { success: true, message: "Postgres schema initialized successfully" }
+    const statements = splitSqlStatements(schemaSql)
+    for (const statement of statements) {
+      await sql.query(statement)
+    }
+    return { success: true, message: `Postgres schema initialized successfully (${statements.length} statements)` }
   } catch (err: any) {
     return { success: false, message: `Schema initialization failed: ${err?.message || err}` }
   }

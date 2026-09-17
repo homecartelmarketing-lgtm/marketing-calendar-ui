@@ -9,10 +9,13 @@ import {
   recordJobFailure,
   cancelScheduledJob,
 } from "@/server/automation/jobs"
-import { resetMockDb, getMockDb } from "@/server/db/client"
+import { resetMockDb, getMockDb, splitSqlStatements } from "@/server/db/client"
 import { POST as runnerPost, GET as runnerGet } from "@/app/api/schedules/runner/route"
 import { POST as schedulesPost, DELETE as schedulesDelete } from "@/app/api/schedules/route"
+import { POST as schedulesTriggerPost } from "@/app/api/schedules/trigger/route"
 import { NextRequest } from "next/server"
+import { readFileSync } from "fs"
+import { join } from "path"
 
 describe("Durable Scheduling & Queue Tests", () => {
   beforeEach(() => {
@@ -368,6 +371,75 @@ describe("Durable Scheduling & Queue Tests", () => {
       const body = await res.json()
       expect(body.paused).toBe(true)
       expect(body.message).toMatch(/kill[ _]?switch/i)
+    })
+  })
+
+  describe("splitSqlStatements (schema.sql bootstrap parsing)", () => {
+    it("keeps every statement that has a preceding comment line, dropping only the comment itself", () => {
+      const sample = `-- header comment\nCREATE TABLE a (id TEXT);\n\n-- comment for b\nCREATE INDEX idx_b ON a (id);\n\nCREATE INDEX idx_c ON a (id);`
+      const statements = splitSqlStatements(sample)
+      expect(statements).toEqual([
+        "CREATE TABLE a (id TEXT)",
+        "CREATE INDEX idx_b ON a (id)",
+        "CREATE INDEX idx_c ON a (id)",
+      ])
+    })
+
+    it("extracts all 5 statements from the real server/db/schema.sql", () => {
+      const schemaSql = readFileSync(join(process.cwd(), "server", "db", "schema.sql"), "utf-8")
+      const statements = splitSqlStatements(schemaSql)
+      expect(statements.length).toBe(5)
+      expect(statements[0]).toMatch(/^CREATE TABLE IF NOT EXISTS automation_jobs/)
+      expect(statements.some((s) => s.includes("automation_runs"))).toBe(true)
+      expect(statements.every((s) => !s.startsWith("--"))).toBe(true)
+    })
+  })
+
+  describe("POST /api/schedules/trigger (Calendar due-now runner nudge)", () => {
+    it("forwards to the runner with the server-held CRON_SECRET, never requiring it from the client", async () => {
+      vi.stubEnv("CRON_SECRET", "super-secret-cron-token")
+
+      const fetchCalls: { url: string; headers: Record<string, string> }[] = []
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async (url: string, init?: RequestInit) => {
+          fetchCalls.push({ url: String(url), headers: (init?.headers as Record<string, string>) || {} })
+          return new Response(JSON.stringify({ success: true, summary: { processed: 1 } }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          })
+        })
+      )
+
+      const req = new NextRequest("http://localhost:3000/api/schedules/trigger", { method: "POST" })
+      const res = await schedulesTriggerPost(req)
+      const body = await res.json()
+
+      expect(fetchCalls.length).toBe(1)
+      expect(fetchCalls[0].url).toContain("/api/schedules/runner")
+      expect(fetchCalls[0].headers.Authorization).toBe("Bearer super-secret-cron-token")
+
+      expect(res.status).toBe(200)
+      expect(body.success).toBe(true)
+      expect(body.response.summary).toEqual({ processed: 1 })
+    })
+
+    it("reports failure without throwing when the runner call itself errors", async () => {
+      vi.stubEnv("CRON_SECRET", "super-secret-cron-token")
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => {
+          throw new Error("network unreachable")
+        })
+      )
+
+      const req = new NextRequest("http://localhost:3000/api/schedules/trigger", { method: "POST" })
+      const res = await schedulesTriggerPost(req)
+      const body = await res.json()
+
+      expect(res.status).toBe(500)
+      expect(body.success).toBe(false)
+      expect(body.error).toContain("network unreachable")
     })
   })
 
