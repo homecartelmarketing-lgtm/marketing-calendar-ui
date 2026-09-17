@@ -314,6 +314,18 @@ export function ContentPreviewModal({
       const schedData = await schedRes.json()
       savedEntry = schedData.entry
 
+      // If the scheduled PHT time is already due, nudge the runner immediately
+      // instead of waiting on external Cron (mirrors scheduler-debug's auto-trigger).
+      // Fire-and-forget: never blocks or fails the schedule save itself.
+      try {
+        const scheduledPhtDate = new Date(`${scheduledDate}T${scheduledTime}:00+08:00`)
+        if (Date.now() >= scheduledPhtDate.getTime()) {
+          fetch("/api/schedules/trigger", { method: "POST" }).catch(() => {})
+        }
+      } catch {
+        // Ignore date parsing issues; the external Cron/runner remains the fallback.
+      }
+
       setStatusByKey((prev) => ({ ...prev, [item.key]: "Scheduled" }))
       onScheduleSuccess?.(item.key, "Scheduled", savedEntry)
       setSuccessTitle("SUCCESSFULLY UPDATED & SCHEDULED!")

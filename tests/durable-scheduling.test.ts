@@ -12,6 +12,7 @@ import {
 import { resetMockDb, getMockDb } from "@/server/db/client"
 import { POST as runnerPost, GET as runnerGet } from "@/app/api/schedules/runner/route"
 import { POST as schedulesPost, DELETE as schedulesDelete } from "@/app/api/schedules/route"
+import { POST as schedulesTriggerPost } from "@/app/api/schedules/trigger/route"
 import { NextRequest } from "next/server"
 
 describe("Durable Scheduling & Queue Tests", () => {
@@ -368,6 +369,54 @@ describe("Durable Scheduling & Queue Tests", () => {
       const body = await res.json()
       expect(body.paused).toBe(true)
       expect(body.message).toMatch(/kill[ _]?switch/i)
+    })
+  })
+
+  describe("POST /api/schedules/trigger (Calendar due-now runner nudge)", () => {
+    it("forwards to the runner with the server-held CRON_SECRET, never requiring it from the client", async () => {
+      vi.stubEnv("CRON_SECRET", "super-secret-cron-token")
+
+      const fetchCalls: { url: string; headers: Record<string, string> }[] = []
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async (url: string, init?: RequestInit) => {
+          fetchCalls.push({ url: String(url), headers: (init?.headers as Record<string, string>) || {} })
+          return new Response(JSON.stringify({ success: true, summary: { processed: 1 } }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          })
+        })
+      )
+
+      const req = new NextRequest("http://localhost:3000/api/schedules/trigger", { method: "POST" })
+      const res = await schedulesTriggerPost(req)
+      const body = await res.json()
+
+      expect(fetchCalls.length).toBe(1)
+      expect(fetchCalls[0].url).toContain("/api/schedules/runner")
+      expect(fetchCalls[0].headers.Authorization).toBe("Bearer super-secret-cron-token")
+
+      expect(res.status).toBe(200)
+      expect(body.success).toBe(true)
+      expect(body.response.summary).toEqual({ processed: 1 })
+    })
+
+    it("reports failure without throwing when the runner call itself errors", async () => {
+      vi.stubEnv("CRON_SECRET", "super-secret-cron-token")
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => {
+          throw new Error("network unreachable")
+        })
+      )
+
+      const req = new NextRequest("http://localhost:3000/api/schedules/trigger", { method: "POST" })
+      const res = await schedulesTriggerPost(req)
+      const body = await res.json()
+
+      expect(res.status).toBe(500)
+      expect(body.success).toBe(false)
+      expect(body.error).toContain("network unreachable")
     })
   })
 

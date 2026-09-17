@@ -139,6 +139,9 @@ const mockDb = new MockDatabase()
 
 function getDatabaseUrl(): string | undefined {
   return (
+    // Prefer the Neon Vercel-integration variable (known-live, pooled) over a
+    // possibly stale hand-set DATABASE_URL from before the integration existed.
+    process.env.POSTGRES_DATABASE_URL ||
     process.env.DATABASE_URL ||
     process.env.POSTGRES_URL ||
     process.env.NEON_DATABASE_URL ||
