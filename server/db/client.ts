@@ -194,9 +194,17 @@ export async function initDbSchema(): Promise<{ success: boolean; message: strin
     const schemaPath = join(process.cwd(), "server", "db", "schema.sql")
     const schemaSql = readFileSync(schemaPath, "utf-8")
     const sql = neon(dbUrl)
-    // Run DDL statements
-    await sql.query(schemaSql)
-    return { success: true, message: "Postgres schema initialized successfully" }
+    // Neon's HTTP driver only accepts one statement per query, so split the
+    // schema file into individual statements (safe here: no semicolons occur
+    // inside string literals, function bodies, or dollar-quoted blocks).
+    const statements = schemaSql
+      .split(";")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0 && !s.startsWith("--"))
+    for (const statement of statements) {
+      await sql.query(statement)
+    }
+    return { success: true, message: `Postgres schema initialized successfully (${statements.length} statements)` }
   } catch (err: any) {
     return { success: false, message: `Schema initialization failed: ${err?.message || err}` }
   }
