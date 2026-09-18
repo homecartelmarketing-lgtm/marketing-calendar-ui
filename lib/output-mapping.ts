@@ -9,7 +9,9 @@ export function getFinalOutputCandidates(category: string, contentType: string):
       return ["Product Closeup Description Converted", "Product Closeup Description Layout"]
     }
     if (type.includes("tips")) return ["Tips and Edu Story Converted", "Tips and Edu Stories"]
-    if (type.includes("day") && type.includes("night")) return ["STORY - Day & Night (2)"]
+    if ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night (")) {
+      return ["STORY - Day & Night (2)"]
+    }
     if (type.includes("moodboard")) return ["Moodboard Converted", "Blended Image"]
     if (type.includes("spec")) return ["PCS Story"]
     if (type.includes("style this")) return ["STORY - Style This? (4)"]
@@ -27,7 +29,7 @@ export function getFinalOutputCandidates(category: string, contentType: string):
         "FEED - Tips & Educational (4)",
       ]
     }
-    if ((type.includes("day") && type.includes("night")) || type.includes("d&n")) {
+    if ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night (")) {
       return ["FEED - Day & Night (2)", "Day Image", "Night Image", "STORY - Day & Night (2)"]
     }
     if (type.includes("collection")) return ["FEED - Collection Category (4)", "Styled Photo - Collection Category", "Collection Category Layout"]
@@ -62,7 +64,9 @@ export function getFinalOutputCandidates(category: string, contentType: string):
   }
 
   if (cat === "reels") {
-    if (type.includes("day") && type.includes("night")) return ["Day and Night Reel with Music and Outro", "REEL - Day & Night"]
+    if ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night (")) {
+      return ["Day and Night Reel with Music and Outro", "REEL - Day & Night"]
+    }
     if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["Converted Reel", "REEL - 1 Product, 3 Styles"]
     if (type.includes("before") && type.includes("after")) return ["Slide Show Before and After Reel", "REEL - Before & After", "Slide Show Before and After"]
     if (type.includes("moodboard")) return ["REEL - Moodboard Reel", "Converted Moodboard Reel"]

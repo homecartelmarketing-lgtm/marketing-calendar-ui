@@ -2,10 +2,11 @@ import fs from "fs"
 import path from "path"
 
 export const MARKETING_AUTOMATION_DIR =
-  process.env.MARKETING_AUTOMATION_DIR ||
-  (fs.existsSync("C:\\Users\\User\\Desktop\\marketing-automation")
-    ? "C:\\Users\\User\\Desktop\\marketing-automation"
-    : "C:\\Users\\User\\marketing-automation")
+  (process.env.MARKETING_AUTOMATION_DIR && fs.existsSync(process.env.MARKETING_AUTOMATION_DIR))
+    ? process.env.MARKETING_AUTOMATION_DIR
+    : (fs.existsSync("C:\\Users\\User\\Desktop\\marketing-automation")
+      ? "C:\\Users\\User\\Desktop\\marketing-automation"
+      : (process.env.MARKETING_AUTOMATION_DIR || "C:\\Users\\User\\marketing-automation"))
 
 export function loadAutomationEnv(): Record<string, string> {
   const out: Record<string, string> = {}

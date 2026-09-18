@@ -276,7 +276,7 @@ function matchIdeaTarget(requestIdea: string, targetIdea: string): boolean {
   if (req.includes("close") && tgt.includes("close")) return true
   if (req.includes("tips") && tgt.includes("tips")) return true
   if (req.includes("before") && tgt.includes("before")) return true
-  if (req.includes("day") && tgt.includes("day")) return true
+  if ((req.includes("day") || req.includes("night") || req.includes("dn")) && (tgt.includes("day") || tgt.includes("night") || tgt.includes("dn"))) return true
   if (req.includes("1prod") && tgt.includes("1prod")) return true
   if (req.includes("showcase") && tgt.includes("showcase")) return true
   if (req.includes("collection") && tgt.includes("collection")) return true

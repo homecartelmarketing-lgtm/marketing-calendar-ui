@@ -111,6 +111,20 @@ describe("scheduler final media selection", () => {
     expect(extractMediaFromRecord({ "STORY - Day & Night (2)": img("https://media.example/story2.jpg") }, "Feeds", "Day & Night").slides)
       .toEqual(["https://media.example/story2.jpg"])
   })
+  it("extracts Day & Night story media across Day & Night, Day (D&N), and Night (D&N) aliases", () => {
+    const record = {
+      "STORY - Day & Night (2)": [
+        ...img("https://media.example/day.jpg"),
+        ...img("https://media.example/night.jpg"),
+      ],
+    }
+    expect(extractMediaFromRecord(record, "Stories", "Day & Night").slides)
+      .toEqual(["https://media.example/day.jpg", "https://media.example/night.jpg"])
+    expect(extractMediaFromRecord(record, "Stories", "Day (D&N)").slides)
+      .toEqual(["https://media.example/day.jpg", "https://media.example/night.jpg"])
+    expect(extractMediaFromRecord(record, "Stories", "Night (D&N)").slides)
+      .toEqual(["https://media.example/day.jpg", "https://media.example/night.jpg"])
+  })
 })
 
 describe("canonical Foreign Key ID derivation", () => {
@@ -130,6 +144,11 @@ describe("canonical Foreign Key ID derivation", () => {
   })
   it("derives DN-REEL prefix for Day & Night reels", () => {
     expect(deriveForeignKeyId({ ID: 5 }, "Reels", "Day & Night", "Chandelier")).toBe("DN-REEL-CH-5")
+  })
+  it("derives DN-STORY prefix for Day & Night stories and aliases", () => {
+    expect(deriveForeignKeyId({ ID: 5 }, "Stories", "Day & Night", "Chandelier")).toBe("DN-STORY-CH-5")
+    expect(deriveForeignKeyId({ ID: 2 }, "Stories", "Day (D&N)", "Pendant Light")).toBe("DN-STORY-PE-2")
+    expect(deriveForeignKeyId({ ID: 3 }, "Stories", "Night (D&N)", "Floor Lamp")).toBe("DN-STORY-FL-3")
   })
   it("derives CTA-STORY prefix for CTA stories", () => {
     expect(deriveForeignKeyId({ ID: 12 }, "Stories", "CTA Story", "Chandelier")).toBe("CTA-STORY-CH-12")

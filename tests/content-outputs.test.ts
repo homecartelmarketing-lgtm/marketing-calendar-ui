@@ -243,4 +243,49 @@ describe("output data completeness", () => {
     expect(body.items[0].videoUrl).toBe("https://media.example/reel.mp4")
     expect(body.items[0].itemNames).toEqual(["Nordic Chandelier", "Linear Glow"])
   })
+
+  it("extracts Day & Night Story records for Day & Night and Day (D&N) requests", async () => {
+    targets.mockReturnValue([
+      { tableId: "tblKkCf88UVQ3Yu07", category: "Stories", idea: "Day & Night", fixtureType: "Chandelier" },
+    ])
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      records: [{
+        id: "rec7n4idUrI3CVYqF",
+        fields: {
+          ID: 5,
+          "Foreign Key ID": "DN-STORY-CH-5",
+          Status: "Complete",
+          "Item Name": "Kaedwen 6 | Modern Chandelier",
+          "STORY - Day & Night (2)": [
+            { id: "att1", url: "https://media.example/dn_day.jpg", type: "image/jpeg" },
+            { id: "att2", url: "https://media.example/dn_night.jpg", type: "image/jpeg" },
+          ],
+        },
+      }],
+    })))
+
+    // 1. Direct "Day & Night" request
+    const res1 = await GET(new NextRequest("http://localhost/api/content-outputs?category=Stories&type=Day%20%26%20Night"))
+    const body1 = await res1.json()
+    expect(res1.status).toBe(200)
+    expect(body1.items.length).toBe(1)
+    expect(body1.items[0].foreignKeyId).toBe("DN-STORY-CH-5")
+    expect(body1.items[0].fixtureType).toBe("Chandelier")
+    expect(body1.items[0].status).toBe("Completed")
+    expect(body1.items[0].slides).toEqual(["https://media.example/dn_day.jpg", "https://media.example/dn_night.jpg"])
+
+    // 2. Calendar variation "Day (D&N)" request
+    const res2 = await GET(new NextRequest("http://localhost/api/content-outputs?category=Stories&type=Day%20(D%26N)"))
+    const body2 = await res2.json()
+    expect(res2.status).toBe(200)
+    expect(body2.items.length).toBe(1)
+    expect(body2.items[0].foreignKeyId).toBe("DN-STORY-CH-5")
+
+    // 3. Calendar variation "Night (D&N)" request
+    const res3 = await GET(new NextRequest("http://localhost/api/content-outputs?category=Stories&type=Night%20(D%26N)"))
+    const body3 = await res3.json()
+    expect(res3.status).toBe(200)
+    expect(body3.items.length).toBe(1)
+    expect(body3.items[0].foreignKeyId).toBe("DN-STORY-CH-5")
+  })
 })

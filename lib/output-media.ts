@@ -31,7 +31,9 @@ export function extractOutputMedia(fields: Record<string, unknown>, category: st
   let selected: Attachment[] = []
   if (cat === "stories" && type.includes("moodboard")) {
     selected = [...read("Moodboard Converted"), ...read("Blended Image")]
-  } else if (cat === "feeds" && ((type.includes("day") && type.includes("night")) || type.includes("d&n"))) {
+  } else if (cat === "stories" && ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night ("))) {
+    selected = read("STORY - Day & Night (2)")
+  } else if (cat === "feeds" && ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night ("))) {
     const day = read("Day Image")[0]
     const night = read("Night Image")[0]
     if (day && night) {
@@ -139,7 +141,7 @@ export function getForeignKeyPrefix(
     if (type.includes("before") && type.includes("after")) {
       return `BA-REEL-${fxCode}`
     }
-    if (type.includes("day") && type.includes("night")) {
+    if ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night (")) {
       return `DN-REEL-${fxCode}`
     }
     if (type.includes("moodboard")) {
@@ -168,7 +170,7 @@ export function getForeignKeyPrefix(
     if (type.includes("this or that")) {
       return `TOT-STORY-${fxCode}`
     }
-    if (type.includes("day") && type.includes("night")) {
+    if ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night (")) {
       return `DN-STORY-${fxCode}`
     }
     if (type.includes("myth") || type.includes("fact")) {
@@ -200,7 +202,7 @@ export function getForeignKeyPrefix(
     if (type.includes("tips")) {
       return `TNE-FEEDS-${fxCode}`
     }
-    if (type.includes("day") && type.includes("night")) {
+    if ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night (")) {
       return `DN-FEEDS-${fxCode}`
     }
     if (type.includes("moodboard #2") || type.includes("moodboard 2")) {

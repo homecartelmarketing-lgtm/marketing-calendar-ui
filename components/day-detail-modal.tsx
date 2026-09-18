@@ -51,7 +51,11 @@ type SelectionState = {
 
 function normalizeIdea(str?: string | null): string {
   if (!str) return ""
-  return str.toLowerCase().replace(/story|feed|reel|layout|photo|styled|#|\s+/g, "")
+  const s = str.toLowerCase().replace(/story|feed|reel|layout|photo|styled|#|\s+/g, "")
+  if (s.includes("d&n") || s.includes("day&night") || s.includes("daynight")) {
+    return "daynight"
+  }
+  return s
 }
 
 function buildSelectionsFromSchedules(
