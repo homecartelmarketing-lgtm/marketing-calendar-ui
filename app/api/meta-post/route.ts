@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { publishToInstagram } from "@/lib/meta-api"
 import { syncAirtableRecord } from "@/lib/schedules"
+import { extractOutputMedia } from "@/lib/output-media"
+import { AIRTABLE_TOKEN, AIRTABLE_BASE_ID } from "@/lib/tables-config"
+import { readAirtableRecordById } from "@/server/airtable/records"
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +14,7 @@ export async function POST(request: NextRequest) {
       mediaType,
       caption,
       category,
+      idea,
       recordId,
       tableId,
       isoDate,
@@ -24,13 +28,41 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const effectiveMediaUrl = mediaUrl || (mediaUrls && mediaUrls[0])
+    let effectiveMediaUrl = mediaUrl || (mediaUrls && mediaUrls[0])
+    let effectiveMediaUrls: string[] =
+      Array.isArray(mediaUrls) && mediaUrls.length > 0 ? mediaUrls : [effectiveMediaUrl]
+
+    // Airtable attachment URLs are signed and expire a few hours after being generated.
+    // The client may have loaded this media a while ago, so refresh it from Airtable
+    // right before publishing instead of trusting whatever the browser still has cached.
+    if (recordId && tableId) {
+      try {
+        const freshRecord = await readAirtableRecordById({
+          baseId: AIRTABLE_BASE_ID,
+          tableId,
+          recordId,
+          token: AIRTABLE_TOKEN,
+        })
+        if (freshRecord) {
+          const fresh = extractOutputMedia(freshRecord.fields, category || "Stories", idea || "")
+          if (fresh.mediaUrl) {
+            effectiveMediaUrl = fresh.mediaUrl
+            effectiveMediaUrls = fresh.slides && fresh.slides.length > 0 ? fresh.slides : [fresh.mediaUrl]
+          }
+        }
+      } catch (refreshErr: any) {
+        console.warn(
+          `[Meta Post Media Refresh] Using client-provided URL for ${recordId} — refresh failed:`,
+          refreshErr?.message
+        )
+      }
+    }
 
     // Call Instagram publishing via Meta API
     const publishResult = await publishToInstagram({
       category: category || "Stories",
       mediaUrl: effectiveMediaUrl,
-      mediaUrls: Array.isArray(mediaUrls) && mediaUrls.length > 0 ? mediaUrls : [effectiveMediaUrl],
+      mediaUrls: effectiveMediaUrls,
       mediaType: mediaType === "video" ? "video" : "image",
       caption,
     })

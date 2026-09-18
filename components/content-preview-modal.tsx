@@ -461,6 +461,7 @@ export function ContentPreviewModal({
           mediaType: isVideo ? "video" : "image",
           caption: caption,
           category: item.type,
+          idea: item.idea,
           recordId: out?.recordId,
           tableId: out?.tableId,
           isoDate: iso,
