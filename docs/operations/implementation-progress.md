@@ -69,10 +69,18 @@ The overall automation goal is active. This record distinguishes implemented fix
   - Fixed with the same pattern: `components/content-preview-modal.tsx` now also sends `idea` in the `/api/meta-post` request body (previously only `category` was sent, so the server couldn't pick the right Airtable field). `app/api/meta-post/route.ts` now re-fetches the Airtable record via `readAirtableRecordById` + `extractOutputMedia` immediately before calling Meta, falling back to the client-provided URL if the refresh fails.
   - Covered by two new tests in `tests/modal-mutations.test.tsx` (fresh URL used on successful refresh; client-provided URL used on refresh failure), plus confirmed the two pre-existing `POST /api/meta-post` tests in that file still pass unmodified.
   - **Not done yet**: not pushed/deployed (local commit only on `codex/post-now-media-refresh`, pending operator approval). `CC-STORY-CH-2` should be retried via "Post Now" once this deploys to confirm live.
+- (2026-09-18, Error 9007 root-cause & fix) Identified why `CC-STORY-CH-2` and image Stories/Feeds failed with `"Failed to publish to Meta: Media ID is not available"` even when media URLs were fresh:
+  - Meta Graph API processes container media downloads asynchronously (`POST /{ig-user-id}/media` returns a container `creation_id` while status is still `IN_PROGRESS`).
+  - In `lib/meta-api.ts`, polling `status_code === 'FINISHED'` was only implemented for videos (`if (isVid)` / `if (isVideo)`). For images (including single images, multi-slide Stories, and carousel Feeds), the code called `POST /{ig-user-id}/media_publish` within milliseconds of container creation, causing Meta to reject the call with Error Code 9007 (`"Media ID is not available"`).
+  - Implemented `waitForContainerReady()` in `lib/meta-api.ts` to poll `GET /{creation_id}?fields=status_code,status` until `status_code === 'FINISHED'` across all media formats (images, videos, multi-slide Stories, carousel items, and parent carousels) before publishing.
+  - Implemented `publishContainerWithRetry()` to catch transient 9007 errors and retry up to 2 times after a 2.5-second backoff.
+  - Added new regression test suite `tests/meta-publishing.test.ts` (5 tests) covering image container polling, multi-slide Story sequential polling, Error 9007 retry recovery, terminal ERROR container abort, and carousel child/parent polling.
+  - Updated mock stubs in `tests/durable-scheduling.test.ts` and `tests/modal-mutations.test.tsx` to handle `fields=status_code`.
+  - Local commit on `codex/meta-container-readiness`.
 
 ## Verification
 
-Latest local run (2026-09-18): `npm test`: 94 passed across ten test files. `npm run typecheck`: passed (0 errors). `npm run build`: passed (clean production compile). Provider requests in these tests are fixtures, not live integration evidence. The Calendar-to-runner trigger has only been verified locally against the mock DB; it does not confirm a live Vercel Cron invocation or a live Instagram publish — see "Next work" item 6.
+Latest local run (2026-09-18): `npm test`: 101 passed across 11 test files. `npm run typecheck`: passed (0 errors). `npm run build`: passed (clean production compile). Provider requests in these tests are fixtures, not live integration evidence. The Calendar-to-runner trigger has only been verified locally against the mock DB; it does not confirm a live Vercel Cron invocation or a live Instagram publish — see "Next work" item 6.
 
 Prior run: `npm test`: 90 passed across ten test files, before the 2026-09-18 media-refresh fix and its two new tests.
 
