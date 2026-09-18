@@ -35,11 +35,119 @@ export interface MetaPublishResponse {
   isSimulated?: boolean
 }
 
+export interface ContainerStatusResult {
+  ready: boolean
+  error?: string
+}
+
+/**
+ * Polls the Meta Graph API media container status until it reaches FINISHED or a terminal error.
+ * Meta processes image downloads and video transcoding asynchronously; calling media_publish
+ * before the container reaches FINISHED results in Error 9007 ("Media ID is not available").
+ */
+export async function waitForContainerReady(params: {
+  graphRoot: string
+  creationId: string
+  accessToken: string
+  isVideo?: boolean
+  pollIntervalMs?: number
+  maxWaitMs?: number
+}): Promise<ContainerStatusResult> {
+  const { graphRoot, creationId, accessToken, isVideo = false } = params
+  const isTestEnv = process.env.NODE_ENV === "test" || process.env.VITEST === "true"
+  const defaultMaxWait = isVideo ? 120_000 : 30_000
+  const defaultInterval = isVideo ? 3_000 : 1_500
+  const maxWaitMs = params.maxWaitMs ?? (isTestEnv ? 500 : defaultMaxWait)
+  const pollIntervalMs = params.pollIntervalMs ?? (isTestEnv ? 10 : defaultInterval)
+  const initialWaitMs = isTestEnv ? 0 : (isVideo ? 2_000 : 1_000)
+
+  if (initialWaitMs > 0) {
+    await new Promise((resolve) => setTimeout(resolve, initialWaitMs))
+  }
+
+  const startTime = Date.now()
+
+  while (Date.now() - startTime < maxWaitMs) {
+    try {
+      const statusRes = await fetch(
+        `${graphRoot}/${creationId}?fields=status_code,status&access_token=${accessToken}`
+      )
+      if (statusRes.ok) {
+        const statusData = await statusRes.json()
+        const statusCode = statusData.status_code
+        if (statusCode === "FINISHED") {
+          return { ready: true }
+        } else if (statusCode === "ERROR" || statusCode === "EXPIRED") {
+          const detail = statusData.status || statusData.error?.message || statusCode
+          return {
+            ready: false,
+            error: `Media container processing failed on Meta servers: ${detail}`,
+          }
+        }
+      }
+    } catch {
+      // Allow intermittent network blips during polling
+    }
+    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
+  }
+
+  return {
+    ready: false,
+    error: `Media container processing timed out on Meta servers (${isVideo ? "video" : "image"}) before publishing`,
+  }
+}
+
+/**
+ * Calls Meta's /{ig-user-id}/media_publish endpoint with retry handling for transient 9007 errors.
+ */
+export async function publishContainerWithRetry(params: {
+  baseUrl: string
+  creationId: string
+  accessToken: string
+  maxRetries?: number
+  retryDelayMs?: number
+}): Promise<{ success: boolean; id?: string; error?: string }> {
+  const { baseUrl, creationId, accessToken, maxRetries = 2 } = params
+  const isTestEnv = process.env.NODE_ENV === "test" || process.env.VITEST === "true"
+  const retryDelay = params.retryDelayMs ?? (isTestEnv ? 10 : 2500)
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const publishRes = await fetch(`${baseUrl}/media_publish`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        creation_id: creationId,
+        access_token: accessToken,
+      }),
+    })
+
+    const publishData = await publishRes.json().catch(() => ({}))
+    if (publishRes.ok && publishData.id) {
+      return { success: true, id: publishData.id }
+    }
+
+    const errorMessage = publishData.error?.message || "Failed to publish media container"
+    const errorCode = publishData.error?.code
+    const isMediaIdUnavailable =
+      errorCode === 9007 || errorMessage.toLowerCase().includes("media id is not available")
+
+    if (isMediaIdUnavailable && attempt < maxRetries) {
+      await new Promise((resolve) => setTimeout(resolve, retryDelay))
+      continue
+    }
+
+    return { success: false, error: errorMessage }
+  }
+
+  return { success: false, error: "Failed to publish media container after retries" }
+}
+
 /**
  * Publishes content to Instagram via the Instagram Graph API.
  * Follows the 2-step container creation and media publish flow:
  * 1. POST /{ig-user-id}/media (create container)
- * 2. POST /{ig-user-id}/media_publish (publish container)
+ * 2. GET /{creation-id}?fields=status_code (poll until FINISHED)
+ * 3. POST /{ig-user-id}/media_publish (publish container)
  * Supports multi-slide Stories (sequential) and multi-image Feeds (CAROUSEL).
  */
 export async function publishToInstagram(
@@ -82,7 +190,7 @@ export async function publishToInstagram(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(slideParams),
         })
-        const createData = await createRes.json()
+        const createData = await createRes.json().catch(() => ({}))
         if (!createRes.ok || !createData.id) {
           return {
             success: false,
@@ -91,57 +199,31 @@ export async function publishToInstagram(
         }
 
         const creationId = createData.id
-
-        if (isVid) {
-          const MAX_WAIT_MS = 120000
-          const POLL_INTERVAL_MS = 5000
-          const startTime = Date.now()
-          let isFinished = false
-
-          while (Date.now() - startTime < MAX_WAIT_MS) {
-            await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
-            try {
-              const statusRes = await fetch(
-                `${graphRoot}/${creationId}?fields=status_code&access_token=${config.accessToken}`
-              )
-              if (statusRes.ok) {
-                const statusData = await statusRes.json()
-                if (statusData.status_code === "FINISHED") {
-                  isFinished = true
-                  break
-                } else if (statusData.status_code === "ERROR" || statusData.status_code === "EXPIRED") {
-                  return {
-                    success: false,
-                    error: `Video container processing failed: ${statusData.status_code}`,
-                  }
-                }
-              }
-            } catch {}
-          }
-          if (!isFinished) {
-            return {
-              success: false,
-              error: "Story video processing timed out before publishing",
-            }
-          }
-        }
-
-        const publishRes = await fetch(`${baseUrl}/media_publish`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            creation_id: creationId,
-            access_token: config.accessToken,
-          }),
+        const readyCheck = await waitForContainerReady({
+          graphRoot,
+          creationId,
+          accessToken: config.accessToken,
+          isVideo: isVid,
         })
-        const publishData = await publishRes.json()
-        if (!publishRes.ok || !publishData.id) {
+        if (!readyCheck.ready) {
           return {
             success: false,
-            error: publishData.error?.message || "Failed to publish Story slide container",
+            error: readyCheck.error || "Story slide processing failed before publishing",
           }
         }
-        publishedIds.push(publishData.id)
+
+        const publishOutcome = await publishContainerWithRetry({
+          baseUrl,
+          creationId,
+          accessToken: config.accessToken,
+        })
+        if (!publishOutcome.success || !publishOutcome.id) {
+          return {
+            success: false,
+            error: publishOutcome.error || "Failed to publish Story slide container",
+          }
+        }
+        publishedIds.push(publishOutcome.id)
       }
 
       return {
@@ -165,13 +247,27 @@ export async function publishToInstagram(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(itemParams),
         })
-        const itemData = await itemRes.json()
+        const itemData = await itemRes.json().catch(() => ({}))
         if (!itemRes.ok || !itemData.id) {
           return {
             success: false,
             error: itemData.error?.message || "Failed to create carousel item container",
           }
         }
+
+        const childReady = await waitForContainerReady({
+          graphRoot,
+          creationId: itemData.id,
+          accessToken: config.accessToken,
+          isVideo: isVid,
+        })
+        if (!childReady.ready) {
+          return {
+            success: false,
+            error: childReady.error || "Carousel item processing failed before publishing",
+          }
+        }
+
         childIds.push(itemData.id)
       }
 
@@ -191,7 +287,7 @@ export async function publishToInstagram(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(carouselParams),
       })
-      const createData = await createRes.json()
+      const createData = await createRes.json().catch(() => ({}))
       if (!createRes.ok || !createData.id) {
         return {
           success: false,
@@ -199,25 +295,34 @@ export async function publishToInstagram(
         }
       }
 
-      const publishRes = await fetch(`${baseUrl}/media_publish`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          creation_id: createData.id,
-          access_token: config.accessToken,
-        }),
+      const carouselReady = await waitForContainerReady({
+        graphRoot,
+        creationId: createData.id,
+        accessToken: config.accessToken,
+        isVideo: false,
       })
-      const publishData = await publishRes.json()
-      if (!publishRes.ok || !publishData.id) {
+      if (!carouselReady.ready) {
         return {
           success: false,
-          error: publishData.error?.message || "Failed to publish carousel container",
+          error: carouselReady.error || "Carousel container processing failed before publishing",
+        }
+      }
+
+      const publishOutcome = await publishContainerWithRetry({
+        baseUrl,
+        creationId: createData.id,
+        accessToken: config.accessToken,
+      })
+      if (!publishOutcome.success || !publishOutcome.id) {
+        return {
+          success: false,
+          error: publishOutcome.error || "Failed to publish carousel container",
         }
       }
 
       return {
         success: true,
-        id: publishData.id,
+        id: publishOutcome.id,
       }
     }
 
@@ -260,7 +365,7 @@ export async function publishToInstagram(
       body: JSON.stringify(containerParams),
     })
 
-    const createData = await createRes.json()
+    const createData = await createRes.json().catch(() => ({}))
     if (!createRes.ok || !createData.id) {
       return {
         success: false,
@@ -269,67 +374,36 @@ export async function publishToInstagram(
     }
 
     const creationId = createData.id
-
-    // 2. For video content (Reels & video Feeds), poll status until container is FINISHED
     const isVideo = payload.mediaType === "video" || payload.category === "Reels"
-    if (isVideo) {
-      const MAX_WAIT_MS = 120000 // up to 2 minutes
-      const POLL_INTERVAL_MS = 5000
-      const startTime = Date.now()
-      let isFinished = false
 
-      while (Date.now() - startTime < MAX_WAIT_MS) {
-        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
-        try {
-          const statusRes = await fetch(
-            `${graphRoot}/${creationId}?fields=status_code&access_token=${config.accessToken}`
-          )
-          if (statusRes.ok) {
-            const statusData = await statusRes.json()
-            if (statusData.status_code === "FINISHED") {
-              isFinished = true
-              break
-            } else if (statusData.status_code === "ERROR" || statusData.status_code === "EXPIRED") {
-              return {
-                success: false,
-                error: `Video container processing failed with status: ${statusData.status_code}`,
-              }
-            }
-          }
-        } catch {
-          // Retry on intermittent network glitch while polling
-        }
-      }
-
-      if (!isFinished) {
-        return {
-          success: false,
-          error: "Video container processing timed out on Meta servers before publishing",
-        }
+    const readyCheck = await waitForContainerReady({
+      graphRoot,
+      creationId,
+      accessToken: config.accessToken,
+      isVideo,
+    })
+    if (!readyCheck.ready) {
+      return {
+        success: false,
+        error: readyCheck.error || "Media container processing failed before publishing",
       }
     }
 
-    // 3. Publish Media Container
-    const publishRes = await fetch(`${baseUrl}/media_publish`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        creation_id: creationId,
-        access_token: config.accessToken,
-      }),
+    const publishOutcome = await publishContainerWithRetry({
+      baseUrl,
+      creationId,
+      accessToken: config.accessToken,
     })
-
-    const publishData = await publishRes.json()
-    if (!publishRes.ok || !publishData.id) {
+    if (!publishOutcome.success || !publishOutcome.id) {
       return {
         success: false,
-        error: publishData.error?.message || "Failed to publish media container",
+        error: publishOutcome.error || "Failed to publish media container",
       }
     }
 
     return {
       success: true,
-      id: publishData.id,
+      id: publishOutcome.id,
     }
   } catch (error: any) {
     return {

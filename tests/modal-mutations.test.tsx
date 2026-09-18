@@ -204,6 +204,110 @@ describe("POST /api/meta-post route behavior", () => {
     expect(json.success).toBe(false)
     expect(json.message).toContain("Media URL is required")
   })
+
+  it("re-fetches Airtable right before publishing and uses the fresh signed URL, not the client's stale one", async () => {
+    vi.stubEnv("META_ACCESS_TOKEN", "test-meta-token")
+    vi.stubEnv("META_IG_ACCOUNT_ID", "test-ig-account")
+    const { POST } = await import("@/app/api/meta-post/route")
+
+    const staleUrl = "https://v5.airtableusercontent.com/stale-expired/photo.jpg"
+    const freshUrl = "https://v5.airtableusercontent.com/fresh-signed/photo.jpg"
+    let createdWith: any = null
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (url.includes("api.airtable.com")) {
+          return new Response(
+            JSON.stringify({
+              id: "rec123",
+              fields: { "CTA Converted Image": [{ url: freshUrl, type: "image/jpeg" }] },
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } }
+          )
+        }
+        if (url.includes("graph.facebook.com") && url.endsWith("/media")) {
+          createdWith = JSON.parse((init?.body as string) || "{}")
+          return new Response(JSON.stringify({ id: "creation_123" }), { status: 200 })
+        }
+        if (url.includes("fields=status_code")) {
+          return new Response(JSON.stringify({ status_code: "FINISHED" }), { status: 200 })
+        }
+        if (url.includes("media_publish")) {
+          return new Response(JSON.stringify({ id: "ig_pub_123" }), { status: 200 })
+        }
+        throw new Error("Unexpected fetch in test: " + url)
+      })
+    )
+
+    const req = new Request("http://localhost:3000/api/meta-post", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mediaUrl: staleUrl,
+        category: "Stories",
+        idea: "CTA Story",
+        recordId: "rec123",
+        tableId: "tbl123",
+      }),
+    })
+
+    const res = await POST(req as any)
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.success).toBe(true)
+    expect(createdWith.image_url).toBe(freshUrl)
+    expect(createdWith.image_url).not.toBe(staleUrl)
+  })
+
+  it("falls back to the client-provided URL when the Airtable refresh fails", async () => {
+    vi.stubEnv("META_ACCESS_TOKEN", "test-meta-token")
+    vi.stubEnv("META_IG_ACCOUNT_ID", "test-ig-account")
+    const { POST } = await import("@/app/api/meta-post/route")
+
+    const staleUrl = "https://v5.airtableusercontent.com/still-valid-for-now/photo.jpg"
+    let createdWith: any = null
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (url.includes("api.airtable.com")) {
+          throw new Error("Airtable temporarily unreachable")
+        }
+        if (url.includes("graph.facebook.com") && url.endsWith("/media")) {
+          createdWith = JSON.parse((init?.body as string) || "{}")
+          return new Response(JSON.stringify({ id: "creation_123" }), { status: 200 })
+        }
+        if (url.includes("fields=status_code")) {
+          return new Response(JSON.stringify({ status_code: "FINISHED" }), { status: 200 })
+        }
+        if (url.includes("media_publish")) {
+          return new Response(JSON.stringify({ id: "ig_pub_123" }), { status: 200 })
+        }
+        throw new Error("Unexpected fetch in test: " + url)
+      })
+    )
+
+    const req = new Request("http://localhost:3000/api/meta-post", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mediaUrl: staleUrl,
+        category: "Stories",
+        idea: "CTA Story",
+        recordId: "rec123",
+        tableId: "tbl123",
+      }),
+    })
+
+    const res = await POST(req as any)
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.success).toBe(true)
+    expect(createdWith.image_url).toBe(staleUrl)
+  })
 })
 
 describe("DayDetailModal Day & Night output handling", () => {
