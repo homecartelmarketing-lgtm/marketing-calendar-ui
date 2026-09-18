@@ -82,3 +82,34 @@ export async function readAirtableRecords(options: {
   } while (offset)
   return [...records.values()]
 }
+
+/** Fetch one record's current fields. Airtable attachment URLs are signed and expire a
+ * few hours after being generated, so callers publishing on a delay (e.g. the automation
+ * runner) must re-fetch immediately before use rather than reuse an older snapshot. */
+export async function readAirtableRecordById(options: {
+  baseId: string
+  tableId: string
+  recordId: string
+  token: string
+  signal?: AbortSignal
+}): Promise<AirtableRecord | null> {
+  if (!options.token || !options.baseId || !options.tableId || !options.recordId) {
+    throw new AirtableReadError("MISSING_CONFIGURATION")
+  }
+  const deadline = AbortSignal.timeout(15_000)
+  const signal = options.signal ? AbortSignal.any([options.signal, deadline]) : deadline
+  await paceRead(options.baseId, signal)
+  const url = `https://api.airtable.com/v0/${encodeURIComponent(options.baseId)}/${encodeURIComponent(options.tableId)}/${encodeURIComponent(options.recordId)}`
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${options.token}` },
+    cache: "no-store",
+    signal: AbortSignal.any([signal, AbortSignal.timeout(10_000)]),
+  })
+  if (response.status === 404) return null
+  if (!response.ok) throw new AirtableReadError("PROVIDER_ERROR", response.status)
+  const record = await response.json()
+  if (!record || typeof record.id !== "string" || !record.fields || typeof record.fields !== "object") {
+    throw new AirtableReadError("INVALID_RECORD")
+  }
+  return record
+}

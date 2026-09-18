@@ -489,4 +489,134 @@ describe("Durable Scheduling & Queue Tests", () => {
       expect(body.message).toMatch(/media/i)
     })
   })
+
+  describe("Runner Media Refresh (Airtable attachment URLs expire before scheduled posts fire)", () => {
+    // A job "due now" needs scheduled_time before the runner's real Date.now(), while still
+    // future-validated against its own referenceNow at creation — so anchor both to real time.
+    function dueJobPhtParts(minutesAgo: number) {
+      const at = new Date(Date.now() - minutesAgo * 60 * 1000)
+      const isoDate = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Manila", year: "numeric", month: "2-digit", day: "2-digit",
+      }).format(at)
+      const time = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Manila", hour: "2-digit", minute: "2-digit", hour12: false,
+      }).format(at)
+      return { isoDate, time }
+    }
+
+    function stubProviders(handlers: {
+      airtable?: () => Response
+      onMediaCreate?: (body: any) => void
+    }) {
+      return vi.fn(async (url: string, init?: RequestInit) => {
+        const urlStr = String(url)
+        if (urlStr.includes("api.airtable.com")) {
+          if (handlers.airtable) return handlers.airtable()
+          throw new Error("Unexpected Airtable call")
+        }
+        if (urlStr.includes("graph.facebook.com") && urlStr.endsWith("/media")) {
+          handlers.onMediaCreate?.(JSON.parse((init?.body as string) || "{}"))
+          return new Response(JSON.stringify({ id: "creation_123" }), {
+            status: 200, headers: { "Content-Type": "application/json" },
+          })
+        }
+        if (urlStr.includes("media_publish")) {
+          return new Response(JSON.stringify({ id: "ig_pub_123" }), {
+            status: 200, headers: { "Content-Type": "application/json" },
+          })
+        }
+        throw new Error("Unexpected fetch in test: " + urlStr)
+      })
+    }
+
+    beforeEach(() => {
+      vi.stubEnv("CRON_SECRET", "test-secret")
+      vi.stubEnv("ENABLE_AUTOMATION_SCHEDULING", "true")
+      vi.stubEnv("META_ACCESS_TOKEN", "test-meta-token")
+      vi.stubEnv("META_IG_ACCOUNT_ID", "test-ig-account")
+    })
+
+    it("re-fetches Airtable right before publishing and uses the fresh signed URL, not the stale queue snapshot", async () => {
+      const staleUrl = "https://v5.airtableusercontent.com/stale-expired/photo.jpg"
+      const freshUrl = "https://v5.airtableusercontent.com/fresh-signed/photo.jpg"
+      const { isoDate, time } = dueJobPhtParts(2)
+
+      await createOrReplaceScheduledJob({
+        recordId: "recFreshTest",
+        tableId: "tblFreshTest",
+        category: "Stories",
+        idea: "CTA Story",
+        caption: "Refresh test",
+        mediaType: "image",
+        mediaUrl: staleUrl,
+        isoDate,
+        time,
+        referenceNow: new Date(Date.now() - 10 * 60 * 1000),
+      })
+
+      let createdWith: any = null
+      vi.stubGlobal(
+        "fetch",
+        stubProviders({
+          airtable: () =>
+            new Response(
+              JSON.stringify({
+                id: "recFreshTest",
+                fields: { "CTA Converted Image": [{ url: freshUrl, type: "image/jpeg" }] },
+              }),
+              { status: 200, headers: { "Content-Type": "application/json" } }
+            ),
+          onMediaCreate: (body) => { createdWith = body },
+        })
+      )
+
+      const req = new NextRequest("http://localhost:3000/api/schedules/runner", {
+        headers: { Authorization: "Bearer test-secret" },
+      })
+      const res = await runnerGet(req)
+      const body = await res.json()
+
+      expect(res.status).toBe(200)
+      expect(body.summary.published).toBe(1)
+      expect(createdWith.image_url).toBe(freshUrl)
+      expect(createdWith.image_url).not.toBe(staleUrl)
+    })
+
+    it("falls back to the stored snapshot URL when the Airtable refresh fails", async () => {
+      const staleUrl = "https://v5.airtableusercontent.com/stale-but-still-valid/photo.jpg"
+      const { isoDate, time } = dueJobPhtParts(2)
+
+      await createOrReplaceScheduledJob({
+        recordId: "recFallbackTest",
+        tableId: "tblFallbackTest",
+        category: "Stories",
+        idea: "CTA Story",
+        caption: "Fallback test",
+        mediaType: "image",
+        mediaUrl: staleUrl,
+        isoDate,
+        time,
+        referenceNow: new Date(Date.now() - 10 * 60 * 1000),
+      })
+
+      let createdWith: any = null
+      vi.stubGlobal(
+        "fetch",
+        stubProviders({
+          airtable: () => { throw new Error("Airtable temporarily unreachable") },
+          onMediaCreate: (body) => { createdWith = body },
+        })
+      )
+
+      const req = new NextRequest("http://localhost:3000/api/schedules/runner", {
+        headers: { Authorization: "Bearer test-secret" },
+      })
+      const res = await runnerGet(req)
+      const body = await res.json()
+
+      expect(res.status).toBe(200)
+      expect(body.summary.published).toBe(1)
+      expect(createdWith.image_url).toBe(staleUrl)
+    })
+  })
 })
