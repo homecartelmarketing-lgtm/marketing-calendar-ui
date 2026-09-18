@@ -36,3 +36,9 @@ catalyst-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+# Obsidian local cache & workspace state (keeps shared configs, ignores window layouts)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/graph.json
+.obsidian/cache/

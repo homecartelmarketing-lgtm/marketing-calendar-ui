@@ -22,3 +22,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Keep implementation progress honest: local tests do not prove a live Instagram publication or a successful deployment.
 - Follow `docs/development/git-workflow.md`. Ask before pushing, creating a PR, merging, deploying, or performing a live publication test.
 - Update relevant documentation with behavior/configuration changes and leave a precise continuation record for unfinished work.
+- Consult the Obsidian Memory Vault (`docs/00 - Index.md`, `docs/architecture/`, and `docs/troubleshooting/`) before implementing fixes or modifying core providers.
+- After completing tasks, debugging, or introducing fixes, record a structured session entry in `docs/daily-logs/YYYY-MM-DD.md` following `docs/templates/session-log-template.md`.
