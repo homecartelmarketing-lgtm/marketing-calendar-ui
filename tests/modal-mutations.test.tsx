@@ -230,6 +230,9 @@ describe("POST /api/meta-post route behavior", () => {
           createdWith = JSON.parse((init?.body as string) || "{}")
           return new Response(JSON.stringify({ id: "creation_123" }), { status: 200 })
         }
+        if (url.includes("fields=status_code")) {
+          return new Response(JSON.stringify({ status_code: "FINISHED" }), { status: 200 })
+        }
         if (url.includes("media_publish")) {
           return new Response(JSON.stringify({ id: "ig_pub_123" }), { status: 200 })
         }
@@ -275,6 +278,9 @@ describe("POST /api/meta-post route behavior", () => {
         if (url.includes("graph.facebook.com") && url.endsWith("/media")) {
           createdWith = JSON.parse((init?.body as string) || "{}")
           return new Response(JSON.stringify({ id: "creation_123" }), { status: 200 })
+        }
+        if (url.includes("fields=status_code")) {
+          return new Response(JSON.stringify({ status_code: "FINISHED" }), { status: 200 })
         }
         if (url.includes("media_publish")) {
           return new Response(JSON.stringify({ id: "ig_pub_123" }), { status: 200 })

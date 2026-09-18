@@ -520,6 +520,11 @@ describe("Durable Scheduling & Queue Tests", () => {
             status: 200, headers: { "Content-Type": "application/json" },
           })
         }
+        if (urlStr.includes("fields=status_code")) {
+          return new Response(JSON.stringify({ status_code: "FINISHED" }), {
+            status: 200, headers: { "Content-Type": "application/json" },
+          })
+        }
         if (urlStr.includes("media_publish")) {
           return new Response(JSON.stringify({ id: "ig_pub_123" }), {
             status: 200, headers: { "Content-Type": "application/json" },
