@@ -26,10 +26,13 @@ export async function GET(request: NextRequest) {
 
   try {
     const rows = await executeSql(
-      `SELECT id, record_id, table_id, status, scheduled_time, scheduled_iso, time_pht, created_at
+      `SELECT id, record_id, table_id, foreign_key_id, category, status,
+              scheduled_time, scheduled_iso, time_pht, created_at, updated_at,
+              attempts, max_attempts, next_attempt_at,
+              last_error_code, last_error_message, meta_publication_ids
        FROM automation_jobs
        ORDER BY created_at DESC
-       LIMIT 50`
+       LIMIT 100`
     )
     return NextResponse.json({ success: true, usingMockDb: false, count: rows.length, jobs: rows })
   } catch (err: any) {

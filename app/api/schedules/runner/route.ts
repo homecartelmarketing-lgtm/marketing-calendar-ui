@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { publishToInstagram } from "@/lib/meta-api"
 import { syncAirtableRecord } from "@/lib/schedules"
+import { extractOutputMedia } from "@/lib/output-media"
+import { AIRTABLE_TOKEN, AIRTABLE_BASE_ID } from "@/lib/tables-config"
+import { readAirtableRecordById } from "@/server/airtable/records"
 import {
   claimDueJobs,
   recordJobSuccess,
@@ -144,11 +147,38 @@ export async function GET(request: NextRequest) {
         continue
       }
 
-      // Live publish to Meta
+      // Live publish to Meta.
+      // Airtable attachment URLs are signed and expire a few hours after being generated.
+      // The queue only stores whatever URL was valid at schedule time, so a post scheduled
+      // hours/days out would otherwise hand Meta a dead link ("Media ID is not available").
+      // Re-fetch the record right before publishing instead of trusting the stored snapshot.
+      let liveMediaUrl = job.media_url
+      let liveMediaUrls = mediaUrls
+      try {
+        const freshRecord = await readAirtableRecordById({
+          baseId: AIRTABLE_BASE_ID,
+          tableId: job.table_id,
+          recordId: job.record_id,
+          token: AIRTABLE_TOKEN,
+        })
+        if (freshRecord) {
+          const fresh = extractOutputMedia(freshRecord.fields, job.category, job.idea || "")
+          if (fresh.mediaUrl) {
+            liveMediaUrl = fresh.mediaUrl
+            liveMediaUrls = fresh.slides && fresh.slides.length > 0 ? fresh.slides : [fresh.mediaUrl]
+          }
+        }
+      } catch (refreshErr: any) {
+        console.warn(
+          `[Runner Media Refresh] Using stored snapshot for ${job.record_id} — refresh failed:`,
+          refreshErr?.message
+        )
+      }
+
       const publishRes = await publishToInstagram({
         category: job.category,
-        mediaUrl: job.media_url,
-        mediaUrls,
+        mediaUrl: liveMediaUrl,
+        mediaUrls: liveMediaUrls,
         mediaType: job.category === "Reels" ? "video" : job.media_type === "video" ? "video" : "image",
         caption: job.caption,
       })
