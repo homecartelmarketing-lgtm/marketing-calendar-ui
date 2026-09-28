@@ -103,6 +103,12 @@ export function ContentCalendar() {
         const result = parseContentCsv(text)
         mergeByDate(result.byDate)
         const days = Object.keys(result.byDate).length
+        const dates = Object.keys(result.byDate).sort()
+        if (dates.length > 0) {
+          const target = dates.find((d) => d.startsWith("2026-10")) ?? dates[dates.length - 1]
+          const [y, m] = target.split("-").map(Number)
+          if (y && m) setCurrent({ year: y, month: m - 1 })
+        }
         setImportStatus(`Imported ${result.rowCount} row${result.rowCount === 1 ? "" : "s"} across ${days} day${days === 1 ? "" : "s"}`)
         return
       }
@@ -116,9 +122,10 @@ export function ContentCalendar() {
       }
       mergeByDate(byDate)
 
-      // Jump to the first imported month so the new content is visible.
-      const first = months[0]?.split("-").map(Number)
-      if (first) setCurrent({ year: first[0], month: first[1] - 1 })
+      // Jump to October if present, or to the latest imported month so the new content is visible.
+      const targetMonthStr = months.includes("2026-10") ? "2026-10" : months[months.length - 1]
+      const target = targetMonthStr?.split("-").map(Number)
+      if (target) setCurrent({ year: target[0], month: target[1] - 1 })
 
       setImportStatus(`Imported ${dayCount} days across ${months.length} month${months.length === 1 ? "" : "s"}`)
     } catch {

@@ -1,4 +1,7 @@
+import { read, utils } from "xlsx"
 import type { ContentEntry, ContentType } from "@/lib/content"
+import { MONTH_NAMES } from "@/lib/calendar-data"
+import { parseGridRows } from "@/lib/workbook"
 
 const VALID_TYPES: ContentType[] = ["Feeds", "Reels", "Stories"]
 
@@ -45,9 +48,9 @@ export type CsvImportResult = {
 }
 
 /**
- * Parse a content-calendar CSV. Recognized headers (case-insensitive):
- * date, type, idea, time, fixture, cid. `date` is optional — rows without a
- * date are returned in `loose` and applied to the open day.
+ * Parse a content-calendar CSV. Supports both:
+ * 1. Standard columnar CSV with headers: date, type, idea, time, fixture, cid
+ * 2. Exported 7-column weekday grid CSV mirroring the printed calendar sheets
  */
 export function parseContentCsv(text: string): CsvImportResult {
   const lines = text
@@ -58,6 +61,53 @@ export function parseContentCsv(text: string): CsvImportResult {
   const result: CsvImportResult = { byDate: {}, loose: [], rowCount: 0 }
   if (lines.length === 0) return result
 
+  // 1. Check if the CSV is a calendar grid (e.g. exported sheet from Excel)
+  const firstHeader = splitLine(lines[0]).map((h) => h.toLowerCase())
+  const isColumnar =
+    firstHeader.includes("type") &&
+    (firstHeader.includes("idea") || firstHeader.includes("title") || firstHeader.includes("date"))
+
+  if (!isColumnar) {
+    try {
+      const wb = read(text, { type: "string" })
+      const sheetName = wb.SheetNames[0]
+      if (sheetName) {
+        const rows = utils.sheet_to_json<unknown[]>(wb.Sheets[sheetName], {
+          header: 1,
+          defval: null,
+        })
+
+        // Detect month and year from top rows
+        let detectedMonth: number | null = null
+        let detectedYear = 2026
+        for (const row of rows.slice(0, 10)) {
+          for (const cell of (row as unknown[]) || []) {
+            if (typeof cell === "string") {
+              for (let i = 0; i < MONTH_NAMES.length; i++) {
+                if (cell.toLowerCase().includes(MONTH_NAMES[i].toLowerCase())) {
+                  detectedMonth = i
+                }
+              }
+              const ym = cell.match(/\b(20\d\d)\b/)
+              if (ym) detectedYear = parseInt(ym[1], 10)
+            }
+          }
+        }
+
+        if (detectedMonth !== null) {
+          const count = parseGridRows(rows, detectedYear, detectedMonth, result.byDate)
+          if (count > 0) {
+            result.rowCount = count
+            return result
+          }
+        }
+      }
+    } catch {
+      // Fall back to columnar parsing below
+    }
+  }
+
+  // 2. Standard columnar parsing
   const header = splitLine(lines[0]).map((h) => h.toLowerCase())
   const idx = (name: string) => header.indexOf(name)
   const di = idx("date")

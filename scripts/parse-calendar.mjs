@@ -1,12 +1,22 @@
 import { read, utils } from "xlsx"
 import { readFileSync, writeFileSync } from "fs"
 
-const buf = readFileSync("data/Content-Calendar-5ea729.xlsx")
+const buf = readFileSync("data/oct-calendar.xlsx")
 const wb = read(buf, { cellDates: true })
 
 const DAY_COLS = [0, 4, 8, 12, 16, 20, 24]
-const TYPES = new Set(["Feeds", "Reels", "Stories"])
-const MONTH_SHEETS = ["July", "August", "September"]
+const CONTENT_TYPES = ["Feeds", "Reels", "Stories"]
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+]
+const MONTH_SHEETS = ["July", "August", "September", "October"]
+
+function normalizeType(value) {
+  if (value == null) return null
+  const s = String(value).trim().toLowerCase()
+  return CONTENT_TYPES.find((t) => t.toLowerCase() === s) ?? null
+}
 
 function fmtTime(v) {
   if (v instanceof Date) {
@@ -17,82 +27,75 @@ function fmtTime(v) {
   return null
 }
 
-function isDayNumberRow(row) {
-  let count = 0
-  for (const c of DAY_COLS) {
-    const v = row[c]
-    if (typeof v === "number" && v >= 1 && v <= 31) count++
-  }
-  return count >= 2
-}
-
 function parseSheet(name) {
   const ws = wb.Sheets[name]
+  if (!ws) return null
+
+  const monthIdx = MONTH_NAMES.indexOf(name.trim())
+  if (monthIdx < 0) return null
+
   const rows = utils.sheet_to_json(ws, { header: 1, defval: null, blankrows: true })
 
-  // Find the month anchor date (first cell that is a Date).
-  let anchor = null
-  for (let r = 0; r < 10; r++) {
-    const v = rows[r]?.[0]
-    if (v instanceof Date) {
-      anchor = v
-      break
+  // Find the year from header rows, fallback to 2026
+  let year = 2026
+  for (const row of rows.slice(0, 10)) {
+    for (const cell of (row || [])) {
+      if (cell instanceof Date && cell.getUTCFullYear() > 1900) {
+        year = cell.getUTCFullYear()
+        break
+      }
     }
-  }
-  if (!anchor) return null
-  const year = anchor.getUTCFullYear()
-  const month = anchor.getUTCMonth() // 0-based
-
-  // Locate all day-number rows.
-  const dayRows = []
-  for (let r = 0; r < rows.length; r++) {
-    if (isDayNumberRow(rows[r])) dayRows.push(r)
   }
 
   const days = {}
 
-  for (let i = 0; i < dayRows.length; i++) {
-    const startRow = dayRows[i]
-    const endRow = i + 1 < dayRows.length ? dayRows[i + 1] : rows.length
-    const numberRow = rows[startRow]
+  for (const base of DAY_COLS) {
+    let currentDay = null
+    let lastType = null
 
-    for (const base of DAY_COLS) {
-      const dayNum = numberRow[base]
-      if (typeof dayNum !== "number" || dayNum < 1 || dayNum > 31) continue
+    for (const row of rows) {
+      if (!row) continue
+      const head = row[base]
+      const idea = row[base + 1]
+      const time = row[base + 2]
+      const status = row[base + 3]
 
-      const iso = `${year}-${String(month + 1).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`
-      const entries = []
-      let currentType = null
-
-      for (let r = startRow + 1; r < endRow; r++) {
-        const row = rows[r]
-        if (!row) continue
-        const typeCell = row[base]
-        const idea = row[base + 1]
-        const time = row[base + 2]
-        const status = row[base + 3]
-
-        const typeStr = typeof typeCell === "string" ? typeCell.trim() : ""
-        if (TYPES.has(typeStr)) currentType = typeStr
-
-        const ideaStr = typeof idea === "string" ? idea.trim() : idea == null ? "" : String(idea)
-        if (!ideaStr && !TYPES.has(typeStr)) continue
-        if (!currentType) continue
-        if (!ideaStr) continue
-
-        entries.push({
-          type: currentType,
-          idea: ideaStr,
-          time: fmtTime(time),
-          status: typeof status === "string" ? status.trim() : null,
-        })
+      // A day number row has an integer day in head and null in other columns
+      if (
+        typeof head === "number" &&
+        Number.isInteger(head) &&
+        head >= 1 &&
+        head <= 31 &&
+        idea == null &&
+        time == null &&
+        status == null
+      ) {
+        currentDay = head
+        lastType = null
+        continue
       }
 
-      if (entries.length) days[iso] = entries
+      if (idea == null || currentDay == null) continue
+
+      const entryType = normalizeType(head) ?? lastType
+      if (!entryType) continue
+      lastType = entryType
+
+      const ideaStr = String(idea).trim()
+      if (!ideaStr) continue
+
+      const iso = `${year}-${String(monthIdx + 1).padStart(2, "0")}-${String(currentDay).padStart(2, "0")}`
+      ;(days[iso] ??= []).push({
+        type: entryType,
+        idea: ideaStr,
+        time: fmtTime(time),
+        status: status == null ? null : String(status).trim(),
+      })
     }
   }
 
-  return { year, month, key: `${year}-${String(month + 1).padStart(2, "0")}`, days }
+  const monthKey = `${year}-${String(monthIdx + 1).padStart(2, "0")}`
+  return { year, month: monthIdx, key: monthKey, days }
 }
 
 const result = { months: [], days: {} }
@@ -104,7 +107,10 @@ for (const name of MONTH_SHEETS) {
 }
 
 writeFileSync("lib/content-data.json", JSON.stringify(result, null, 2))
-console.log("Months:", result.months)
+console.log("Parsed months:", result.months)
 console.log("Total days with content:", Object.keys(result.days).length)
-console.log("Sample 2026-09-03:", JSON.stringify(result.days["2026-09-03"], null, 1))
-console.log("Sample 2026-07-01:", JSON.stringify(result.days["2026-07-01"], null, 1))
+console.log("September days count:", Object.keys(result.days).filter(k => k.startsWith("2026-09")).length)
+console.log("October days count:", Object.keys(result.days).filter(k => k.startsWith("2026-10")).length)
+console.log("Sample 2026-09-01:", result.days["2026-09-01"])
+console.log("Sample 2026-10-01:", result.days["2026-10-01"])
+console.log("Sample 2026-10-31:", result.days["2026-10-31"])

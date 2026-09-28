@@ -25,16 +25,85 @@ function normalizeType(value: unknown): ContentType | null {
   return CONTENT_TYPES.find((t) => t.toLowerCase() === s) ?? null
 }
 
-/** Excel stores times as a Date anchored to 1899-12-31 in UTC. */
-function formatTime(value: unknown): string | null {
+/** Excel stores times as a Date anchored to 1899-12-31 in UTC, or string in CSV exports. */
+export function formatTime(value: unknown): string | null {
   if (value instanceof Date) {
     return `${value.getUTCHours()}:${String(value.getUTCMinutes()).padStart(2, "0")}`
+  }
+  if (typeof value === "string") {
+    const m = value.match(/(\d{1,2}):(\d{2})/)
+    if (m) return `${parseInt(m[1], 10)}:${m[2]}`
   }
   return null
 }
 
-function isoDate(year: number, month: number, day: number): string {
+export function isoDate(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+}
+
+/**
+ * Parse grid rows laid out as 7 weekday column blocks into byDate entries.
+ */
+export function parseGridRows(
+  rows: unknown[][],
+  year: number,
+  monthIdx: number,
+  byDate: Record<string, ContentEntry[]>,
+): number {
+  let count = 0
+  for (const base of WEEKDAY_BASES) {
+    let currentDay: number | null = null
+    let lastType: ContentType | null = null
+
+    for (const row of rows) {
+      if (!row) continue
+      const head = row[base]
+      const idea = row[base + 1]
+      const time = row[base + 2]
+      const status = row[base + 3]
+
+      // A day-number row carries only the day number in the block's first cell.
+      const headNum =
+        typeof head === "number" && Number.isInteger(head)
+          ? head
+          : typeof head === "string" && /^\d{1,2}$/.test(head.trim())
+          ? parseInt(head.trim(), 10)
+          : null
+
+      if (
+        headNum != null &&
+        headNum >= 1 &&
+        headNum <= 31 &&
+        idea == null &&
+        time == null &&
+        status == null
+      ) {
+        currentDay = headNum
+        lastType = null
+        continue
+      }
+
+      if (idea == null || currentDay == null) continue
+
+      // A blank type cell means "same type as the row above" (merged group).
+      const entryType: ContentType | null = normalizeType(head) ?? lastType
+      if (!entryType) continue
+      lastType = entryType
+
+      const ideaStr = String(idea).trim()
+      if (!ideaStr) continue
+
+      const key = isoDate(year, monthIdx, currentDay)
+      ;(byDate[key] ??= []).push({
+        type: entryType,
+        idea: ideaStr,
+        time: formatTime(time),
+        status: status == null ? null : String(status).trim(),
+      })
+      count++
+    }
+  }
+  return count
 }
 
 /**
@@ -57,7 +126,7 @@ export function parseContentWorkbook(data: ArrayBuffer): WorkbookImportResult {
       defval: null,
     })
 
-    // Derive the year from the first real date found in the header rows.
+    // Derive the year from the first real date or 4-digit year found in the header rows.
     let year: number | null = null
     for (const row of rows.slice(0, 5)) {
       for (const cell of row) {
@@ -65,51 +134,20 @@ export function parseContentWorkbook(data: ArrayBuffer): WorkbookImportResult {
           year = cell.getUTCFullYear()
           break
         }
+        if (typeof cell === "string") {
+          const ym = cell.match(/\b(20\d\d)\b/)
+          if (ym) {
+            year = parseInt(ym[1], 10)
+            break
+          }
+        }
       }
       if (year) break
     }
-    if (!year) continue
+    if (!year) year = 2026
     months.push(`${year}-${String(monthIdx + 1).padStart(2, "0")}`)
 
-    for (const base of WEEKDAY_BASES) {
-      let currentDay: number | null = null
-      let lastType: ContentType | null = null
-
-      for (const row of rows) {
-        const head = row[base]
-        const idea = row[base + 1]
-        const time = row[base + 2]
-        const status = row[base + 3]
-
-        // A day-number row carries only the day number in the block's first cell.
-        if (
-          typeof head === "number" &&
-          Number.isInteger(head) &&
-          idea == null &&
-          time == null &&
-          status == null
-        ) {
-          currentDay = head
-          lastType = null
-          continue
-        }
-
-        if (idea == null || currentDay == null) continue
-
-        // A blank type cell means "same type as the row above" (merged group).
-        const entryType: ContentType | null = normalizeType(head) ?? lastType
-        if (!entryType) continue
-        lastType = entryType
-
-        const key = isoDate(year, monthIdx, currentDay)
-        ;(byDate[key] ??= []).push({
-          type: entryType,
-          idea: String(idea).trim(),
-          time: formatTime(time),
-          status: status == null ? null : String(status).trim(),
-        })
-      }
-    }
+    parseGridRows(rows, year, monthIdx, byDate)
   }
 
   return { byDate, months, dayCount: Object.keys(byDate).length }
