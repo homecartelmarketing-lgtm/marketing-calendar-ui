@@ -136,12 +136,12 @@ export async function pullAirtableSchedulesWithDiagnostics(options?: { forceFres
         await Promise.all(
           batch.map(async (cfg) => {
             try {
-              // Fetch only Scheduled records for the content calendar
+              // Fetch Scheduled and Posted records for the content calendar
               const records = await readAirtableRecords({
                 baseId: AIRTABLE_BASE_ID,
                 tableId: cfg.tableId,
                 token: AIRTABLE_TOKEN,
-                filterByFormula: "Status='Scheduled'",
+                filterByFormula: "OR(Status='Scheduled', Status='Posted')",
               })
           for (let rIdx = 0; rIdx < records.length; rIdx++) {
             const r = records[rIdx]
@@ -167,7 +167,8 @@ export async function pullAirtableSchedulesWithDiagnostics(options?: { forceFres
 
             const { mediaUrl, mediaType, slides } = extractMediaFromRecord(fields, cfg.category, cfg.idea)
 
-            const status: ScheduledEntry["status"] = "Scheduled"
+            const rawStatus = String(fields["Status"] || "").trim()
+            const status: ScheduledEntry["status"] = rawStatus === "Posted" ? "Posted" : "Scheduled"
 
             const entry: ScheduledEntry = {
               recordId: r.id,

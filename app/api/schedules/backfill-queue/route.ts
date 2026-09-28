@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
 
   for (const isoDate of Object.keys(schedules)) {
     for (const entry of schedules[isoDate]) {
+      if (entry.status !== "Scheduled") continue
       try {
         const existing = await getActiveJobByRecordId(entry.recordId)
         if (existing) {
