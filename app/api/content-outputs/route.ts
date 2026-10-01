@@ -243,6 +243,8 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
       )
     } else if (t.includes("closeup")) {
       ids.push("tblqBZ946hVdOpmDV")
+    } else if (t.includes("one light") || t.includes("one at a time") || t.includes("oatl")) {
+      ids.push(autoEnv.AIRTABLE_TABLE_ID_ONE_AT_A_TIME_LIGHTS || "tblJpEtBudQZda319")
     }
   }
 
@@ -280,6 +282,10 @@ function matchIdeaTarget(requestIdea: string, targetIdea: string): boolean {
   if (req.includes("1prod") && tgt.includes("1prod")) return true
   if (req.includes("showcase") && tgt.includes("showcase")) return true
   if (req.includes("collection") && tgt.includes("collection")) return true
+  if (
+    (req.includes("onelight") || req.includes("oneat") || req.includes("oatl")) &&
+    (tgt.includes("onelight") || tgt.includes("oneat") || tgt.includes("oatl"))
+  ) return true
 
   return req.includes(tgt) || tgt.includes(req)
 }
@@ -377,6 +383,15 @@ export async function GET(request: NextRequest) {
           for (let i = 1; i <= 5; i++) {
             const val = fields[`Item Name${i}`] || (i === 1 ? fields["Item Name"] : undefined)
             if (val) itemNames.push(String(val))
+          }
+          if (itemNames.length === 0 && typeof fields["Scraped Items"] === "string") {
+            const lines = fields["Scraped Items"].split("\n")
+            for (const line of lines) {
+              const parts = line.split("|").map((p: string) => p.trim())
+              if (parts.length >= 2 && parts[1]) {
+                itemNames.push(parts[1])
+              }
+            }
           }
 
           const caption = extractCaption(fields)

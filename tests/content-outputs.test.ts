@@ -288,4 +288,34 @@ describe("output data completeness", () => {
     expect(body3.items.length).toBe(1)
     expect(body3.items[0].foreignKeyId).toBe("DN-STORY-CH-5")
   })
+
+  it("extracts One Light at a Time Reel records with Scraped Items parsing and Living Room fixture", async () => {
+    targets.mockReturnValue([
+      { tableId: "tblJpEtBudQZda319", category: "Reels", idea: "One Light at a Time", fixtureType: "Living Room" },
+    ])
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      records: [{
+        id: "rec2BsJrUZ7OLR2wD",
+        fields: {
+          ID: 8,
+          "Foreign Key ID": "OATL-REEL-LR-8",
+          Status: "Done",
+          "Scraped Items": "Slot 1 (Table Lamp) | IIona | Modern Table Lamp | SKU FL9097T | table_lamps\nSlot 2 (Ceiling Mounted Light) | Pavo | Modern Ceiling Light | SKU 9016C-S | ceiling_lights\nSlot 3 (Pendant Light) | Zeppelin | Pendant Light | SKU 245-PNDNT-ZPPLN-S | pendant_lights",
+          "Final Video": [
+            { id: "attVideo1", url: "https://media.example/oatl_reel.mp4", type: "video/mp4" },
+          ],
+        },
+      }],
+    })))
+
+    const res = await GET(new NextRequest("http://localhost/api/content-outputs?category=Reels&type=One%20Light%20at%20a%20Time"))
+    const body = await res.json()
+    expect(res.status).toBe(200)
+    expect(body.items.length).toBe(1)
+    expect(body.items[0].foreignKeyId).toBe("OATL-REEL-LR-8")
+    expect(body.items[0].fixtureType).toBe("Living Room")
+    expect(body.items[0].status).toBe("Completed")
+    expect(body.items[0].videoUrl).toBe("https://media.example/oatl_reel.mp4")
+    expect(body.items[0].itemNames).toEqual(["IIona", "Pavo", "Zeppelin"])
+  })
 })
