@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { extractMediaFromRecord } from "@/lib/schedules"
-import { deriveForeignKeyId, deriveFixtureFromForeignKeyId } from "@/lib/output-media"
+import { deriveForeignKeyId, deriveFixtureFromForeignKeyId, getFixtureCode } from "@/lib/output-media"
 
 const img = (url: string) => [{ url, type: "image/jpeg", filename: "image.jpg" }]
 describe("scheduler final media selection", () => {
@@ -167,6 +167,29 @@ describe("canonical Foreign Key ID derivation", () => {
     expect(deriveForeignKeyId({ ID: 4 }, "Stories", "Tips & Educational", "Ceiling Mounted")).toBe("TNE-STORY-CM-4")
     expect(deriveForeignKeyId({ ID: 19 }, "Feeds", "Collection Category", "")).toBe("CC-FEEDS-SET-19")
   })
+  it("derives OATL-REEL prefix for One Light at a Time reels", () => {
+    expect(deriveForeignKeyId({ ID: 8 }, "Reels", "One Light at a Time", "Living Room")).toBe("OATL-REEL-LR-8")
+    expect(deriveForeignKeyId({ ID: 6 }, "Reels", "One at a time lights", "Living Room")).toBe("OATL-REEL-LR-6")
+  })
+  it("maps Living Room-style names to LR without disturbing existing fixture codes", () => {
+    expect(getFixtureCode("Living Room")).toBe("LR")
+    expect(getFixtureCode("Chandelier")).toBe("CH")
+    expect(getFixtureCode("Linear Chandelier")).toBe("LC")
+    expect(getFixtureCode("Ceiling Mounted")).toBe("CM")
+  })
+  it("extracts Final Video for One Light at a Time reels", () => {
+    expect(
+      extractMediaFromRecord(
+        { "Final Video": [{ url: "https://media.example/oatl.mp4", type: "video/mp4" }] },
+        "Reels",
+        "One Light at a Time"
+      )
+    ).toEqual({
+      mediaUrl: "https://media.example/oatl.mp4",
+      mediaType: "video",
+      slides: ["https://media.example/oatl.mp4"],
+    })
+  })
 })
 
 describe("deriveFixtureFromForeignKeyId", () => {
@@ -179,6 +202,7 @@ describe("deriveFixtureFromForeignKeyId", () => {
     expect(deriveFixtureFromForeignKeyId("TNE-FEEDS-CL-4")).toBe("Cluster Chandelier")
     expect(deriveFixtureFromForeignKeyId("TNE-STORY-CM-5")).toBe("Ceiling Mounted")
     expect(deriveFixtureFromForeignKeyId("MB-REEL-LC-6")).toBe("Linear Chandelier")
+    expect(deriveFixtureFromForeignKeyId("OATL-REEL-LR-8")).toBe("Living Room")
     expect(deriveFixtureFromForeignKeyId("UNKNOWN-ID")).toBeUndefined()
     expect(deriveFixtureFromForeignKeyId("")).toBeUndefined()
     expect(deriveFixtureFromForeignKeyId(undefined)).toBeUndefined()

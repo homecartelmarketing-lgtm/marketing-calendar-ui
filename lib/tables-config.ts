@@ -187,6 +187,14 @@ export function getAllConfiguredTables(): TableTarget[] {
     // Product Closeup Reel
     { tableId: "tblqBZ946hVdOpmDV", category: "Reels", idea: "Product Closeup", fixtureType: "Table Lamp" },
     { tableId: "tblEGTB6BodRVDqBV", category: "Reels", idea: "Product Closeup", fixtureType: "Chandelier" },
+
+    // One at a Time Lights Reel
+    {
+      tableId: env.AIRTABLE_TABLE_ID_ONE_AT_A_TIME_LIGHTS || "tblJpEtBudQZda319",
+      category: "Reels",
+      idea: "One Light at a Time",
+      fixtureType: "Living Room",
+    },
   ]
 
   // Filter out any entries that do not have a valid tableId starting with 'tbl'

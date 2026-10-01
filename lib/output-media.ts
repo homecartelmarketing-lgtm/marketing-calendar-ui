@@ -108,6 +108,7 @@ export function getFixtureCode(fixtureType?: string): string {
   if (norm.includes("linear")) return "LC"
   if (norm.includes("ceiling")) return "CM"
   if (norm.includes("chandelier")) return "CH"
+  if (norm.includes("living") || norm.includes("bedroom") || norm.includes("room")) return "LR"
   return fixtureType.slice(0, 2).toUpperCase() || "FX"
 }
 
@@ -123,6 +124,7 @@ export function deriveFixtureFromForeignKeyId(foreignKeyId?: string): string | u
     if (part === "CL") return "Cluster Chandelier"
     if (part === "CM") return "Ceiling Mounted"
     if (part === "LC") return "Linear Chandelier"
+    if (part === "LR") return "Living Room"
   }
   return undefined
 }
@@ -138,6 +140,9 @@ export function getForeignKeyPrefix(
 
   // Reels
   if (cat === "reels") {
+    if (type.includes("one light") || type.includes("one at a time") || type.includes("oatl")) {
+      return `OATL-REEL-${fxCode}`
+    }
     if (type.includes("before") && type.includes("after")) {
       return `BA-REEL-${fxCode}`
     }

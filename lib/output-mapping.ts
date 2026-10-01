@@ -64,6 +64,9 @@ export function getFinalOutputCandidates(category: string, contentType: string):
   }
 
   if (cat === "reels") {
+    if (type.includes("one light") || type.includes("one at a time") || type.includes("oatl")) {
+      return ["Final Video", "Raw Video", "REEL - One at a Time Lights"]
+    }
     if ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night (")) {
       return ["Day and Night Reel with Music and Outro", "REEL - Day & Night"]
     }

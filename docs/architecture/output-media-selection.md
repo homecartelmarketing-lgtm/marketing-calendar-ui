@@ -29,6 +29,13 @@ All media resolution logic is centralized in [`lib/output-media.ts`](file:///c:/
 * Extracts `Item Name 1..5` and corresponding slide attachments.
 * Bidirectional pipeline matcher prevents cross-matching with "1 Product, 3 Styles".
 
+### 5. One Light at a Time Reel
+* Airtable table `tblJpEtBudQZda319` ("One at a time lights"); override with `AIRTABLE_TABLE_ID_ONE_AT_A_TIME_LIGHTS`.
+* Video candidates (in order): `Final Video`, `Raw Video`, `REEL - One at a Time Lights`.
+* Foreign Key ID prefix `OATL-REEL-<fixture code>-<ID>`; code `LR` maps to the `Living Room` fixture.
+* Item names come from `Item Name1..4`; when absent they are parsed from `Scraped Items` (one line per slot, `Slot N (Fixture) | Name | ...`, second `|` column is the name).
+* The table needs a `Date and Time Scheduled` (or `Date and Time`) field before a schedule can be saved; without it `syncAirtableRecord` fails with an error rather than saving status alone.
+
 ---
 
 ## 🚦 Candidate Status Filters (`isCompletedOrDoneStatus`)
