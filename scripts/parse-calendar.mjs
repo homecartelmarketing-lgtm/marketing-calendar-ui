@@ -1,8 +1,10 @@
-import { read, utils } from "xlsx"
+import { SSF, read, utils } from "xlsx"
 import { readFileSync, writeFileSync } from "fs"
 
-const buf = readFileSync("data/oct-calendar.xlsx")
-const wb = read(buf, { cellDates: true })
+// Raw serials (no cellDates): SheetJS builds Dates from the machine timezone, which
+// shifted every time by the UTC offset. Keep this in sync with lib/workbook.ts.
+const buf = readFileSync(process.argv[2] ?? "data/oct-calendar.xlsx")
+const wb = read(buf, { cellDates: false })
 
 const DAY_COLS = [0, 4, 8, 12, 16, 20, 24]
 const CONTENT_TYPES = ["Feeds", "Reels", "Stories"]
@@ -19,12 +21,18 @@ function normalizeType(value) {
 }
 
 function fmtTime(v) {
-  if (v instanceof Date) {
-    const h = v.getUTCHours()
-    const m = v.getUTCMinutes()
-    return `${h}:${String(m).padStart(2, "0")}`
+  if (typeof v === "number" && v >= 0 && v < 1) {
+    const minutes = Math.round(v * 1440) % 1440
+    return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, "0")}`
   }
   return null
+}
+
+// The real schedule state lives in Airtable, never in the planned slot.
+function normStatus(v) {
+  if (v == null) return null
+  const s = String(v).trim()
+  return /^scheduled/i.test(s) ? "To Do" : s
 }
 
 function parseSheet(name) {
@@ -40,8 +48,8 @@ function parseSheet(name) {
   let year = 2026
   for (const row of rows.slice(0, 10)) {
     for (const cell of (row || [])) {
-      if (cell instanceof Date && cell.getUTCFullYear() > 1900) {
-        year = cell.getUTCFullYear()
+      if (typeof cell === "number" && cell > 40000 && cell < 80000) {
+        year = SSF.parse_date_code(cell).y
         break
       }
     }
@@ -89,7 +97,7 @@ function parseSheet(name) {
         type: entryType,
         idea: ideaStr,
         time: fmtTime(time),
-        status: status == null ? null : String(status).trim(),
+        status: normStatus(status),
       })
     }
   }
@@ -105,6 +113,8 @@ for (const name of MONTH_SHEETS) {
   result.months.push(parsed.key)
   Object.assign(result.days, parsed.days)
 }
+// Chronological day keys (the weekday-block scan otherwise groups them by weekday).
+result.days = Object.fromEntries(Object.entries(result.days).sort(([a], [b]) => a.localeCompare(b)))
 
 writeFileSync("lib/content-data.json", JSON.stringify(result, null, 2))
 console.log("Parsed months:", result.months)

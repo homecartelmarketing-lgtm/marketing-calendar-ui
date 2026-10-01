@@ -33,6 +33,7 @@ Welcome to the central memory index for **HomeCartel Marketing Output UI**. This
 - [[troubleshooting/durable-queue-and-cron|Durable Queue & Cron Issues (Neon Postgres, Statement Splitting, Backfill)]]
 - [[troubleshooting/airtable-sync-issues|Airtable Sync Issues (Pagination, Foreign Key Parsing, Status Sync)]]
 - [[troubleshooting/cloudflare-tunnel|Cloudflare Tunnels (Local Launch, Token Setup, Zero Trust Routing)]]
+- [[troubleshooting/calendar-import-timezone|Calendar Import Times Shifted by 8 Hours (xlsx timezone)]]
 
 ---
 
