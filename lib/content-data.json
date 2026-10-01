@@ -6,6 +6,158 @@
     "2026-10"
   ],
   "days": {
+    "2026-07-01": [
+      {
+        "type": "Feeds",
+        "idea": "Styled Photo (Removed)",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Styled Stories",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-02": [
+      {
+        "type": "Feeds",
+        "idea": "Day & Night",
+        "time": "10:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Styled Reel Slideshow",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "19:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-03": [
+      {
+        "type": "Feeds",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Reposting Influencers (Thu/Fri)",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Styled Stories",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day & Night",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day & Night",
+        "time": "17:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-04": [
+      {
+        "type": "Feeds",
+        "idea": "Carousel Product Closeup",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "17:00",
+        "status": "Posted"
+      }
+    ],
     "2026-07-05": [
       {
         "type": "Feeds",
@@ -16,145 +168,31 @@
       {
         "type": "Reels",
         "idea": "Before & After",
-        "time": "10:00",
+        "time": "18:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Styled Stories",
-        "time": "1:00",
+        "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "5:00",
+        "time": "13:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Tips & Educational",
-        "time": "9:00",
+        "time": "17:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Collection Category",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-12": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "Reposting Influencers (Thu/Fri)",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day & Night",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day & Night",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Styled Stories",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "11:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-19": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "1 Product, 3 Styles",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Styled Stories",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-26": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "Product Closeup",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Styled Stories",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -162,151 +200,37 @@
       {
         "type": "Feeds",
         "idea": "Moodboard #1",
-        "time": "5:00",
+        "time": "13:00",
         "status": "Posted"
       },
       {
         "type": "Reels",
         "idea": "Product Closeup",
-        "time": "10:00",
+        "time": "18:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Day & Night",
-        "time": "1:00",
+        "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Day & Night",
-        "time": "1:00",
+        "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Product Closeup w/ specifications",
-        "time": "9:00",
+        "time": "17:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-13": [
-      {
-        "type": "Feeds",
-        "idea": "Tips & Educational",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Styled Reel Slideshow",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-20": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #2",
-        "time": "11:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Day & Night",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Styled Stories",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-27": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #2",
-        "time": "11:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "1 Product, 3 Styles",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -326,25 +250,253 @@
       {
         "type": "Stories",
         "idea": "Styled Stories",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
         "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
-        "idea": "CTA",
+        "idea": "Tips & Educational",
         "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-08": [
+      {
+        "type": "Feeds",
+        "idea": "1 Product, 3 Styles",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Styled Stories",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-09": [
+      {
+        "type": "Feeds",
+        "idea": "Product Spotlight (Removed)",
+        "time": "10:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Moodboard Reel",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Styled Stories",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-10": [
+      {
+        "type": "Feeds",
+        "idea": "Product Showcase",
+        "time": "10:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "1 Product, 3 Styles",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day & Night",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day & Night",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "13:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-11": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #2",
+        "time": "10:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Day & Night",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-12": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "Reposting Influencers (Thu/Fri)",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day & Night",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day & Night",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Styled Stories",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "19:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-13": [
+      {
+        "type": "Feeds",
+        "idea": "Tips & Educational",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Styled Reel Slideshow",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "9:00",
         "status": "Posted"
       }
     ],
@@ -364,25 +516,253 @@
       {
         "type": "Stories",
         "idea": "Myth & Fact",
-        "time": "2:00",
+        "time": "10:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Myth & Fact",
-        "time": "2:00",
+        "time": "10:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Myth & Fact",
-        "time": "2:00",
+        "time": "10:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Myth & Fact",
-        "time": "2:00",
+        "time": "10:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-15": [
+      {
+        "type": "Feeds",
+        "idea": "Styled Photo (Removed)",
+        "time": "10:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-16": [
+      {
+        "type": "Feeds",
+        "idea": "Day & Night",
+        "time": "10:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Before & After",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-17": [
+      {
+        "type": "Feeds",
+        "idea": "Collection Category",
+        "time": "10:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Product Closeup",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day & Night",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day & Night",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-18": [
+      {
+        "type": "Feeds",
+        "idea": "Carousel Product Closeup",
+        "time": "19:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Moodboard Reel",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-19": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "1 Product, 3 Styles",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Styled Stories",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-20": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #2",
+        "time": "19:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Day & Night",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Styled Stories",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -402,25 +782,253 @@
       {
         "type": "Stories",
         "idea": "Moodboard Story",
-        "time": "1:00",
+        "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Moodboard Story",
-        "time": "1:00",
+        "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Day & Night",
-        "time": "5:00",
+        "time": "13:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Day & Night",
-        "time": "5:00",
+        "time": "13:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-22": [
+      {
+        "type": "Feeds",
+        "idea": "1 Product, 3 Styles",
+        "time": "19:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "13:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-23": [
+      {
+        "type": "Feeds",
+        "idea": "Product Showcase",
+        "time": "19:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Reposting Influencers (Thu/Fri)",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Myth & Fact",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Myth & Fact",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Myth & Fact",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Myth & Fact",
+        "time": "13:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-24": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #1",
+        "time": "19:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Styled Reel Slideshow",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-25": [
+      {
+        "type": "Feeds",
+        "idea": "Tips & Educational",
+        "time": "19:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Before & After",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day & Night",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day & Night",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-26": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "Product Closeup",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Story",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Styled Stories",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-07-27": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #2",
+        "time": "19:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "1 Product, 3 Styles",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -440,177 +1048,25 @@
       {
         "type": "Stories",
         "idea": "Day & Night",
-        "time": "5:00",
+        "time": "13:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Day & Night",
-        "time": "5:00",
+        "time": "13:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Tips & Educational",
-        "time": "9:00",
+        "time": "17:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-01": [
-      {
-        "type": "Feeds",
-        "idea": "Styled Photo (Removed)",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Styled Stories",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-08": [
-      {
-        "type": "Feeds",
-        "idea": "1 Product, 3 Styles",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Styled Stories",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-15": [
-      {
-        "type": "Feeds",
-        "idea": "Styled Photo (Removed)",
-        "time": "2:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-22": [
-      {
-        "type": "Feeds",
-        "idea": "1 Product, 3 Styles",
-        "time": "11:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "5:00",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -618,7 +1074,7 @@
       {
         "type": "Feeds",
         "idea": "Tips & Educational",
-        "time": "11:00",
+        "time": "19:00",
         "status": "Posted"
       },
       {
@@ -630,177 +1086,25 @@
       {
         "type": "Stories",
         "idea": "Style this?",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-02": [
-      {
-        "type": "Feeds",
-        "idea": "Day & Night",
-        "time": "2:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Styled Reel Slideshow",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "11:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-09": [
-      {
-        "type": "Feeds",
-        "idea": "Product Spotlight (Removed)",
-        "time": "2:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Moodboard Reel",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Styled Stories",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
         "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-16": [
-      {
-        "type": "Feeds",
-        "idea": "Day & Night",
-        "time": "2:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Before & After",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
+        "idea": "Style this?",
         "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-23": [
-      {
-        "type": "Feeds",
-        "idea": "Product Showcase",
-        "time": "11:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Reposting Influencers (Thu/Fri)",
-        "time": "10:00",
+        "idea": "Style this?",
+        "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
-        "idea": "Myth & Fact",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Myth & Fact",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Myth & Fact",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Myth & Fact",
-        "time": "5:00",
+        "idea": "Style this?",
+        "time": "9:00",
         "status": "Posted"
       }
     ],
@@ -808,188 +1112,36 @@
       {
         "type": "Feeds",
         "idea": "Day & Night",
-        "time": "11:00",
+        "time": "19:00",
         "status": "Posted"
       },
       {
         "type": "Reels",
         "idea": "Moodboard Reel",
-        "time": "10:00",
+        "time": "18:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Myth & Fact",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Myth & Fact",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Myth & Fact",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Myth & Fact",
-        "time": "5:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-03": [
-      {
-        "type": "Feeds",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Reposting Influencers (Thu/Fri)",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Styled Stories",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day & Night",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day & Night",
-        "time": "9:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-10": [
-      {
-        "type": "Feeds",
-        "idea": "Product Showcase",
-        "time": "2:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "1 Product, 3 Styles",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day & Night",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day & Night",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "5:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-17": [
-      {
-        "type": "Feeds",
-        "idea": "Collection Category",
-        "time": "2:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Product Closeup",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day & Night",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day & Night",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
         "time": "13:00",
         "status": "Posted"
-      }
-    ],
-    "2026-07-24": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #1",
-        "time": "11:00",
-        "status": "Posted"
       },
       {
-        "type": "Reels",
-        "idea": "Styled Reel Slideshow",
-        "time": "10:00",
+        "type": "Stories",
+        "idea": "Myth & Fact",
+        "time": "13:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
+        "idea": "Myth & Fact",
+        "time": "13:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
+        "idea": "Myth & Fact",
         "time": "13:00",
         "status": "Posted"
       }
@@ -998,189 +1150,57 @@
       {
         "type": "Feeds",
         "idea": "Collection Category",
-        "time": "11:00",
+        "time": "19:00",
         "status": "Posted"
       },
       {
         "type": "Reels",
         "idea": "Day & Night",
-        "time": "10:00",
+        "time": "18:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Tips & Educational",
-        "time": "1:00",
+        "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
+        "time": "13:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Collection Category",
-        "time": "9:00",
+        "time": "17:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
-    "2026-07-04": [
-      {
-        "type": "Feeds",
-        "idea": "Carousel Product Closeup",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "9:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-11": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #2",
-        "time": "2:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Day & Night",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-18": [
-      {
-        "type": "Feeds",
-        "idea": "Carousel Product Closeup",
-        "time": "11:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Moodboard Reel",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Story",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-07-25": [
+    "2026-08-01": [
       {
         "type": "Feeds",
         "idea": "Tips & Educational",
-        "time": "11:00",
+        "time": "14:00",
         "status": "Posted"
       },
       {
         "type": "Reels",
         "idea": "Before & After",
-        "time": "10:00",
+        "time": "18:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day & Night",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day & Night",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "idea": "Style this?",
+        "time": "9:00",
         "status": "Posted"
       }
     ],
@@ -1188,189 +1208,37 @@
       {
         "type": "Feeds",
         "idea": "Moodboard #1",
-        "time": "6:00",
+        "time": "14:00",
         "status": "Posted"
       },
       {
         "type": "Reels",
         "idea": "Reposting Influencers (Thu/Fri)",
-        "time": "10:00",
+        "time": "18:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
         "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-09": [
-      {
-        "type": "Feeds",
-        "idea": "Day & Night",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "1 Product, 3 Styles",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
         "idea": "This or That",
-        "time": "5:00",
+        "time": "13:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Product Closeup w/ description",
-        "time": "9:00",
+        "time": "17:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-16": [
-      {
-        "type": "Feeds",
-        "idea": "Tips & Educational",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Styled Reel Slideshow",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-23": [
-      {
-        "type": "Feeds",
-        "idea": "Tips & Educational",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Day & Night",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-30": [
-      {
-        "type": "Feeds",
-        "idea": "Day & Night",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Before & After",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -1384,183 +1252,31 @@
       {
         "type": "Reels",
         "idea": "Styled Reel Slideshow",
-        "time": "10:00",
+        "time": "18:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
         "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-10": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "Day & Night",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
         "idea": "Tips & Educational",
-        "time": "5:00",
+        "time": "13:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "This or That",
-        "time": "9:00",
+        "time": "17:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-17": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "Product Closeup",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-24": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "Styled Reel Slideshow",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-31": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "Product Closeup",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -1580,7 +1296,217 @@
       {
         "type": "Stories",
         "idea": "Myth & Fact (4)",
-        "time": "1:00",
+        "time": "9:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-05": [
+      {
+        "type": "Feeds",
+        "idea": "Product Showcase",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Styled Photo",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Layout",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-06": [
+      {
+        "type": "Feeds",
+        "idea": "Collection Category",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Day & Night",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day (D&N)",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Night (D&N)",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-07": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #2",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Product Closeup",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-08": [
+      {
+        "type": "Feeds",
+        "idea": "1 Product, 3 Styles",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Moodboard Reel",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "9:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-09": [
+      {
+        "type": "Feeds",
+        "idea": "Day & Night",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "1 Product, 3 Styles",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-10": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "Day & Night",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -1600,7 +1526,217 @@
       {
         "type": "Stories",
         "idea": "Myth & Fact (4)",
-        "time": "1:00",
+        "time": "9:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-12": [
+      {
+        "type": "Feeds",
+        "idea": "Product Showcase",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Styled Photo",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Layout",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-13": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #1",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Before & After",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day (D&N)",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Night (D&N)",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-14": [
+      {
+        "type": "Feeds",
+        "idea": "1 Product, 3 Styles",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Day & Night",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-15": [
+      {
+        "type": "Feeds",
+        "idea": "Collection Category",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Moodboard Reel",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "9:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-16": [
+      {
+        "type": "Feeds",
+        "idea": "Tips & Educational",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Styled Reel Slideshow",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-17": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "Product Closeup",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -1620,7 +1756,217 @@
       {
         "type": "Stories",
         "idea": "Myth & Fact (4)",
-        "time": "1:00",
+        "time": "9:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-19": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #2",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Styled Photo",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Layout",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-20": [
+      {
+        "type": "Feeds",
+        "idea": "Collection Category",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Before & After",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day (D&N)",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Night (D&N)",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-21": [
+      {
+        "type": "Feeds",
+        "idea": "1 Product, 3 Styles",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Moodboard Reel",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-22": [
+      {
+        "type": "Feeds",
+        "idea": "Day & Night",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Before & After",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "9:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-23": [
+      {
+        "type": "Feeds",
+        "idea": "Tips & Educational",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Day & Night",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-08-24": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "Styled Reel Slideshow",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -1640,121 +1986,7 @@
       {
         "type": "Stories",
         "idea": "Myth & Fact (4)",
-        "time": "1:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-05": [
-      {
-        "type": "Feeds",
-        "idea": "Product Showcase",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Styled Photo",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-12": [
-      {
-        "type": "Feeds",
-        "idea": "Product Showcase",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Styled Photo",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-19": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #2",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Styled Photo",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "time": "9:00",
         "status": "Posted"
       }
     ],
@@ -1762,7 +1994,7 @@
       {
         "type": "Feeds",
         "idea": "Moodboard #1",
-        "time": "6:00",
+        "time": "14:00",
         "status": "Posted"
       },
       {
@@ -1774,139 +2006,25 @@
       {
         "type": "Stories",
         "idea": "Moodboard Styled Photo",
-        "time": "1:00",
+        "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Moodboard Layout",
-        "time": "1:00",
+        "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Collection Category",
-        "time": "5:00",
+        "time": "13:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-06": [
-      {
-        "type": "Feeds",
-        "idea": "Collection Category",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Day & Night",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day (D&N)",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Night (D&N)",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-13": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #1",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Before & After",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day (D&N)",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Night (D&N)",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-20": [
-      {
-        "type": "Feeds",
-        "idea": "Collection Category",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Before & After",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day (D&N)",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Night (D&N)",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -1914,151 +2032,37 @@
       {
         "type": "Feeds",
         "idea": "Product Showcase",
-        "time": "6:00",
+        "time": "14:00",
         "status": "Posted"
       },
       {
         "type": "Reels",
         "idea": "Moodboard Reel",
-        "time": "10:00",
+        "time": "18:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Day (D&N)",
-        "time": "1:00",
+        "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Night (D&N)",
-        "time": "1:00",
+        "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Product Closeup w/ description",
-        "time": "5:00",
+        "time": "13:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-07": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #2",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Product Closeup",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-14": [
-      {
-        "type": "Feeds",
-        "idea": "1 Product, 3 Styles",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Day & Night",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-21": [
-      {
-        "type": "Feeds",
-        "idea": "1 Product, 3 Styles",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Moodboard Reel",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -2066,117 +2070,37 @@
       {
         "type": "Feeds",
         "idea": "Moodboard #2",
-        "time": "6:00",
+        "time": "14:00",
         "status": "Posted"
       },
       {
         "type": "Reels",
         "idea": "1 Product, 3 Styles",
-        "time": "10:00",
+        "time": "18:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
         "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
-        "idea": "CTA",
+        "idea": "Product Closeup w/ specifications",
         "time": "13:00",
         "status": "Posted"
-      }
-    ],
-    "2026-08-01": [
+      },
       {
-        "type": "Feeds",
+        "type": "Stories",
         "idea": "Tips & Educational",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Before & After",
-        "time": "10:00",
+        "time": "17:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-08": [
-      {
-        "type": "Feeds",
-        "idea": "1 Product, 3 Styles",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Moodboard Reel",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-15": [
-      {
-        "type": "Feeds",
-        "idea": "Collection Category",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Moodboard Reel",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-08-22": [
-      {
-        "type": "Feeds",
-        "idea": "Day & Night",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Before & After",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
+        "idea": "CTA",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -2184,289 +2108,61 @@
       {
         "type": "Feeds",
         "idea": "Tips & Educational",
-        "time": "6:00",
+        "time": "14:00",
         "status": "Posted"
       },
       {
         "type": "Reels",
         "idea": "UGC",
-        "time": "10:00",
+        "time": "18:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Style this?",
-        "time": "1:00",
+        "time": "9:00",
         "status": "Posted"
       }
     ],
-    "2026-09-06": [
+    "2026-08-30": [
       {
         "type": "Feeds",
-        "idea": "Tips & Educational",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
         "idea": "Day & Night",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-09-13": [
-      {
-        "type": "Feeds",
-        "idea": "Tips & Educational",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Moodboard Reel",
-        "time": "10:00",
-        "status": "Item Name Error, Rescheduled"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-09-20": [
-      {
-        "type": "Feeds",
-        "idea": "Tips & Educational",
-        "time": "6:00",
+        "time": "14:00",
         "status": "Posted"
       },
       {
         "type": "Reels",
         "idea": "Before & After",
-        "time": "10:00",
-        "status": "Not Pushed Through"
+        "time": "18:00",
+        "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Tips & Educational",
-        "time": "1:00",
+        "time": "9:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "This or That",
-        "time": "5:00",
+        "time": "13:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Product Closeup w/ description",
-        "time": "9:00",
+        "time": "17:00",
         "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
-    "2026-09-27": [
-      {
-        "type": "Feeds",
-        "idea": "1 Product, 3 Styles",
-        "time": "6:00",
-        "status": "Scheduled (Manual Edit)"
-      },
-      {
-        "type": "Reels",
-        "idea": "Before & After",
-        "time": "10:00",
-        "status": "Scheduled (Manual Edit)"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "Scheduled (Manual Edit)"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "5:00",
-        "status": "Scheduled (via UI)"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "9:00",
-        "status": "Scheduled (via UI)"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Scheduled (via UI)"
-      }
-    ],
-    "2026-09-07": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "Styled Reel Slideshow",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-09-14": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "Moodboard Reel",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-09-21": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "Styled Reel Slideshow",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "This or That",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-09-28": [
+    "2026-08-31": [
       {
         "type": "Feeds",
         "idea": "NONE",
@@ -2476,32 +2172,32 @@
       {
         "type": "Reels",
         "idea": "Product Closeup",
-        "time": "10:00",
-        "status": "Scheduled (Manual Edit)"
+        "time": "18:00",
+        "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Scheduled (via UI)"
+        "time": "9:00",
+        "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "Tips & Educational",
-        "time": "5:00",
-        "status": "Scheduled (via UI)"
+        "time": "13:00",
+        "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "This or That",
-        "time": "9:00",
-        "status": "Scheduled (via SB)"
+        "time": "17:00",
+        "status": "Posted"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "Scheduled (via UI)"
+        "time": "21:00",
+        "status": "Posted"
       }
     ],
     "2026-09-01": [
@@ -2520,7 +2216,217 @@
       {
         "type": "Stories",
         "idea": "Myth & Fact (4)",
-        "time": "1:00",
+        "time": "9:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-02": [
+      {
+        "type": "Feeds",
+        "idea": "Product Showcase",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Styled Photo",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Layout",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-03": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #1",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Before & After",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day (D&N)",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Night (D&N)",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-04": [
+      {
+        "type": "Feeds",
+        "idea": "1 Product, 3 Styles",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Product Closeup",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-05": [
+      {
+        "type": "Feeds",
+        "idea": "Collection Category",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Reposting Influencers (Thu/Fri)",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "9:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-06": [
+      {
+        "type": "Feeds",
+        "idea": "Tips & Educational",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Day & Night",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-07": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "Styled Reel Slideshow",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -2540,7 +2446,217 @@
       {
         "type": "Stories",
         "idea": "Myth & Fact (4)",
-        "time": "1:00",
+        "time": "9:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-09": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #2",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Styled Photo",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Layout",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-10": [
+      {
+        "type": "Feeds",
+        "idea": "Day & Night",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "Moodboard Reel",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day (D&N)",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Night (D&N)",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-09-11": [
+      {
+        "type": "Feeds",
+        "idea": "Product Showcase",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "1 Product, 3 Styles",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-09-12": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #1",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "Before & After",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "9:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-09-13": [
+      {
+        "type": "Feeds",
+        "idea": "Tips & Educational",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Moodboard Reel",
+        "time": "18:00",
+        "status": "Item Name Error, Rescheduled"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-14": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "Moodboard Reel",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -2560,7 +2676,217 @@
       {
         "type": "Stories",
         "idea": "Myth & Fact (4)",
-        "time": "1:00",
+        "time": "9:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-16": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #2",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Styled Photo",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Layout",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-09-17": [
+      {
+        "type": "Feeds",
+        "idea": "Collection Category",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Before & After",
+        "time": "18:00",
+        "status": "Not Pushed Through"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day (D&N)",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Night (D&N)",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Not Pushed Through"
+      }
+    ],
+    "2026-09-18": [
+      {
+        "type": "Feeds",
+        "idea": "1 Product, 3 Styles",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Product Closeup",
+        "time": "18:00",
+        "status": "Not Pushed Through"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-19": [
+      {
+        "type": "Feeds",
+        "idea": "Day & Night",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Moodboard Reel",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "9:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-20": [
+      {
+        "type": "Feeds",
+        "idea": "Tips & Educational",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "Before & After",
+        "time": "18:00",
+        "status": "Not Pushed Through"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-21": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "Styled Reel Slideshow",
+        "time": "18:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "17:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
         "status": "Posted"
       }
     ],
@@ -2580,8 +2906,218 @@
       {
         "type": "Stories",
         "idea": "Myth & Fact (4)",
-        "time": "1:00",
+        "time": "9:00",
         "status": "Posted"
+      }
+    ],
+    "2026-09-23": [
+      {
+        "type": "Feeds",
+        "idea": "Product Showcase",
+        "time": "14:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Styled Photo",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Layout",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "13:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "Posted"
+      }
+    ],
+    "2026-09-24": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #1",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "Before & After",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day (D&N)",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Night (D&N)",
+        "time": "9:00",
+        "status": "Posted"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-09-25": [
+      {
+        "type": "Feeds",
+        "idea": "Day & Night",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "1 Product, 3 Styles",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-09-26": [
+      {
+        "type": "Feeds",
+        "idea": "Collection Category",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "Day & Night",
+        "time": "18:00",
+        "status": "Rescheduled"
+      },
+      {
+        "type": "Stories",
+        "idea": "Style this?",
+        "time": "9:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-09-27": [
+      {
+        "type": "Feeds",
+        "idea": "1 Product, 3 Styles",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "Before & After",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-09-28": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "Product Closeup",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "This or That",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
       }
     ],
     "2026-09-29": [
@@ -2600,168 +3136,16 @@
       {
         "type": "Stories",
         "idea": "Myth & Fact (4)",
-        "time": "1:00",
-        "status": "Scheduled (Manual Edit)"
-      }
-    ],
-    "2026-09-02": [
-      {
-        "type": "Feeds",
-        "idea": "Product Showcase",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Styled Photo",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-09-09": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #2",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Styled Photo",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-09-16": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #2",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Styled Photo",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Scheduled but not Published (via UI)"
-      }
-    ],
-    "2026-09-23": [
-      {
-        "type": "Feeds",
-        "idea": "Product Showcase",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Styled Photo",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
+        "time": "9:00",
+        "status": "To Do"
       }
     ],
     "2026-09-30": [
       {
         "type": "Feeds",
         "idea": "Moodboard #2",
-        "time": "6:00",
-        "status": "Scheduled (Manual Edit)"
+        "time": "14:00",
+        "status": "To Do"
       },
       {
         "type": "Reels",
@@ -2772,561 +3156,177 @@
       {
         "type": "Stories",
         "idea": "Moodboard Styled Photo",
-        "time": "1:00",
-        "status": "Scheduled (Manual Edit)"
+        "time": "9:00",
+        "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Moodboard Layout",
-        "time": "1:00",
-        "status": "Scheduled (Manual Edit)"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "5:00",
-        "status": "Scheduled (via UI)"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Scheduled (via UI)"
-      }
-    ],
-    "2026-09-03": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #1",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Before & After",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day (D&N)",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Night (D&N)",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-09-10": [
-      {
-        "type": "Feeds",
-        "idea": "Day & Night",
-        "time": "6:00",
-        "status": "Scheduled (Manual Edit)"
-      },
-      {
-        "type": "Reels",
-        "idea": "Moodboard Reel",
-        "time": "10:00",
-        "status": "Scheduled (Manual Edit)"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day (D&N)",
-        "time": "1:00",
-        "status": "Scheduled"
-      },
-      {
-        "type": "Stories",
-        "idea": "Night (D&N)",
-        "time": "1:00",
-        "status": "Scheduled"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "Scheduled but not Published (via UI)"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Scheduled but not Published (via UI)"
-      }
-    ],
-    "2026-09-17": [
-      {
-        "type": "Feeds",
-        "idea": "Collection Category",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Before & After",
-        "time": "10:00",
-        "status": "Not Pushed Through"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day (D&N)",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Night (D&N)",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Not Pushed Through"
-      }
-    ],
-    "2026-09-24": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #1",
-        "time": "6:00",
-        "status": "Scheduled"
-      },
-      {
-        "type": "Reels",
-        "idea": "Before & After",
-        "time": "10:00",
-        "status": "Scheduled"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day (D&N)",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Night (D&N)",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "Scheduled (via UI)"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Scheduled (via UI)"
-      }
-    ],
-    "2026-09-04": [
-      {
-        "type": "Feeds",
-        "idea": "1 Product, 3 Styles",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Product Closeup",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
         "time": "9:00",
-        "status": "Posted"
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "13:00",
+        "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
+        "time": "21:00",
+        "status": "To Do"
       }
     ],
-    "2026-09-11": [
+    "2026-10-01": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "One Light at a Time",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day (D&N)",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Night (D&N)",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-02": [
       {
         "type": "Feeds",
         "idea": "Product Showcase",
-        "time": "6:00",
-        "status": "Scheduled"
+        "time": "14:00",
+        "status": "To Do"
       },
       {
         "type": "Reels",
-        "idea": "1 Product, 3 Styles",
-        "time": "10:00",
-        "status": "Scheduled"
+        "idea": "Sketch to Real",
+        "time": "18:00",
+        "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
+        "time": "9:00",
+        "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "Posted"
+        "time": "13:00",
+        "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Tips & Educational",
-        "time": "9:00",
-        "status": "Scheduled (Manual Edit)"
+        "time": "17:00",
+        "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "Scheduled (Manual Edit)"
+        "time": "21:00",
+        "status": "To Do"
       }
     ],
-    "2026-09-18": [
-      {
-        "type": "Feeds",
-        "idea": "1 Product, 3 Styles",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Product Closeup",
-        "time": "10:00",
-        "status": "Not Pushed Through"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "9:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-09-25": [
-      {
-        "type": "Feeds",
-        "idea": "Day & Night",
-        "time": "6:00",
-        "status": "Scheduled (via SB)"
-      },
-      {
-        "type": "Reels",
-        "idea": "1 Product, 3 Styles",
-        "time": "10:00",
-        "status": "Scheduled (via SB)"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "Scheduled (via UI)"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "Scheduled (via UI)"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "9:00",
-        "status": "Scheduled (via UI)"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "Scheduled (via UI)"
-      }
-    ],
-    "2026-09-05": [
+    "2026-10-03": [
       {
         "type": "Feeds",
         "idea": "Collection Category",
-        "time": "6:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Reels",
-        "idea": "Reposting Influencers (Thu/Fri)",
-        "time": "10:00",
-        "status": "Posted"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-09-12": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #1",
-        "time": "6:00",
-        "status": "Scheduled"
-      },
-      {
-        "type": "Reels",
-        "idea": "Before & After",
-        "time": "10:00",
-        "status": "Scheduled (Manual Edit)"
-      },
-      {
-        "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Scheduled (Manual Edit)"
-      }
-    ],
-    "2026-09-19": [
-      {
-        "type": "Feeds",
-        "idea": "Day & Night",
-        "time": "6:00",
-        "status": "Posted"
+        "time": "14:00",
+        "status": "To Do"
       },
       {
         "type": "Reels",
         "idea": "Moodboard Reel",
-        "time": "10:00",
-        "status": "Posted"
+        "time": "18:00",
+        "status": "To Do"
       },
       {
         "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Posted"
-      }
-    ],
-    "2026-09-26": [
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "To Do"
+      },
       {
-        "type": "Feeds",
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
         "idea": "Collection Category",
-        "time": "6:00",
-        "status": "Scheduled (Manual Edit)"
-      },
-      {
-        "type": "Reels",
-        "idea": "Day & Night",
-        "time": "10:00",
-        "status": "Scheduled (via UI)"
+        "time": "17:00",
+        "status": "To Do"
       },
       {
         "type": "Stories",
-        "idea": "Style this?",
-        "time": "1:00",
-        "status": "Scheduled (Manual Edit)"
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
       }
     ],
     "2026-10-04": [
       {
         "type": "Feeds",
         "idea": "Tips & Educational",
-        "time": "6:00",
+        "time": "14:00",
         "status": "To Do"
       },
       {
         "type": "Reels",
         "idea": "Before & After",
-        "time": "10:00",
+        "time": "18:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
         "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-11": [
-      {
-        "type": "Feeds",
-        "idea": "Tips & Educational",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "House Tour",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
         "idea": "Product Closeup w/ description",
-        "time": "5:00",
+        "time": "13:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Collection Category",
-        "time": "9:00",
+        "time": "17:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-18": [
-      {
-        "type": "Feeds",
-        "idea": "Tips & Educational",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "Product Closeup",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "9:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-25": [
-      {
-        "type": "Feeds",
-        "idea": "Tips & Educational",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "House Tour",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "9:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "To Do"
       }
     ],
@@ -3334,7 +3334,7 @@
       {
         "type": "Feeds",
         "idea": "1 Product, 3 Styles",
-        "time": "6:00",
+        "time": "14:00",
         "status": "To Do"
       },
       {
@@ -3346,139 +3346,25 @@
       {
         "type": "Stories",
         "idea": "Collection Category",
-        "time": "1:00",
+        "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Moodboard Styled Photo",
-        "time": "5:00",
+        "time": "13:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Moodboard Layout",
-        "time": "5:00",
+        "time": "13:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-12": [
-      {
-        "type": "Feeds",
-        "idea": "1 Product, 3 Styles",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Styled Photo",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-19": [
-      {
-        "type": "Feeds",
-        "idea": "1 Product, 3 Styles",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Styled Photo",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-26": [
-      {
-        "type": "Feeds",
-        "idea": "1 Product, 3 Styles",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Styled Photo",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "To Do"
       }
     ],
@@ -3498,25 +3384,253 @@
       {
         "type": "Stories",
         "idea": "Day (D&N)",
-        "time": "1:00",
+        "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Night (D&N)",
-        "time": "1:00",
+        "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Collection Category",
-        "time": "5:00",
+        "time": "13:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-07": [
+      {
+        "type": "Feeds",
+        "idea": "Day & Night",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "House Tour",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Styled Photo",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Layout",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-08": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "Product Closeup",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day (D&N)",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Night (D&N)",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
         "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-09": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #1",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "This Mood Every Night",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-10": [
+      {
+        "type": "Feeds",
+        "idea": "Product Showcase",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "Before & After",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-11": [
+      {
+        "type": "Feeds",
+        "idea": "Tips & Educational",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "House Tour",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-12": [
+      {
+        "type": "Feeds",
+        "idea": "1 Product, 3 Styles",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Styled Photo",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Layout",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
         "status": "To Do"
       }
     ],
@@ -3536,25 +3650,253 @@
       {
         "type": "Stories",
         "idea": "Day (D&N)",
-        "time": "1:00",
+        "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Night (D&N)",
-        "time": "1:00",
+        "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Collection Category",
-        "time": "5:00",
+        "time": "13:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-14": [
+      {
+        "type": "Feeds",
+        "idea": "Day & Night",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "Day & Night",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Styled Photo",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Layout",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-15": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "One Part Per Room",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day (D&N)",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Night (D&N)",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
         "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-16": [
+      {
+        "type": "Feeds",
+        "idea": "Product Showcase",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "Virtual Staging",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-17": [
+      {
+        "type": "Feeds",
+        "idea": "Collection Category",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "Moodboard Reel",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-18": [
+      {
+        "type": "Feeds",
+        "idea": "Tips & Educational",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "Product Closeup",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-19": [
+      {
+        "type": "Feeds",
+        "idea": "1 Product, 3 Styles",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Styled Photo",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Layout",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
         "status": "To Do"
       }
     ],
@@ -3574,25 +3916,253 @@
       {
         "type": "Stories",
         "idea": "Day (D&N)",
-        "time": "1:00",
+        "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Night (D&N)",
-        "time": "1:00",
+        "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Collection Category",
-        "time": "5:00",
+        "time": "13:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-21": [
+      {
+        "type": "Feeds",
+        "idea": "Day & Night",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "House Tour",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Styled Photo",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Layout",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-22": [
+      {
+        "type": "Feeds",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Reels",
+        "idea": "Sketch to Real",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Day (D&N)",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Night (D&N)",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
         "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-23": [
+      {
+        "type": "Feeds",
+        "idea": "Moodboard #1",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "One Light at a Time",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ specifications",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-24": [
+      {
+        "type": "Feeds",
+        "idea": "Product Showcase",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "Before & After",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-25": [
+      {
+        "type": "Feeds",
+        "idea": "Tips & Educational",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "House Tour",
+        "time": "18:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Tips & Educational",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Product Closeup w/ description",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
+        "status": "To Do"
+      }
+    ],
+    "2026-10-26": [
+      {
+        "type": "Feeds",
+        "idea": "1 Product, 3 Styles",
+        "time": "14:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Reels",
+        "idea": "NONE",
+        "time": null,
+        "status": "N/A"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "9:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Styled Photo",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Moodboard Layout",
+        "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
         "status": "To Do"
       }
     ],
@@ -3612,139 +4182,25 @@
       {
         "type": "Stories",
         "idea": "Day (D&N)",
-        "time": "1:00",
+        "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Night (D&N)",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-07": [
-      {
-        "type": "Feeds",
-        "idea": "Day & Night",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "House Tour",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Styled Photo",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
         "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-14": [
-      {
-        "type": "Feeds",
-        "idea": "Day & Night",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "Day & Night",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Styled Photo",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
         "idea": "Collection Category",
-        "time": "9:00",
+        "time": "13:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-21": [
-      {
-        "type": "Feeds",
-        "idea": "Day & Night",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "House Tour",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Styled Photo",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "9:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "To Do"
       }
     ],
@@ -3752,189 +4208,37 @@
       {
         "type": "Feeds",
         "idea": "Day & Night",
-        "time": "6:00",
+        "time": "14:00",
         "status": "To Do"
       },
       {
         "type": "Reels",
         "idea": "Styled Reel Slideshow",
-        "time": "10:00",
+        "time": "18:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Moodboard Styled Photo",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Moodboard Layout",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
         "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-01": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "One at a Time Lights",
-        "time": "10:00",
+        "idea": "Moodboard Layout",
+        "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
-        "idea": "Day (D&N)",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Night (D&N)",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
+        "idea": "Collection Category",
+        "time": "17:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-08": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "Product Closeup",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day (D&N)",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Night (D&N)",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-15": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "One Part Per Room",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day (D&N)",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Night (D&N)",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-22": [
-      {
-        "type": "Feeds",
-        "idea": "NONE",
-        "time": null,
-        "status": "N/A"
-      },
-      {
-        "type": "Reels",
-        "idea": "Sketch to Real",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Day (D&N)",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Night (D&N)",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "To Do"
       }
     ],
@@ -3948,183 +4252,31 @@
       {
         "type": "Reels",
         "idea": "Virtual Staging",
-        "time": "10:00",
+        "time": "18:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Day (D&N)",
-        "time": "1:00",
+        "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Night (D&N)",
-        "time": "1:00",
+        "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Product Closeup w/ description",
-        "time": "5:00",
+        "time": "13:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-02": [
-      {
-        "type": "Feeds",
-        "idea": "Product Showcase",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "Sketch to Real",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "9:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-09": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #1",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "This Mood Every Night",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "9:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-16": [
-      {
-        "type": "Feeds",
-        "idea": "Product Showcase",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "Virtual Staging",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "9:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-23": [
-      {
-        "type": "Feeds",
-        "idea": "Moodboard #1",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "One at a Time Lights",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "9:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "To Do"
       }
     ],
@@ -4132,189 +4284,37 @@
       {
         "type": "Feeds",
         "idea": "Moodboard #1",
-        "time": "6:00",
+        "time": "14:00",
         "status": "To Do"
       },
       {
         "type": "Reels",
         "idea": "One Part Per Room",
-        "time": "10:00",
+        "time": "18:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Collection Category",
-        "time": "1:00",
+        "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Product Closeup w/ specifications",
-        "time": "5:00",
+        "time": "13:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Tips & Educational",
-        "time": "9:00",
+        "time": "17:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-03": [
-      {
-        "type": "Feeds",
-        "idea": "Collection Category",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "Moodboard Reel",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "9:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-10": [
-      {
-        "type": "Feeds",
-        "idea": "Product Showcase",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "Before & After",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "9:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-17": [
-      {
-        "type": "Feeds",
-        "idea": "Collection Category",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "Moodboard Reel",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "9:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
-        "status": "To Do"
-      }
-    ],
-    "2026-10-24": [
-      {
-        "type": "Feeds",
-        "idea": "Product Showcase",
-        "time": "6:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Reels",
-        "idea": "Before & After",
-        "time": "10:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
-        "time": "9:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "CTA",
-        "time": "13:00",
+        "time": "21:00",
         "status": "To Do"
       }
     ],
@@ -4322,37 +4322,37 @@
       {
         "type": "Feeds",
         "idea": "Collection Category",
-        "time": "6:00",
+        "time": "14:00",
         "status": "To Do"
       },
       {
         "type": "Reels",
         "idea": "Moodboard Reel",
-        "time": "10:00",
+        "time": "18:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
         "idea": "Tips & Educational",
-        "time": "1:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Product Closeup w/ description",
-        "time": "5:00",
-        "status": "To Do"
-      },
-      {
-        "type": "Stories",
-        "idea": "Collection Category",
         "time": "9:00",
         "status": "To Do"
       },
       {
         "type": "Stories",
-        "idea": "CTA",
+        "idea": "Product Closeup w/ description",
         "time": "13:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "Collection Category",
+        "time": "17:00",
+        "status": "To Do"
+      },
+      {
+        "type": "Stories",
+        "idea": "CTA",
+        "time": "21:00",
         "status": "To Do"
       }
     ]

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { readFileSync } from "fs"
-import { parseContentWorkbook } from "@/lib/workbook"
+import { formatTime, parseContentWorkbook } from "@/lib/workbook"
 import { parseContentCsv } from "@/lib/csv"
 import { CONTENT_DAYS, CONTENT_MONTHS } from "@/lib/content"
 
@@ -34,12 +34,47 @@ describe("Calendar Content & Import Suite", () => {
     // Check October 1
     const oct1 = result.byDate["2026-10-01"]
     expect(oct1).toBeDefined()
-    expect(oct1.some((e) => e.type === "Reels" && e.idea.includes("Lights"))).toBe(true)
+    expect(oct1.some((e) => e.type === "Reels" && e.idea === "One Light at a Time")).toBe(true)
 
     // Check October 31
     const oct31 = result.byDate["2026-10-31"]
     expect(oct31).toBeDefined()
     expect(oct31.some((e) => e.type === "Feeds")).toBe(true)
+  })
+
+  it("keeps planned times exactly as typed in the sheet, regardless of timezone", () => {
+    // Excel stores times as a fraction of a day: 14:00 = 14/24.
+    expect(formatTime(14 / 24)).toBe("14:00")
+    expect(formatTime(9 / 24)).toBe("9:00")
+    expect(formatTime(21 / 24)).toBe("21:00")
+    expect(formatTime(0)).toBe("0:00")
+
+    const buffer = readFileSync("data/oct-calendar.xlsx").buffer
+    const { byDate } = parseContentWorkbook(buffer)
+    const times = (iso: string, type: string) =>
+      byDate[iso].filter((e) => e.type === type).map((e) => e.time)
+
+    // October 1 (Thu): Feeds none, Reels 18:00, Stories 9:00 / 9:00 / 13:00 / 21:00
+    expect(times("2026-10-01", "Reels")).toEqual(["18:00"])
+    expect(times("2026-10-01", "Stories")).toEqual(["9:00", "9:00", "13:00", "21:00"])
+    // October 2 (Fri): Feeds 14:00
+    expect(times("2026-10-02", "Feeds")).toEqual(["14:00"])
+    // September times must not shift either
+    expect(times("2026-09-01", "Stories")).toEqual(["9:00"])
+
+    // The pre-baked JSON must agree with a fresh parse of the workbook.
+    for (const iso of ["2026-10-01", "2026-10-02", "2026-10-14", "2026-10-31"]) {
+      expect(CONTENT_DAYS[iso].map((e) => e.time)).toEqual(byDate[iso].map((e) => e.time))
+    }
+  })
+
+  it("never carries Scheduled labels from the sheet into planned slots", () => {
+    const buffer = readFileSync("data/oct-calendar.xlsx").buffer
+    const { byDate } = parseContentWorkbook(buffer)
+    for (const entries of [...Object.values(byDate), ...Object.values(CONTENT_DAYS)]) {
+      for (const e of entries) expect(e.status ?? "").not.toMatch(/^scheduled/i)
+    }
+    expect(byDate["2026-10-14"].find((e) => e.type === "Reels")?.status).toBe("To Do")
   })
 
   it("parses standard columnar CSV with date, type, idea headers", () => {

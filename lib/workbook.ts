@@ -1,4 +1,4 @@
-import { read, utils } from "xlsx"
+import { SSF, read, utils } from "xlsx"
 import { CONTENT_TYPES, type ContentEntry, type ContentType } from "@/lib/content"
 import { MONTH_NAMES } from "@/lib/calendar-data"
 
@@ -25,8 +25,17 @@ function normalizeType(value: unknown): ContentType | null {
   return CONTENT_TYPES.find((t) => t.toLowerCase() === s) ?? null
 }
 
-/** Excel stores times as a Date anchored to 1899-12-31 in UTC, or string in CSV exports. */
+/**
+ * Excel stores times as a fraction of a day. Read raw (`cellDates: false`) the
+ * value is timezone-independent; a Date is only trustworthy for legacy callers,
+ * and CSV exports give a string.
+ */
 export function formatTime(value: unknown): string | null {
+  if (typeof value === "number") {
+    if (!(value >= 0 && value < 1)) return null
+    const minutes = Math.round(value * 1440) % 1440
+    return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, "0")}`
+  }
   if (value instanceof Date) {
     return `${value.getUTCHours()}:${String(value.getUTCMinutes()).padStart(2, "0")}`
   }
@@ -35,6 +44,16 @@ export function formatTime(value: unknown): string | null {
     if (m) return `${parseInt(m[1], 10)}:${m[2]}`
   }
   return null
+}
+
+/**
+ * Sheet labels like "Scheduled (via UI)" are typed by hand; the real schedule
+ * state lives in Airtable, so planned slots never carry a Scheduled status.
+ */
+export function normalizePlannedStatus(value: unknown): string | null {
+  if (value == null) return null
+  const s = String(value).trim()
+  return /^scheduled/i.test(s) ? "To Do" : s
 }
 
 export function isoDate(year: number, month: number, day: number): string {
@@ -98,7 +117,7 @@ export function parseGridRows(
         type: entryType,
         idea: ideaStr,
         time: formatTime(time),
-        status: status == null ? null : String(status).trim(),
+        status: normalizePlannedStatus(status),
       })
       count++
     }
@@ -113,7 +132,9 @@ export function parseGridRows(
  * month sheet.
  */
 export function parseContentWorkbook(data: ArrayBuffer): WorkbookImportResult {
-  const wb = read(new Uint8Array(data), { type: "array", cellDates: true })
+  // Raw serials (no cellDates): SheetJS builds Dates from the machine timezone,
+  // which shifted every time by the UTC offset (14:00 became 6:00 in Manila).
+  const wb = read(new Uint8Array(data), { type: "array", cellDates: false })
   const byDate: Record<string, ContentEntry[]> = {}
   const months: string[] = []
 
@@ -130,6 +151,14 @@ export function parseContentWorkbook(data: ArrayBuffer): WorkbookImportResult {
     let year: number | null = null
     for (const row of rows.slice(0, 5)) {
       for (const cell of row) {
+        // Header date marker arrives as an Excel serial (e.g. 46296 = 2026-10-01).
+        if (typeof cell === "number" && cell > 40000 && cell < 80000) {
+          const parsed = SSF.parse_date_code(cell)
+          if (parsed?.y) {
+            year = parsed.y
+            break
+          }
+        }
         if (cell instanceof Date && cell.getUTCFullYear() > 1900) {
           year = cell.getUTCFullYear()
           break
