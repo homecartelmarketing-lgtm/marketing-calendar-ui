@@ -40,6 +40,7 @@ export const FIXTURES: { name: string; className: string }[] = [
   { name: "Table Lamp", className: "text-cyan-500" },
   { name: "Wall Light", className: "text-purple-500" },
   { name: "Living Room", className: "text-amber-600" },
+  { name: "House Tour", className: "text-teal-600" },
 ]
 
 /** Placeholder CID codes offered in the day-detail CID selector. */

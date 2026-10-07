@@ -195,6 +195,14 @@ export function getAllConfiguredTables(): TableTarget[] {
       idea: "One Light at a Time",
       fixtureType: "Living Room",
     },
+
+    // House Tour Reel
+    {
+      tableId: env.AIRTABLE_TABLE_ID_HOUSE_TOUR_REEL || "tblqXkdDw4O7hxJS4",
+      category: "Reels",
+      idea: "House Tour",
+      fixtureType: "House Tour",
+    },
   ]
 
   // Filter out any entries that do not have a valid tableId starting with 'tbl'

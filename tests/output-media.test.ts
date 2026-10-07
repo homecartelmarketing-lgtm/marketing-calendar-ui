@@ -171,8 +171,14 @@ describe("canonical Foreign Key ID derivation", () => {
     expect(deriveForeignKeyId({ ID: 8 }, "Reels", "One Light at a Time", "Living Room")).toBe("OATL-REEL-LR-8")
     expect(deriveForeignKeyId({ ID: 6 }, "Reels", "One at a time lights", "Living Room")).toBe("OATL-REEL-LR-6")
   })
-  it("maps Living Room-style names to LR without disturbing existing fixture codes", () => {
+  it("derives HTR-REEL-SET prefix for House Tour reels", () => {
+    expect(deriveForeignKeyId({ ID: 8 }, "Reels", "House Tour", "House Tour")).toBe("HTR-REEL-SET-8")
+    expect(deriveForeignKeyId({ ID: 6 }, "Reels", "House Tour", "")).toBe("HTR-REEL-SET-6")
+    expect(deriveForeignKeyId({ "Foreign Key ID": "HTR-REEL-SET-8" }, "Reels", "House Tour")).toBe("HTR-REEL-SET-8")
+  })
+  it("maps Living Room-style names to LR and House Tour to SET without disturbing existing fixture codes", () => {
     expect(getFixtureCode("Living Room")).toBe("LR")
+    expect(getFixtureCode("House Tour")).toBe("SET")
     expect(getFixtureCode("Chandelier")).toBe("CH")
     expect(getFixtureCode("Linear Chandelier")).toBe("LC")
     expect(getFixtureCode("Ceiling Mounted")).toBe("CM")
@@ -190,6 +196,19 @@ describe("canonical Foreign Key ID derivation", () => {
       slides: ["https://media.example/oatl.mp4"],
     })
   })
+  it("extracts Final Video for House Tour reels", () => {
+    expect(
+      extractMediaFromRecord(
+        { "Final Video": [{ url: "https://media.example/house_tour.mp4", type: "video/mp4" }] },
+        "Reels",
+        "House Tour"
+      )
+    ).toEqual({
+      mediaUrl: "https://media.example/house_tour.mp4",
+      mediaType: "video",
+      slides: ["https://media.example/house_tour.mp4"],
+    })
+  })
 })
 
 describe("deriveFixtureFromForeignKeyId", () => {
@@ -203,6 +222,7 @@ describe("deriveFixtureFromForeignKeyId", () => {
     expect(deriveFixtureFromForeignKeyId("TNE-STORY-CM-5")).toBe("Ceiling Mounted")
     expect(deriveFixtureFromForeignKeyId("MB-REEL-LC-6")).toBe("Linear Chandelier")
     expect(deriveFixtureFromForeignKeyId("OATL-REEL-LR-8")).toBe("Living Room")
+    expect(deriveFixtureFromForeignKeyId("HTR-REEL-SET-8")).toBe("House Tour")
     expect(deriveFixtureFromForeignKeyId("UNKNOWN-ID")).toBeUndefined()
     expect(deriveFixtureFromForeignKeyId("")).toBeUndefined()
     expect(deriveFixtureFromForeignKeyId(undefined)).toBeUndefined()

@@ -654,6 +654,7 @@ function matchesFixture(itemFixture?: string, selectedFixture?: string): boolean
   const aIsCluster = a.includes("cluster")
   const bIsCluster = b.includes("cluster")
   if (aIsCluster !== bIsCluster) return false
+  if ((a.includes("house") || a.includes("tour") || a === "set") && (b.includes("house") || b.includes("tour") || b === "set")) return true
   return a.includes(b) || b.includes(a)
 }
 

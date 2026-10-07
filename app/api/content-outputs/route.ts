@@ -245,6 +245,8 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
       ids.push("tblqBZ946hVdOpmDV")
     } else if (t.includes("one light") || t.includes("one at a time") || t.includes("oatl")) {
       ids.push(autoEnv.AIRTABLE_TABLE_ID_ONE_AT_A_TIME_LIGHTS || "tblJpEtBudQZda319")
+    } else if (t.includes("house tour") || t.includes("htr")) {
+      ids.push(autoEnv.AIRTABLE_TABLE_ID_HOUSE_TOUR_REEL || "tblqXkdDw4O7hxJS4")
     }
   }
 
@@ -285,6 +287,10 @@ function matchIdeaTarget(requestIdea: string, targetIdea: string): boolean {
   if (
     (req.includes("onelight") || req.includes("oneat") || req.includes("oatl")) &&
     (tgt.includes("onelight") || tgt.includes("oneat") || tgt.includes("oatl"))
+  ) return true
+  if (
+    (req.includes("housetour") || req.includes("htr")) &&
+    (tgt.includes("housetour") || tgt.includes("htr"))
   ) return true
 
   return req.includes(tgt) || tgt.includes(req)
@@ -380,7 +386,7 @@ export async function GET(request: NextRequest) {
           const fkId = deriveForeignKeyId(fields, category, contentType, fixtureType, rec.id, recIndex + 1)
 
           const itemNames: string[] = []
-          for (let i = 1; i <= 5; i++) {
+          for (let i = 1; i <= 20; i++) {
             const val = fields[`Item Name${i}`] || (i === 1 ? fields["Item Name"] : undefined)
             if (val) itemNames.push(String(val))
           }
