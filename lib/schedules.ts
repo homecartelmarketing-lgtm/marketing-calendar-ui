@@ -160,9 +160,9 @@ export async function pullAirtableSchedulesWithDiagnostics(options?: { forceFres
 
             // Extract item names
             const itemNames: string[] = []
-            for (let idx = 1; idx <= 4; idx++) {
-              const key = idx === 1 ? "Item Name" : `Item Name${idx}`
-              if (fields[key]) itemNames.push(String(fields[key]))
+            for (let idx = 1; idx <= 20; idx++) {
+              const val = fields[`Item Name${idx}`] || (idx === 1 ? fields["Item Name"] : undefined)
+              if (val) itemNames.push(String(val))
             }
 
             const { mediaUrl, mediaType, slides } = extractMediaFromRecord(fields, cfg.category, cfg.idea)

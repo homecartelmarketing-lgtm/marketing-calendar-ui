@@ -36,6 +36,13 @@ All media resolution logic is centralized in [`lib/output-media.ts`](file:///c:/
 * Item names come from `Item Name1..4`; when absent they are parsed from `Scraped Items` (one line per slot, `Slot N (Fixture) | Name | ...`, second `|` column is the name).
 * The table needs a `Date and Time Scheduled` (or `Date and Time`) field before a schedule can be saved; without it `syncAirtableRecord` fails with an error rather than saving status alone.
 
+### 6. House Tour Reel
+* Airtable table `tblqXkdDw4O7hxJS4` ("House Tour Reel"); override with `AIRTABLE_TABLE_ID_HOUSE_TOUR_REEL`.
+* Video candidates (in order): `Final Video`, `Raw Video`, `REEL - House Tour`, `House Tour Reel`.
+* Foreign Key ID prefix `HTR-REEL-<fixture code>-<ID>`; code `SET` maps to `House Tour` fixture.
+* Item names are extracted from `Item Name1..11` (covering up to 11 rooms/furniture slots).
+* The table needs a `Date and Time Scheduled` (or `Date and Time`) field in Airtable before a live schedule timestamp can be saved; without it `syncAirtableRecord` fails with an error rather than silently saving status alone.
+
 ---
 
 ## 🚦 Candidate Status Filters (`isCompletedOrDoneStatus`)

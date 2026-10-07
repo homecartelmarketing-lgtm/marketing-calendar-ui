@@ -318,4 +318,49 @@ describe("output data completeness", () => {
     expect(body.items[0].videoUrl).toBe("https://media.example/oatl_reel.mp4")
     expect(body.items[0].itemNames).toEqual(["IIona", "Pavo", "Zeppelin"])
   })
+
+  it("extracts House Tour Reel records with all item names, House Tour fixture, and Final Video", async () => {
+    targets.mockReturnValue([
+      { tableId: "tblqXkdDw4O7hxJS4", category: "Reels", idea: "House Tour", fixtureType: "House Tour" },
+    ])
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      records: [{
+        id: "recCBn353skL2r9Ov",
+        fields: {
+          ID: 8,
+          "Foreign Key ID": "HTR-REEL-SET-8",
+          Status: "Done",
+          "Caption Generated": "Discover our curated home tour collection.",
+          "Date and Time Generated": "2026-10-06T03:45:23.466Z",
+          "Item Name1": "Alejandro Une | Chandelier",
+          "Item Name2": "Samoa | Table Lamp",
+          "Item Name3": "Namid | Modern Pendant Light",
+          "Item Name4": "Saanvi | Silk Pendant Light",
+          "Item Name5": "Keanu | Floor Lamp",
+          "Item Name6": "Salvi Gold Frost | Wall Lamp",
+          "Item Name7": "Golfo | Table Lamp",
+          "Item Name8": "Galene Trois | Modern LED Wall Light",
+          "Item Name9": "Sagiri Lin | Chandelier",
+          "Item Name10": "Vega | Modern Ceiling Mounted Light",
+          "Item Name11": "Natasha | Pendant Light",
+          "Final Video": [
+            { id: "attVideo1", url: "https://media.example/house_tour.mp4", type: "video/mp4" },
+          ],
+        },
+      }],
+    })))
+
+    const res = await GET(new NextRequest("http://localhost/api/content-outputs?category=Reels&type=House%20Tour"))
+    const body = await res.json()
+    expect(res.status).toBe(200)
+    expect(body.items.length).toBe(1)
+    expect(body.items[0].foreignKeyId).toBe("HTR-REEL-SET-8")
+    expect(body.items[0].fixtureType).toBe("House Tour")
+    expect(body.items[0].status).toBe("Completed")
+    expect(body.items[0].videoUrl).toBe("https://media.example/house_tour.mp4")
+    expect(body.items[0].caption).toBe("Discover our curated home tour collection.")
+    expect(body.items[0].itemNames.length).toBe(11)
+    expect(body.items[0].itemNames[0]).toBe("Alejandro Une | Chandelier")
+    expect(body.items[0].itemNames[10]).toBe("Natasha | Pendant Light")
+  })
 })

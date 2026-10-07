@@ -64,6 +64,9 @@ export function getFinalOutputCandidates(category: string, contentType: string):
   }
 
   if (cat === "reels") {
+    if (type.includes("house tour") || type.includes("htr")) {
+      return ["Final Video", "Raw Video", "REEL - House Tour", "House Tour Reel"]
+    }
     if (type.includes("one light") || type.includes("one at a time") || type.includes("oatl")) {
       return ["Final Video", "Raw Video", "REEL - One at a Time Lights"]
     }
