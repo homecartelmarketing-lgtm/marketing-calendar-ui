@@ -43,6 +43,13 @@ All media resolution logic is centralized in [`lib/output-media.ts`](file:///c:/
 * Item names are extracted from `Item Name1..11` (covering up to 11 rooms/furniture slots).
 * The table needs a `Date and Time Scheduled` (or `Date and Time`) field in Airtable before a live schedule timestamp can be saved; without it `syncAirtableRecord` fails with an error rather than silently saving status alone.
 
+### 7. This Mood Every Night Reel
+* Airtable table `tblDa5UOTUTlU1Xxy` ("This Mood Every Night"); override with `AIRTABLE_TABLE_ID_THIS_MOOD_EVERY_NIGHT_REEL`.
+* Video candidates (in order): `Final Video`, `Raw Video`, `REEL - This Mood Every Night`, `This Mood Every Night Reel`.
+* Foreign Key ID prefix `TMEN-REEL-<fixture code>-<ID>`; code `SET` maps to `This Mood Every Night` fixture.
+* Item names are extracted from `Item Name1..7` (covering all 7 luxury nighttime room slots).
+* The table needs a `Date and Time Scheduled` (or `Date and Time`) field in Airtable before a live schedule timestamp can be saved; without it `syncAirtableRecord` fails with an error rather than silently saving status alone.
+
 ---
 
 ## 🚦 Candidate Status Filters (`isCompletedOrDoneStatus`)

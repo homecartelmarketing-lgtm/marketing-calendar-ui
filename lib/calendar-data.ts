@@ -32,6 +32,7 @@ export const NAV_MENUS: Record<NavKey, string[]> = {
     "Product Closeup",
     "Reposting Influencers",
     "Style Reel Slideshow",
+    "This Mood Every Night",
     "UGC",
   ],
 }

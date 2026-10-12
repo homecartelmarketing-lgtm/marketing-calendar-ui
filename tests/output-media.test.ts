@@ -176,9 +176,15 @@ describe("canonical Foreign Key ID derivation", () => {
     expect(deriveForeignKeyId({ ID: 6 }, "Reels", "House Tour", "")).toBe("HTR-REEL-SET-6")
     expect(deriveForeignKeyId({ "Foreign Key ID": "HTR-REEL-SET-8" }, "Reels", "House Tour")).toBe("HTR-REEL-SET-8")
   })
-  it("maps Living Room-style names to LR and House Tour to SET without disturbing existing fixture codes", () => {
+  it("derives TMEN-REEL-SET prefix for This Mood Every Night reels", () => {
+    expect(deriveForeignKeyId({ ID: 1 }, "Reels", "This Mood Every Night", "This Mood Every Night")).toBe("TMEN-REEL-SET-1")
+    expect(deriveForeignKeyId({ ID: 3 }, "Reels", "This Mood Every Night", "")).toBe("TMEN-REEL-SET-3")
+    expect(deriveForeignKeyId({ "Foreign Key ID": "TMEN-REEL-SET-1" }, "Reels", "This Mood Every Night")).toBe("TMEN-REEL-SET-1")
+  })
+  it("maps Living Room-style names to LR and House Tour / This Mood Every Night to SET without disturbing existing fixture codes", () => {
     expect(getFixtureCode("Living Room")).toBe("LR")
     expect(getFixtureCode("House Tour")).toBe("SET")
+    expect(getFixtureCode("This Mood Every Night")).toBe("SET")
     expect(getFixtureCode("Chandelier")).toBe("CH")
     expect(getFixtureCode("Linear Chandelier")).toBe("LC")
     expect(getFixtureCode("Ceiling Mounted")).toBe("CM")
@@ -209,6 +215,19 @@ describe("canonical Foreign Key ID derivation", () => {
       slides: ["https://media.example/house_tour.mp4"],
     })
   })
+  it("extracts Final Video for This Mood Every Night reels", () => {
+    expect(
+      extractMediaFromRecord(
+        { "Final Video": [{ url: "https://media.example/this_mood_every_night.mp4", type: "video/mp4" }] },
+        "Reels",
+        "This Mood Every Night"
+      )
+    ).toEqual({
+      mediaUrl: "https://media.example/this_mood_every_night.mp4",
+      mediaType: "video",
+      slides: ["https://media.example/this_mood_every_night.mp4"],
+    })
+  })
 })
 
 describe("deriveFixtureFromForeignKeyId", () => {
@@ -223,6 +242,7 @@ describe("deriveFixtureFromForeignKeyId", () => {
     expect(deriveFixtureFromForeignKeyId("MB-REEL-LC-6")).toBe("Linear Chandelier")
     expect(deriveFixtureFromForeignKeyId("OATL-REEL-LR-8")).toBe("Living Room")
     expect(deriveFixtureFromForeignKeyId("HTR-REEL-SET-8")).toBe("House Tour")
+    expect(deriveFixtureFromForeignKeyId("TMEN-REEL-SET-1")).toBe("This Mood Every Night")
     expect(deriveFixtureFromForeignKeyId("UNKNOWN-ID")).toBeUndefined()
     expect(deriveFixtureFromForeignKeyId("")).toBeUndefined()
     expect(deriveFixtureFromForeignKeyId(undefined)).toBeUndefined()

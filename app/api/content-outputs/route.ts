@@ -247,6 +247,8 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
       ids.push(autoEnv.AIRTABLE_TABLE_ID_ONE_AT_A_TIME_LIGHTS || "tblJpEtBudQZda319")
     } else if (t.includes("house tour") || t.includes("htr")) {
       ids.push(autoEnv.AIRTABLE_TABLE_ID_HOUSE_TOUR_REEL || "tblqXkdDw4O7hxJS4")
+    } else if (t.includes("this mood every night") || t.includes("tmen") || (t.includes("this mood") && t.includes("night"))) {
+      ids.push(autoEnv.AIRTABLE_TABLE_ID_THIS_MOOD_EVERY_NIGHT_REEL || "tblDa5UOTUTlU1Xxy")
     }
   }
 
@@ -291,6 +293,10 @@ function matchIdeaTarget(requestIdea: string, targetIdea: string): boolean {
   if (
     (req.includes("housetour") || req.includes("htr")) &&
     (tgt.includes("housetour") || tgt.includes("htr"))
+  ) return true
+  if (
+    (req.includes("thismood") || req.includes("tmen") || (req.includes("mood") && req.includes("night"))) &&
+    (tgt.includes("thismood") || tgt.includes("tmen") || (tgt.includes("mood") && tgt.includes("night")))
   ) return true
 
   return req.includes(tgt) || tgt.includes(req)

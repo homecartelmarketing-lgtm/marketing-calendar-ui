@@ -74,6 +74,9 @@ export function getFinalOutputCandidates(category: string, contentType: string):
       return ["Day and Night Reel with Music and Outro", "REEL - Day & Night"]
     }
     if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["Converted Reel", "REEL - 1 Product, 3 Styles"]
+    if (type.includes("this mood every night") || type.includes("tmen") || (type.includes("this mood") && type.includes("night"))) {
+      return ["Final Video", "Raw Video", "REEL - This Mood Every Night", "This Mood Every Night Reel"]
+    }
     if (type.includes("before") && type.includes("after")) return ["Slide Show Before and After Reel", "REEL - Before & After", "Slide Show Before and After"]
     if (type.includes("moodboard")) return ["REEL - Moodboard Reel", "Converted Moodboard Reel"]
     if (type.includes("style")) return ["Style Reel Slideshow", "REEL - Style Reel Slideshow"]
