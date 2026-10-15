@@ -21,6 +21,7 @@ Welcome to the central memory index for **HomeCartel Marketing Output UI**. This
 
 ### 1. 📅 Daily Session Logs (Work History & Context)
 *Keep track of session progress, files modified, and next steps so any developer or AI can resume instantly.*
+- [[daily-logs/2026-10-15|2026-10-15 — Day & Night Story Tagged Item Name Thumbnail Extraction]]
 - [[daily-logs/2026-10-12|2026-10-12 — This Mood Every Night Reel Table Integration]]
 - [[daily-logs/2026-10-07|2026-10-07 — House Tour Reel Table Integration]]
 - [[daily-logs/2026-09-18|2026-09-18 — Obsidian Memory Vault Integration & Meta API Diagnostics]]

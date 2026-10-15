@@ -32,7 +32,12 @@ export function extractOutputMedia(fields: Record<string, unknown>, category: st
   if (cat === "stories" && type.includes("moodboard")) {
     selected = [...read("Moodboard Converted"), ...read("Blended Image")]
   } else if (cat === "stories" && ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night ("))) {
-    selected = read("STORY - Day & Night (2)")
+    const tagged =
+      read("Blended Image with Name text").length ? read("Blended Image with Name text") :
+      read("Blended Image with Item Name").length ? read("Blended Image with Item Name") :
+      read("Blended with Item Name").length ? read("Blended with Item Name") :
+      read("Blended Image with Name").length ? read("Blended Image with Name") : []
+    selected = tagged.length ? tagged : read("STORY - Day & Night (2)")
   } else if (cat === "feeds" && ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night ("))) {
     const day = read("Day Image")[0]
     const night = read("Night Image")[0]
@@ -47,7 +52,12 @@ export function extractOutputMedia(fields: Record<string, unknown>, category: st
       } else if (night) {
         selected = [night]
       } else {
-        selected = read("STORY - Day & Night (2)")
+        const tagged =
+          read("Blended Image with Name text").length ? read("Blended Image with Name text") :
+          read("Blended Image with Item Name").length ? read("Blended Image with Item Name") :
+          read("Blended with Item Name").length ? read("Blended with Item Name") :
+          read("Blended Image with Name").length ? read("Blended Image with Name") : []
+        selected = tagged.length ? tagged : read("STORY - Day & Night (2)")
       }
     }
   } else if (cat === "feeds" && type.includes("tips")) {

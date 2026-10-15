@@ -289,6 +289,42 @@ describe("output data completeness", () => {
     expect(body3.items[0].foreignKeyId).toBe("DN-STORY-CH-5")
   })
 
+  it("extracts Day & Night Story records with Blended Image with Name text when available", async () => {
+    targets.mockReturnValue([
+      { tableId: "tblKkCf88UVQ3Yu07", category: "Stories", idea: "Day & Night", fixtureType: "Chandelier" },
+    ])
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      records: [{
+        id: "rec7n4idUrI3CVYqF",
+        fields: {
+          ID: 5,
+          "Foreign Key ID": "DN-STORY-CH-5",
+          Status: "Complete",
+          "Item Name": "Kaedwen 6 | Modern Chandelier",
+          "STORY - Day & Night (2)": [
+            { id: "att1", url: "https://media.example/dn_day_raw.jpg", type: "image/jpeg" },
+            { id: "att2", url: "https://media.example/dn_night_raw.jpg", type: "image/jpeg" },
+          ],
+          "Blended Image with Name text": [
+            { id: "attTagged1", url: "https://media.example/dn_day_tagged.jpg", type: "image/jpeg" },
+            { id: "attTagged2", url: "https://media.example/dn_night_tagged.jpg", type: "image/jpeg" },
+          ],
+        },
+      }],
+    })))
+
+    const res = await GET(new NextRequest("http://localhost/api/content-outputs?category=Stories&type=Day%20%26%20Night"))
+    const body = await res.json()
+    expect(res.status).toBe(200)
+    expect(body.items.length).toBe(1)
+    expect(body.items[0].foreignKeyId).toBe("DN-STORY-CH-5")
+    expect(body.items[0].slides).toEqual([
+      "https://media.example/dn_day_tagged.jpg",
+      "https://media.example/dn_night_tagged.jpg",
+    ])
+    expect(body.items[0].slides[0]).toBe("https://media.example/dn_day_tagged.jpg")
+  })
+
   it("extracts One Light at a Time Reel records with Scraped Items parsing and Living Room fixture", async () => {
     targets.mockReturnValue([
       { tableId: "tblJpEtBudQZda319", category: "Reels", idea: "One Light at a Time", fixtureType: "Living Room" },

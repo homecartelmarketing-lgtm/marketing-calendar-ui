@@ -125,6 +125,37 @@ describe("scheduler final media selection", () => {
     expect(extractMediaFromRecord(record, "Stories", "Night (D&N)").slides)
       .toEqual(["https://media.example/day.jpg", "https://media.example/night.jpg"])
   })
+  it("prioritizes Blended Image with Name text (and aliases) over raw STORY - Day & Night (2)", () => {
+    const recordWithTagged = {
+      "STORY - Day & Night (2)": [
+        ...img("https://media.example/day_raw.jpg"),
+        ...img("https://media.example/night_raw.jpg"),
+      ],
+      "Blended Image with Name text": [
+        ...img("https://media.example/day_tagged.jpg"),
+        ...img("https://media.example/night_tagged.jpg"),
+      ],
+    }
+    const result = extractMediaFromRecord(recordWithTagged, "Stories", "Day & Night")
+    expect(result.slides).toEqual([
+      "https://media.example/day_tagged.jpg",
+      "https://media.example/night_tagged.jpg",
+    ])
+    expect(result.mediaUrl).toBe("https://media.example/day_tagged.jpg")
+
+    // Test resilient alias: Blended with Item Name
+    const recordWithItemNameAlias = {
+      "STORY - Day & Night (2)": [
+        ...img("https://media.example/day_raw.jpg"),
+      ],
+      "Blended with Item Name": [
+        ...img("https://media.example/day_item_name.jpg"),
+      ],
+    }
+    expect(extractMediaFromRecord(recordWithItemNameAlias, "Stories", "Day (D&N)").slides).toEqual([
+      "https://media.example/day_item_name.jpg",
+    ])
+  })
 })
 
 describe("canonical Foreign Key ID derivation", () => {
