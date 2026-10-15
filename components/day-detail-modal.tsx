@@ -655,6 +655,7 @@ function matchesFixture(itemFixture?: string, selectedFixture?: string): boolean
   const bIsCluster = b.includes("cluster")
   if (aIsCluster !== bIsCluster) return false
   if ((a.includes("house") || a.includes("tour") || a === "set") && (b.includes("house") || b.includes("tour") || b === "set")) return true
+  if ((a.includes("this mood") || a.includes("mood every night") || a === "set") && (b.includes("this mood") || b.includes("mood every night") || b === "set")) return true
   return a.includes(b) || b.includes(a)
 }
 

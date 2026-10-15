@@ -289,6 +289,42 @@ describe("output data completeness", () => {
     expect(body3.items[0].foreignKeyId).toBe("DN-STORY-CH-5")
   })
 
+  it("extracts Day & Night Story records with Blended Image with Name text when available", async () => {
+    targets.mockReturnValue([
+      { tableId: "tblKkCf88UVQ3Yu07", category: "Stories", idea: "Day & Night", fixtureType: "Chandelier" },
+    ])
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      records: [{
+        id: "rec7n4idUrI3CVYqF",
+        fields: {
+          ID: 5,
+          "Foreign Key ID": "DN-STORY-CH-5",
+          Status: "Complete",
+          "Item Name": "Kaedwen 6 | Modern Chandelier",
+          "STORY - Day & Night (2)": [
+            { id: "att1", url: "https://media.example/dn_day_raw.jpg", type: "image/jpeg" },
+            { id: "att2", url: "https://media.example/dn_night_raw.jpg", type: "image/jpeg" },
+          ],
+          "Blended Image with Name text": [
+            { id: "attTagged1", url: "https://media.example/dn_day_tagged.jpg", type: "image/jpeg" },
+            { id: "attTagged2", url: "https://media.example/dn_night_tagged.jpg", type: "image/jpeg" },
+          ],
+        },
+      }],
+    })))
+
+    const res = await GET(new NextRequest("http://localhost/api/content-outputs?category=Stories&type=Day%20%26%20Night"))
+    const body = await res.json()
+    expect(res.status).toBe(200)
+    expect(body.items.length).toBe(1)
+    expect(body.items[0].foreignKeyId).toBe("DN-STORY-CH-5")
+    expect(body.items[0].slides).toEqual([
+      "https://media.example/dn_day_tagged.jpg",
+      "https://media.example/dn_night_tagged.jpg",
+    ])
+    expect(body.items[0].slides[0]).toBe("https://media.example/dn_day_tagged.jpg")
+  })
+
   it("extracts One Light at a Time Reel records with Scraped Items parsing and Living Room fixture", async () => {
     targets.mockReturnValue([
       { tableId: "tblJpEtBudQZda319", category: "Reels", idea: "One Light at a Time", fixtureType: "Living Room" },
@@ -362,5 +398,46 @@ describe("output data completeness", () => {
     expect(body.items[0].itemNames.length).toBe(11)
     expect(body.items[0].itemNames[0]).toBe("Alejandro Une | Chandelier")
     expect(body.items[0].itemNames[10]).toBe("Natasha | Pendant Light")
+  })
+
+  it("extracts This Mood Every Night Reel records with all item names, This Mood Every Night fixture, and Final Video", async () => {
+    targets.mockReturnValue([
+      { tableId: "tblDa5UOTUTlU1Xxy", category: "Reels", idea: "This Mood Every Night", fixtureType: "This Mood Every Night" },
+    ])
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      records: [{
+        id: "recTMENtest12345",
+        fields: {
+          ID: 1,
+          "Foreign Key ID": "TMEN-REEL-SET-1",
+          Status: "Done",
+          "Caption Generated": "Embrace the warm, moody evening glow.",
+          "Date and Time Generated": "2026-10-12T01:30:00.000Z",
+          "Item Name1": "Mina 7 | Chandelier",
+          "Item Name2": "Landon | Kitchen Pendant",
+          "Item Name3": "Riley | Hearth Accent",
+          "Item Name4": "Landulf | Counter Pendant",
+          "Item Name5": "Alondra | Dining Chandelier",
+          "Item Name6": "Hugi | Floor Lamp",
+          "Item Name7": "Gulla | Stair Footlights",
+          "Final Video": [
+            { id: "attVideoTMEN1", url: "https://media.example/this_mood_every_night.mp4", type: "video/mp4" },
+          ],
+        },
+      }],
+    })))
+
+    const res = await GET(new NextRequest("http://localhost/api/content-outputs?category=Reels&type=This%20Mood%20Every%20Night"))
+    const body = await res.json()
+    expect(res.status).toBe(200)
+    expect(body.items.length).toBe(1)
+    expect(body.items[0].foreignKeyId).toBe("TMEN-REEL-SET-1")
+    expect(body.items[0].fixtureType).toBe("This Mood Every Night")
+    expect(body.items[0].status).toBe("Completed")
+    expect(body.items[0].videoUrl).toBe("https://media.example/this_mood_every_night.mp4")
+    expect(body.items[0].caption).toBe("Embrace the warm, moody evening glow.")
+    expect(body.items[0].itemNames.length).toBe(7)
+    expect(body.items[0].itemNames[0]).toBe("Mina 7 | Chandelier")
+    expect(body.items[0].itemNames[6]).toBe("Gulla | Stair Footlights")
   })
 })

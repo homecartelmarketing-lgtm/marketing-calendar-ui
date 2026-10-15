@@ -10,7 +10,13 @@ export function getFinalOutputCandidates(category: string, contentType: string):
     }
     if (type.includes("tips")) return ["Tips and Edu Story Converted", "Tips and Edu Stories"]
     if ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night (")) {
-      return ["STORY - Day & Night (2)"]
+      return [
+        "Blended Image with Name text",
+        "Blended Image with Item Name",
+        "Blended with Item Name",
+        "Blended Image with Name",
+        "STORY - Day & Night (2)",
+      ]
     }
     if (type.includes("moodboard")) return ["Moodboard Converted", "Blended Image"]
     if (type.includes("spec")) return ["PCS Story"]
@@ -30,7 +36,16 @@ export function getFinalOutputCandidates(category: string, contentType: string):
       ]
     }
     if ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night (")) {
-      return ["FEED - Day & Night (2)", "Day Image", "Night Image", "STORY - Day & Night (2)"]
+      return [
+        "FEED - Day & Night (2)",
+        "Day Image",
+        "Night Image",
+        "Blended Image with Name text",
+        "Blended Image with Item Name",
+        "Blended with Item Name",
+        "Blended Image with Name",
+        "STORY - Day & Night (2)",
+      ]
     }
     if (type.includes("collection")) return ["FEED - Collection Category (4)", "Styled Photo - Collection Category", "Collection Category Layout"]
     if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["1 Product 3 Style Blended", "FEED - 1 Product, 3 Styles (3)"]
@@ -74,6 +89,9 @@ export function getFinalOutputCandidates(category: string, contentType: string):
       return ["Day and Night Reel with Music and Outro", "REEL - Day & Night"]
     }
     if (type.includes("1 product") || type.includes("one product") || type.includes("3 styles")) return ["Converted Reel", "REEL - 1 Product, 3 Styles"]
+    if (type.includes("this mood every night") || type.includes("tmen") || (type.includes("this mood") && type.includes("night"))) {
+      return ["Final Video", "Raw Video", "REEL - This Mood Every Night", "This Mood Every Night Reel"]
+    }
     if (type.includes("before") && type.includes("after")) return ["Slide Show Before and After Reel", "REEL - Before & After", "Slide Show Before and After"]
     if (type.includes("moodboard")) return ["REEL - Moodboard Reel", "Converted Moodboard Reel"]
     if (type.includes("style")) return ["Style Reel Slideshow", "REEL - Style Reel Slideshow"]
