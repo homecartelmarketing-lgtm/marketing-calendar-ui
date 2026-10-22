@@ -1,4 +1,5 @@
 import { neon } from "@neondatabase/serverless"
+import postgres from "postgres"
 import { readFileSync } from "fs"
 import { join } from "path"
 
@@ -45,7 +46,7 @@ export interface AutomationRunRow {
   error_message?: string | null
 }
 
-// In-memory mock database for provider-isolated tests and local dev without Neon
+// In-memory mock database for provider-isolated tests and local dev without Postgres
 class MockDatabase {
   jobs = new Map<string, AutomationJobRow>()
   runs: AutomationRunRow[] = []
@@ -137,10 +138,34 @@ class MockDatabase {
 
 const mockDb = new MockDatabase()
 
-function getDatabaseUrl(): string | undefined {
+let sqlClient: ReturnType<typeof postgres> | null = null
+let currentDbUrl: string | null = null
+
+function getSqlClient(dbUrl: string): ReturnType<typeof postgres> {
+  if (!sqlClient || currentDbUrl !== dbUrl) {
+    if (sqlClient) {
+      try {
+        sqlClient.end({ timeout: 5 }).catch(() => {})
+      } catch {
+        // ignore
+      }
+    }
+    currentDbUrl = dbUrl
+    sqlClient = postgres(dbUrl, {
+      max: 1, // 1 connection per serverless warm instance (Supabase / Vercel best practice)
+      prepare: false, // Required for Supabase Transaction Pooler (port 6543)
+      ssl: dbUrl.includes("localhost") || dbUrl.includes("127.0.0.1") ? false : "require",
+      idle_timeout: 20,
+      connect_timeout: 15,
+    })
+  }
+  return sqlClient
+}
+
+export function getDatabaseUrl(): string | undefined {
   return (
-    // Prefer the Neon Vercel-integration variable (known-live, pooled) over a
-    // possibly stale hand-set DATABASE_URL from before the integration existed.
+    process.env.SUPABASE_DATABASE_URL ||
+    process.env.SUPABASE_DB_URL ||
     process.env.POSTGRES_DATABASE_URL ||
     process.env.DATABASE_URL ||
     process.env.POSTGRES_URL ||
@@ -162,7 +187,7 @@ export function resetMockDb(): void {
 }
 
 /**
- * Executes a query against Neon Postgres if DATABASE_URL is configured;
+ * Executes a query against Supabase Postgres / Neon Postgres if configured;
  * otherwise throws an error unless in mock mode.
  */
 export async function executeSql<T = any>(queryText: string, params: any[] = []): Promise<T[]> {
@@ -171,17 +196,21 @@ export async function executeSql<T = any>(queryText: string, params: any[] = [])
     throw new Error("executeSql called in mock mode: use high-level automation methods")
   }
 
-  const sql = neon(dbUrl)
-  const rows = await sql.query(queryText, params)
-  return rows as T[]
+  // Neon HTTP endpoint compatibility fallback
+  if (dbUrl.includes("neon.tech") && !dbUrl.includes("pooler")) {
+    const sql = neon(dbUrl)
+    const rows = await sql.query(queryText, params)
+    return rows as T[]
+  }
+
+  // Universal Postgres driver (Supabase Transaction/Session Pooler, direct Supabase, or standard Postgres)
+  const client = getSqlClient(dbUrl)
+  const rows = await client.unsafe(queryText, params)
+  return rows as unknown as T[]
 }
 
 /**
- * Splits a .sql file's text into individual executable statements. Neon's
- * HTTP driver only accepts one statement per query, so full-line comments
- * are stripped first, then the remainder is split on statement boundaries
- * (safe here: no semicolons occur inside string literals, function bodies,
- * or dollar-quoted blocks in this project's schema files).
+ * Splits a .sql file's text into individual executable statements.
  */
 export function splitSqlStatements(sqlText: string): string[] {
   const withoutComments = sqlText
@@ -195,7 +224,7 @@ export function splitSqlStatements(sqlText: string): string[] {
 }
 
 /**
- * Initializes database schema by applying server/db/schema.sql to Neon Postgres.
+ * Initializes database schema by applying server/db/schema.sql to Postgres (Supabase or Neon).
  */
 export async function initDbSchema(): Promise<{ success: boolean; message: string }> {
   if (isMockDb()) {
@@ -211,10 +240,9 @@ export async function initDbSchema(): Promise<{ success: boolean; message: strin
   try {
     const schemaPath = join(process.cwd(), "server", "db", "schema.sql")
     const schemaSql = readFileSync(schemaPath, "utf-8")
-    const sql = neon(dbUrl)
     const statements = splitSqlStatements(schemaSql)
     for (const statement of statements) {
-      await sql.query(statement)
+      await executeSql(statement)
     }
     return { success: true, message: `Postgres schema initialized successfully (${statements.length} statements)` }
   } catch (err: any) {
