@@ -20,3 +20,14 @@
 ## 🛡️ Prevention
 - Regenerating `lib/content-data.json` never touches Airtable or the job queue. Scheduled posts are loaded from `/api/schedules`.
 - After any calendar re-import, compare the Scheduled Posts modal times against the sheet.
+
+## Runtime source of truth (2026-10-26)
+
+Uploaded workbooks are now parsed on the server and stored per month in the
+`calendar_months` Postgres table. `lib/content-data.json` is only the seed for
+months that have never been imported; it is no longer updated by monthly
+uploads, and `scripts/parse-calendar.mjs` is a build-time seed tool only.
+
+Re-importing a month replaces that entire month. Other saved months are
+untouched. The timezone rules above still apply because `lib/workbook.ts` and
+`lib/csv.ts` were not changed.

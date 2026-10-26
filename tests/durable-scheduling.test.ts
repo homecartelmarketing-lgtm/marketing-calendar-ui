@@ -385,12 +385,13 @@ describe("Durable Scheduling & Queue Tests", () => {
       ])
     })
 
-    it("extracts all 5 statements from the real server/db/schema.sql", () => {
+    it("extracts every statement from the real server/db/schema.sql", () => {
       const schemaSql = readFileSync(join(process.cwd(), "server", "db", "schema.sql"), "utf-8")
       const statements = splitSqlStatements(schemaSql)
-      expect(statements.length).toBe(5)
+      expect(statements.length).toBe(6)
       expect(statements[0]).toMatch(/^CREATE TABLE IF NOT EXISTS automation_jobs/)
       expect(statements.some((s) => s.includes("automation_runs"))).toBe(true)
+      expect(statements.some((s) => s.includes("calendar_months"))).toBe(true)
       expect(statements.every((s) => !s.startsWith("--"))).toBe(true)
     })
   })

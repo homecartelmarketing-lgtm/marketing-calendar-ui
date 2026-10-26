@@ -16,6 +16,7 @@ export function CalendarNav({
   importStatus,
   importError = false,
   onDismissStatus,
+  importDisabled = false,
   activeContent,
   onSelectContent,
   onBackToCalendar,
@@ -24,6 +25,7 @@ export function CalendarNav({
   importStatus?: string | null
   importError?: boolean
   onDismissStatus?: () => void
+  importDisabled?: boolean
   activeContent?: ActiveContent | null
   onSelectContent?: (category: "Feeds" | "Stories" | "Reels", type: string) => void
   onBackToCalendar?: () => void
@@ -168,12 +170,14 @@ export function CalendarNav({
           type="file"
           accept=".xlsx,.xls,.csv,text/csv"
           className="hidden"
+          disabled={importDisabled}
           onChange={handleFile}
         />
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-black transition-opacity hover:opacity-80 sm:px-3 sm:text-sm"
+          disabled={importDisabled}
+          className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-black transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 sm:px-3 sm:text-sm"
         >
           <Upload className="h-4 w-4" />
           <span className="hidden sm:inline">Import Calendar</span>
@@ -182,6 +186,7 @@ export function CalendarNav({
 
         {importStatus && (
           <div
+            title={importStatus}
             className={`flex max-w-[220px] items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium shadow-lg ${
               importError ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
             }`}

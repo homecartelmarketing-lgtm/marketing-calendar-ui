@@ -12,7 +12,6 @@ const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ]
-const MONTH_SHEETS = ["July", "August", "September", "October"]
 
 function normalizeType(value) {
   if (value == null) return null
@@ -107,7 +106,8 @@ function parseSheet(name) {
 }
 
 const result = { months: [], days: {} }
-for (const name of MONTH_SHEETS) {
+// Every sheet named after a month is collected; no fixed month list.
+for (const name of wb.SheetNames) {
   const parsed = parseSheet(name)
   if (!parsed) continue
   result.months.push(parsed.key)
@@ -119,8 +119,9 @@ result.days = Object.fromEntries(Object.entries(result.days).sort(([a], [b]) => 
 writeFileSync("lib/content-data.json", JSON.stringify(result, null, 2))
 console.log("Parsed months:", result.months)
 console.log("Total days with content:", Object.keys(result.days).length)
-console.log("September days count:", Object.keys(result.days).filter(k => k.startsWith("2026-09")).length)
-console.log("October days count:", Object.keys(result.days).filter(k => k.startsWith("2026-10")).length)
+for (const month of result.months) {
+  console.log(`${month} days count:`, Object.keys(result.days).filter(k => k.startsWith(`${month}-`)).length)
+}
 console.log("Sample 2026-09-01:", result.days["2026-09-01"])
 console.log("Sample 2026-10-01:", result.days["2026-10-01"])
 console.log("Sample 2026-10-31:", result.days["2026-10-31"])

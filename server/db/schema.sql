@@ -55,3 +55,14 @@ CREATE TABLE IF NOT EXISTS automation_runs (
 
 CREATE INDEX IF NOT EXISTS idx_automation_runs_job 
   ON automation_runs (job_id);
+
+-- Imported Content Calendar, one row per month. An import replaces the whole
+-- row for every month it contains; months absent from the upload are untouched.
+CREATE TABLE IF NOT EXISTS calendar_months (
+  month_key   TEXT PRIMARY KEY,
+  year        INTEGER NOT NULL,
+  month       INTEGER NOT NULL,
+  days        JSONB NOT NULL,
+  source_file TEXT NOT NULL,
+  imported_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

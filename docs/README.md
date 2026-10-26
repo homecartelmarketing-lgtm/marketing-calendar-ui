@@ -8,6 +8,8 @@ Start with the [project README](../README.md), [Git workflow](development/git-wo
 - [Repository organization implementation plan](superpowers/plans/2026-09-14-repository-organization.md)
 - [Automation design](superpowers/specs/2026-09-14-automation-stabilization-design.md)
 - [Repository design](superpowers/specs/2026-09-14-repository-documentation-organization-design.md)
+- [Content Calendar persistence implementation plan](superpowers/plans/2026-10-26-calendar-persistence.md)
+- [Content Calendar persistence design](superpowers/specs/2026-10-26-calendar-persistence-design.md)
 - [Verified progress and remaining work](operations/implementation-progress.md)
 
 The implementation plans track the full requested scope. Existing root deployment guides have not yet been consolidated; they require review against the current code before use.
