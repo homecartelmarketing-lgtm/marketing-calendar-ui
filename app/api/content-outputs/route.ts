@@ -249,6 +249,8 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
       ids.push(autoEnv.AIRTABLE_TABLE_ID_HOUSE_TOUR_REEL || "tblqXkdDw4O7hxJS4")
     } else if (t.includes("this mood every night") || t.includes("tmen") || (t.includes("this mood") && t.includes("night"))) {
       ids.push(autoEnv.AIRTABLE_TABLE_ID_THIS_MOOD_EVERY_NIGHT_REEL || "tblDa5UOTUTlU1Xxy")
+    } else if (t.includes("one part") || t.includes("oppr") || (t.includes("part") && t.includes("room"))) {
+      ids.push(autoEnv.AIRTABLE_TABLE_ID_ONE_PART_PER_ROOM_REEL || "tbldk5nac1UeYHd77")
     }
   }
 
@@ -297,6 +299,10 @@ function matchIdeaTarget(requestIdea: string, targetIdea: string): boolean {
   if (
     (req.includes("thismood") || req.includes("tmen") || (req.includes("mood") && req.includes("night"))) &&
     (tgt.includes("thismood") || tgt.includes("tmen") || (tgt.includes("mood") && tgt.includes("night")))
+  ) return true
+  if (
+    (req.includes("onepart") || req.includes("oppr") || (req.includes("part") && req.includes("room"))) &&
+    (tgt.includes("onepart") || tgt.includes("oppr") || (tgt.includes("part") && tgt.includes("room")))
   ) return true
 
   return req.includes(tgt) || tgt.includes(req)

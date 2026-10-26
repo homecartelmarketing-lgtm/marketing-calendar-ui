@@ -440,4 +440,52 @@ describe("output data completeness", () => {
     expect(body.items[0].itemNames[0]).toBe("Mina 7 | Chandelier")
     expect(body.items[0].itemNames[6]).toBe("Gulla | Stair Footlights")
   })
+
+  it("extracts One Part Per Room Reel records strictly from Final Video with One Part Per Room fixture", async () => {
+    targets.mockReturnValue([
+      { tableId: "tbldk5nac1UeYHd77", category: "Reels", idea: "One Part Per Room", fixtureType: "One Part Per Room" },
+    ])
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      records: [
+        {
+          id: "recOPPRtest12345",
+          fields: {
+            ID: 1,
+            "Foreign Key ID": "OPPR-REEL-SET-1",
+            Status: "Completed",
+            "Caption Generated": "Discover our room lighting pairings.",
+            "Date and Time Generated": "2026-10-26T08:00:00.000Z",
+            "Item Name1": "Nordic Halo Pendant",
+            "Item Name2": "Aura Floor Lamp",
+            "Final Video": [
+              { id: "attVideoOPPR1", url: "https://media.example/one_part_per_room.mp4", type: "video/mp4" },
+            ],
+          },
+        },
+        {
+          id: "recOPPRwithoutFinal",
+          fields: {
+            ID: 2,
+            "Foreign Key ID": "OPPR-REEL-SET-2",
+            Status: "Completed",
+            "Raw Video": [
+              { id: "attVideoRaw2", url: "https://media.example/raw_only.mp4", type: "video/mp4" },
+            ],
+          },
+        },
+      ],
+    })))
+
+    const res = await GET(new NextRequest("http://localhost/api/content-outputs?category=Reels&type=One%20Part%20Per%20Room"))
+    const body = await res.json()
+    expect(res.status).toBe(200)
+    // Only the record with "Final Video" is included; the record with only "Raw Video" is omitted
+    expect(body.items.length).toBe(1)
+    expect(body.items[0].foreignKeyId).toBe("OPPR-REEL-SET-1")
+    expect(body.items[0].fixtureType).toBe("One Part Per Room")
+    expect(body.items[0].status).toBe("Completed")
+    expect(body.items[0].videoUrl).toBe("https://media.example/one_part_per_room.mp4")
+    expect(body.items[0].caption).toBe("Discover our room lighting pairings.")
+    expect(body.items[0].itemNames).toEqual(["Nordic Halo Pendant", "Aura Floor Lamp"])
+  })
 })

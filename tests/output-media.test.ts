@@ -212,10 +212,16 @@ describe("canonical Foreign Key ID derivation", () => {
     expect(deriveForeignKeyId({ ID: 3 }, "Reels", "This Mood Every Night", "")).toBe("TMEN-REEL-SET-3")
     expect(deriveForeignKeyId({ "Foreign Key ID": "TMEN-REEL-SET-1" }, "Reels", "This Mood Every Night")).toBe("TMEN-REEL-SET-1")
   })
-  it("maps Living Room-style names to LR and House Tour / This Mood Every Night to SET without disturbing existing fixture codes", () => {
+  it("derives OPPR-REEL-SET prefix for One Part Per Room reels", () => {
+    expect(deriveForeignKeyId({ ID: 1 }, "Reels", "One Part Per Room", "One Part Per Room")).toBe("OPPR-REEL-SET-1")
+    expect(deriveForeignKeyId({ ID: 4 }, "Reels", "One Part Per Room", "")).toBe("OPPR-REEL-SET-4")
+    expect(deriveForeignKeyId({ "Foreign Key ID": "OPPR-REEL-SET-2" }, "Reels", "One Part Per Room")).toBe("OPPR-REEL-SET-2")
+  })
+  it("maps Living Room-style names to LR and House Tour / This Mood Every Night / One Part Per Room to SET without disturbing existing fixture codes", () => {
     expect(getFixtureCode("Living Room")).toBe("LR")
     expect(getFixtureCode("House Tour")).toBe("SET")
     expect(getFixtureCode("This Mood Every Night")).toBe("SET")
+    expect(getFixtureCode("One Part Per Room")).toBe("SET")
     expect(getFixtureCode("Chandelier")).toBe("CH")
     expect(getFixtureCode("Linear Chandelier")).toBe("LC")
     expect(getFixtureCode("Ceiling Mounted")).toBe("CM")
@@ -259,6 +265,31 @@ describe("canonical Foreign Key ID derivation", () => {
       slides: ["https://media.example/this_mood_every_night.mp4"],
     })
   })
+  it("extracts strictly Final Video for One Part Per Room reels", () => {
+    expect(
+      extractMediaFromRecord(
+        { "Final Video": [{ url: "https://media.example/one_part_per_room.mp4", type: "video/mp4" }] },
+        "Reels",
+        "One Part Per Room"
+      )
+    ).toEqual({
+      mediaUrl: "https://media.example/one_part_per_room.mp4",
+      mediaType: "video",
+      slides: ["https://media.example/one_part_per_room.mp4"],
+    })
+    // Strictly ignores other fields like Raw Video if Final Video is absent
+    expect(
+      extractMediaFromRecord(
+        { "Raw Video": [{ url: "https://media.example/raw.mp4", type: "video/mp4" }] },
+        "Reels",
+        "One Part Per Room"
+      )
+    ).toEqual({
+      mediaUrl: "",
+      mediaType: "video",
+      slides: [],
+    })
+  })
 })
 
 describe("deriveFixtureFromForeignKeyId", () => {
@@ -274,6 +305,7 @@ describe("deriveFixtureFromForeignKeyId", () => {
     expect(deriveFixtureFromForeignKeyId("OATL-REEL-LR-8")).toBe("Living Room")
     expect(deriveFixtureFromForeignKeyId("HTR-REEL-SET-8")).toBe("House Tour")
     expect(deriveFixtureFromForeignKeyId("TMEN-REEL-SET-1")).toBe("This Mood Every Night")
+    expect(deriveFixtureFromForeignKeyId("OPPR-REEL-SET-1")).toBe("One Part Per Room")
     expect(deriveFixtureFromForeignKeyId("UNKNOWN-ID")).toBeUndefined()
     expect(deriveFixtureFromForeignKeyId("")).toBeUndefined()
     expect(deriveFixtureFromForeignKeyId(undefined)).toBeUndefined()

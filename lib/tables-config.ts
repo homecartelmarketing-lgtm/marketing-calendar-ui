@@ -211,6 +211,14 @@ export function getAllConfiguredTables(): TableTarget[] {
       idea: "This Mood Every Night",
       fixtureType: "This Mood Every Night",
     },
+
+    // One Part Per Room Reel
+    {
+      tableId: env.AIRTABLE_TABLE_ID_ONE_PART_PER_ROOM_REEL || "tbldk5nac1UeYHd77",
+      category: "Reels",
+      idea: "One Part Per Room",
+      fixtureType: "One Part Per Room",
+    },
   ]
 
   // Filter out any entries that do not have a valid tableId starting with 'tbl'

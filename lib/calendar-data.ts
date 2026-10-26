@@ -29,6 +29,7 @@ export const NAV_MENUS: Record<NavKey, string[]> = {
     "House Tour",
     "Moodboard Reel",
     "One Light at a Time",
+    "One Part Per Room",
     "Product Closeup",
     "Reposting Influencers",
     "Style Reel Slideshow",
