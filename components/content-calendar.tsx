@@ -10,9 +10,17 @@ import { ScheduledPostsModal } from "@/components/scheduled-posts-modal"
 import { UniversalContentGallery } from "@/components/universal-content-gallery"
 import { type ActiveContent } from "@/components/calendar-nav"
 import { MONTH_NAMES } from "@/lib/calendar-data"
-import { CONTENT_DAYS, buildMonthCells, type ContentEntry } from "@/lib/content"
-import { parseContentCsv } from "@/lib/csv"
-import { parseContentWorkbook } from "@/lib/workbook"
+import {
+  CONTENT_DAYS,
+  CONTENT_MONTHS,
+  buildMonthCells,
+  type ContentEntry,
+} from "@/lib/content"
+import {
+  latestMonth,
+  mergeCalendarDays,
+  pickImportTargetMonth,
+} from "@/lib/calendar-months"
 import type { ScheduledEntry } from "@/app/api/schedules/route"
 
 export function ContentCalendar() {
@@ -22,8 +30,10 @@ export function ContentCalendar() {
   const [selectedIso, setSelectedIso] = useState<string | null>(null)
   const [showScheduledModal, setShowScheduledModal] = useState(false)
 
-  // Imported content merged over the built-in workbook data, keyed by ISO date.
-  const [overrides, setOverrides] = useState<Record<string, ContentEntry[]>>({})
+  // Months imported through the Studio, loaded from the calendar API.
+  const [savedMonths, setSavedMonths] = useState<string[]>([])
+  const [savedDays, setSavedDays] = useState<Record<string, ContentEntry[]>>({})
+  const [calendarReady, setCalendarReady] = useState(false)
   const [importStatus, setImportStatus] = useState<string | null>(null)
   const [importError, setImportError] = useState(false)
 
@@ -60,7 +70,47 @@ export function ContentCalendar() {
     return () => clearInterval(interval)
   }, [])
 
-  const dayMap = useMemo(() => ({ ...CONTENT_DAYS, ...overrides }), [overrides])
+  // Load the durable calendar, then open the newest saved month. The seed stays
+  // visible if storage is unavailable, so the page never renders empty.
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadSavedCalendar() {
+      try {
+        const response = await fetch("/api/calendar")
+        const data = response.ok ? await response.json() : null
+        if (!response.ok || !data?.success) throw new Error("calendar load failed")
+        if (cancelled) return
+
+        const months: string[] = Array.isArray(data.months) ? data.months : []
+        setSavedMonths(months)
+        setSavedDays(data.days && typeof data.days === "object" ? data.days : {})
+
+        const newest = latestMonth(months)
+        if (newest) {
+          const [year, month] = newest.split("-").map(Number)
+          if (year && month) setCurrent({ year, month: month - 1 })
+        }
+      } catch {
+        if (!cancelled) {
+          setImportError(true)
+          setImportStatus("Saved calendar unavailable — showing the built-in schedule.")
+        }
+      } finally {
+        if (!cancelled) setCalendarReady(true)
+      }
+    }
+
+    loadSavedCalendar()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const dayMap = useMemo(
+    () => mergeCalendarDays(CONTENT_DAYS, savedMonths, savedDays),
+    [savedMonths, savedDays],
+  )
 
   const activeScheduledCount = useMemo(() => {
     let count = 0
@@ -84,53 +134,81 @@ export function ContentCalendar() {
     })
   }
 
-  function mergeByDate(byDate: Record<string, ContentEntry[]>) {
-    setOverrides((prev) => {
-      const next = { ...prev }
-      for (const [date, entries] of Object.entries(byDate)) {
-        next[date] = entries
-      }
-      return next
-    })
+  function formatImportDate(value: unknown): string {
+    if (typeof value !== "string") return ""
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return ""
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
   }
 
   async function handleImportFile(file: File) {
+    if (!calendarReady) return
     setImportError(false)
+    setImportStatus("Importing calendar...")
+
+    // Capture what we knew before the upload so the newly imported month wins.
+    const knownMonths = new Set<string>([...CONTENT_MONTHS, ...savedMonths])
+
     try {
-      const isCsv = /\.csv$/i.test(file.name) || file.type === "text/csv"
-      if (isCsv) {
-        const text = await file.text()
-        const result = parseContentCsv(text)
-        mergeByDate(result.byDate)
-        const days = Object.keys(result.byDate).length
-        const dates = Object.keys(result.byDate).sort()
-        if (dates.length > 0) {
-          const target = dates.find((d) => d.startsWith("2026-10")) ?? dates[dates.length - 1]
-          const [y, m] = target.split("-").map(Number)
-          if (y && m) setCurrent({ year: y, month: m - 1 })
-        }
-        setImportStatus(`Imported ${result.rowCount} row${result.rowCount === 1 ? "" : "s"} across ${days} day${days === 1 ? "" : "s"}`)
-        return
-      }
+      const form = new FormData()
+      form.append("file", file)
 
-      const buffer = await file.arrayBuffer()
-      const { byDate, months, dayCount } = parseContentWorkbook(buffer)
-      if (dayCount === 0) {
+      const response = await fetch("/api/calendar", { method: "POST", body: form })
+      const result = await response.json().catch(() => null)
+      if (!response.ok || !result?.success) {
         setImportError(true)
-        setImportStatus("No calendar data found in that file")
+        setImportStatus(result?.error ?? "Couldn't import that file. Try again.")
         return
       }
-      mergeByDate(byDate)
 
-      // Jump to October if present, or to the latest imported month so the new content is visible.
-      const targetMonthStr = months.includes("2026-10") ? "2026-10" : months[months.length - 1]
-      const target = targetMonthStr?.split("-").map(Number)
-      if (target) setCurrent({ year: target[0], month: target[1] - 1 })
+      const refreshed = await fetch("/api/calendar")
+      if (!refreshed.ok) {
+        setImportError(true)
+        setImportStatus("Imported, but the calendar could not refresh. Reload the page.")
+        return
+      }
+      const snapshot = await refreshed.json().catch(() => null)
+      if (!snapshot?.success) {
+        setImportError(true)
+        setImportStatus("Imported, but the calendar could not refresh. Reload the page.")
+        return
+      }
 
-      setImportStatus(`Imported ${dayCount} days across ${months.length} month${months.length === 1 ? "" : "s"}`)
+      setSavedMonths(Array.isArray(snapshot.months) ? snapshot.months : [])
+      setSavedDays(snapshot.days && typeof snapshot.days === "object" ? snapshot.days : {})
+
+      const savedMonthsResult: string[] = Array.isArray(result.savedMonths)
+        ? result.savedMonths
+        : []
+      const target = pickImportTargetMonth(savedMonthsResult, knownMonths)
+      if (target) {
+        const [year, month] = target.split("-").map(Number)
+        if (year && month) setCurrent({ year, month: month - 1 })
+      }
+
+      const dayCount = Number(result.dayCount) || 0
+      const monthCount = savedMonthsResult.length
+      const targetLabel = target
+        ? `${MONTH_NAMES[Number(target.slice(5, 7)) - 1]} ${target.slice(0, 4)}`
+        : ""
+      const importedAt = Array.isArray(snapshot.imports) ? snapshot.imports[0]?.importedAt : null
+      const importedLabel = importedAt ? `huling import ${formatImportDate(importedAt)}` : ""
+      const ignored = Number(result.ignoredRows) > 0
+        ? ` · ${result.ignoredRows} undated row${Number(result.ignoredRows) === 1 ? "" : "s"} ignored`
+        : ""
+
+      setImportStatus(
+        [
+          `Imported ${dayCount} day${dayCount === 1 ? "" : "s"} across ${monthCount} month${monthCount === 1 ? "" : "s"}`,
+          targetLabel,
+          importedLabel,
+        ]
+          .filter(Boolean)
+          .join(" · ") + ignored,
+      )
     } catch {
       setImportError(true)
-      setImportStatus("Couldn't read that file. Upload a .xlsx or .csv calendar.")
+      setImportStatus("Couldn't import that file. Check your connection and try again.")
     }
   }
 
@@ -173,6 +251,7 @@ export function ContentCalendar() {
         importStatus={importStatus}
         importError={importError}
         onDismissStatus={() => setImportStatus(null)}
+        importDisabled={!calendarReady}
         activeContent={selectedContent}
         onSelectContent={(category, type) => setSelectedContent({ category, type })}
         onBackToCalendar={() => setSelectedContent(null)}

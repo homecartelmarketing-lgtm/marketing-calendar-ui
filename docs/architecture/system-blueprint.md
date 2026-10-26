@@ -72,6 +72,20 @@ This document outlines the high-level architecture of the **Marketing Output UI*
 
 ---
 
+### Content Calendar import (`/api/calendar`)
+
+* **POST**: multipart upload (`.xlsx`, `.xls`, or `.csv`) → existing parser →
+  one `calendar_months` upsert per imported month. Returns saved and skipped
+  months plus the day count.
+* **GET**: returns saved months, their entries, and import metadata.
+* **Client**: merges saved months over `lib/content-data.json`, opens the newest
+  saved month on load, and after an import opens the earliest newly imported
+  month (falling back to the latest imported month). No month name is hard-coded.
+* **Failure**: production without a database URL returns 503; the seed stays
+  visible and nothing is reported as saved.
+
+---
+
 ## 🔑 Environment Variables & Services
 
 | Variable Name | Purpose | Criticality |
