@@ -8,6 +8,7 @@ import {
   getAllConfiguredTables,
 } from "@/lib/tables-config"
 import { extractOutputMedia, deriveForeignKeyId, deriveFixtureFromForeignKeyId } from "@/lib/output-media"
+import { extractCaption } from "@/lib/caption"
 import { AirtableReadError, readAirtableRecords } from "@/server/airtable/records"
 import { ScheduleValidationError, syncAirtableRecord } from "@/server/airtable/write-schedule"
 
@@ -64,25 +65,6 @@ function normalizeStatus(
   if (s.includes("manual") || s.includes("revision") || s === "fm") return "For Manual"
   if (s.includes("discard")) return "Discard"
   return "Completed"
-}
-
-function extractCaption(fields: Record<string, any>): string {
-  for (const [key, val] of Object.entries(fields)) {
-    const lower = key.trim().toLowerCase()
-    if (
-      lower === "generated caption" ||
-      lower === "caption generated" ||
-      lower === "caption" ||
-      lower === "post caption" ||
-      lower === "final caption" ||
-      lower === "copy"
-    ) {
-      if (typeof val === "string" && val.trim()) {
-        return val.trim()
-      }
-    }
-  }
-  return ""
 }
 
 function formatDateDisplay(isoDateString?: string): { date: string; time: string } {
@@ -249,6 +231,8 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
       ids.push(autoEnv.AIRTABLE_TABLE_ID_HOUSE_TOUR_REEL || "tblqXkdDw4O7hxJS4")
     } else if (t.includes("this mood every night") || t.includes("tmen") || (t.includes("this mood") && t.includes("night"))) {
       ids.push(autoEnv.AIRTABLE_TABLE_ID_THIS_MOOD_EVERY_NIGHT_REEL || "tblDa5UOTUTlU1Xxy")
+    } else if (t.includes("one part") || t.includes("oppr") || (t.includes("part") && t.includes("room"))) {
+      ids.push(autoEnv.AIRTABLE_TABLE_ID_ONE_PART_PER_ROOM_REEL || "tbldk5nac1UeYHd77")
     }
   }
 
@@ -297,6 +281,10 @@ function matchIdeaTarget(requestIdea: string, targetIdea: string): boolean {
   if (
     (req.includes("thismood") || req.includes("tmen") || (req.includes("mood") && req.includes("night"))) &&
     (tgt.includes("thismood") || tgt.includes("tmen") || (tgt.includes("mood") && tgt.includes("night")))
+  ) return true
+  if (
+    (req.includes("onepart") || req.includes("oppr") || (req.includes("part") && req.includes("room"))) &&
+    (tgt.includes("onepart") || tgt.includes("oppr") || (tgt.includes("part") && tgt.includes("room")))
   ) return true
 
   return req.includes(tgt) || tgt.includes(req)

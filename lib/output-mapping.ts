@@ -95,6 +95,9 @@ export function getFinalOutputCandidates(category: string, contentType: string):
     if (type.includes("before") && type.includes("after")) return ["Slide Show Before and After Reel", "REEL - Before & After", "Slide Show Before and After"]
     if (type.includes("moodboard")) return ["REEL - Moodboard Reel", "Converted Moodboard Reel"]
     if (type.includes("style")) return ["Style Reel Slideshow", "REEL - Style Reel Slideshow"]
+    if (type.includes("one part") || type.includes("oppr")) {
+      return ["Final Video"]
+    }
     if (type.includes("closeup")) return ["Final Video", "REEL - Product Closeup", "Product Closeup Reel"]
   }
 

@@ -22,6 +22,13 @@ it("includes due records on subsequent Airtable pages", async () => {
   expect(result.schedules["2026-09-20"][100]).toMatchObject({ recordId: "rec101", time: "14:30" })
 })
 
+it("carries the Caption Generated field onto scheduled entries", async () => {
+  const rec = { id: "recCap", fields: { Status: "Scheduled", "Date and Time Scheduled": "2026-09-21T06:30:00Z", "Caption Generated": "Warm evening glow." } }
+  vi.stubGlobal("fetch", vi.fn(async () => Response.json({ records: [rec] })))
+  const result = await pullAirtableSchedulesWithDiagnostics()
+  expect(result.schedules["2026-09-21"][0].caption).toBe("Warm evening glow.")
+})
+
 it("reports a malformed schedule page rather than making scheduled content disappear silently", async () => {
   vi.stubGlobal("fetch", vi.fn(async () => Response.json({ unexpected: [] })))
   const result = await pullAirtableSchedulesWithDiagnostics()

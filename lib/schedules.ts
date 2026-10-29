@@ -5,6 +5,7 @@ import {
   TableTarget,
 } from "@/lib/tables-config"
 import { extractOutputMedia as extractMediaFromRecord, deriveForeignKeyId } from "@/lib/output-media"
+import { extractCaption } from "@/lib/caption"
 import { AirtableReadError, readAirtableRecords } from "@/server/airtable/records"
 
 export type ScheduledEntry = {
@@ -181,7 +182,7 @@ export async function pullAirtableSchedulesWithDiagnostics(options?: { forceFres
               fixture: cfg.fixtureType,
               foreignKeyId: fkId,
               status,
-              caption: fields["Generated Caption"] || fields["Caption"] || "",
+              caption: extractCaption(fields),
               airtableUrl: `https://airtable.com/${AIRTABLE_BASE_ID}/${cfg.tableId}/${r.id}`,
               itemNames: itemNames.length > 0 ? itemNames : undefined,
               mediaUrl: mediaUrl || undefined,

@@ -117,9 +117,8 @@ export function getFixtureCode(fixtureType?: string): string {
   if (norm.includes("cluster")) return "CL"
   if (norm.includes("linear")) return "LC"
   if (norm.includes("ceiling")) return "CM"
-  if (norm.includes("chandelier")) return "CH"
+  if (norm.includes("house") || norm.includes("tour") || norm.includes("set") || norm.includes("this mood") || norm.includes("mood every night") || norm.includes("one part") || norm.includes("per room")) return "SET"
   if (norm.includes("living") || norm.includes("bedroom") || norm.includes("room")) return "LR"
-  if (norm.includes("house") || norm.includes("tour") || norm.includes("set") || norm.includes("this mood") || norm.includes("mood every night")) return "SET"
   return fixtureType.slice(0, 2).toUpperCase() || "FX"
 }
 
@@ -128,6 +127,7 @@ export function deriveFixtureFromForeignKeyId(foreignKeyId?: string): string | u
   const upper = foreignKeyId.trim().toUpperCase()
   if (upper.startsWith("HTR-")) return "House Tour"
   if (upper.startsWith("TMEN-")) return "This Mood Every Night"
+  if (upper.startsWith("OPPR-") || upper.startsWith("OPR-")) return "One Part Per Room"
   const parts = upper.split("-")
   for (const part of parts) {
     if (part === "CH") return "Chandelier"
@@ -141,6 +141,7 @@ export function deriveFixtureFromForeignKeyId(foreignKeyId?: string): string | u
     if (part === "LR") return "Living Room"
     if (part === "SET" && upper.includes("HTR")) return "House Tour"
     if (part === "SET" && upper.includes("TMEN")) return "This Mood Every Night"
+    if (part === "SET" && (upper.includes("OPPR") || upper.includes("OPR"))) return "One Part Per Room"
   }
   return undefined
 }
@@ -161,6 +162,9 @@ export function getForeignKeyPrefix(
     }
     if (type.includes("this mood every night") || type.includes("tmen") || (type.includes("this mood") && type.includes("night"))) {
       return `TMEN-REEL-${fxCode}`
+    }
+    if (type.includes("one part") || type.includes("oppr") || (type.includes("part") && type.includes("room"))) {
+      return `OPPR-REEL-${fxCode}`
     }
     if (type.includes("one light") || type.includes("one at a time") || type.includes("oatl")) {
       return `OATL-REEL-${fxCode}`

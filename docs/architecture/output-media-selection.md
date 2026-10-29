@@ -56,6 +56,13 @@ All media resolution logic is centralized in [`lib/output-media.ts`](file:///c:/
 * Item names are extracted from `Item Name1..7` (covering all 7 luxury nighttime room slots).
 * The table needs a `Date and Time Scheduled` (or `Date and Time`) field in Airtable before a live schedule timestamp can be saved; without it `syncAirtableRecord` fails with an error rather than silently saving status alone.
 
+### 9. One Part Per Room Reel
+* Airtable table `tbldk5nac1UeYHd77` ("One Part Per Room"); override with `AIRTABLE_TABLE_ID_ONE_PART_PER_ROOM_REEL`.
+* Video candidate strictly: `Final Video` (records without a valid video in `Final Video` are excluded from candidates).
+* Foreign Key ID prefix `OPPR-REEL-<fixture code>-<ID>`; code `SET` maps to `One Part Per Room` fixture.
+* Item names are extracted from `Item Name1..20` or parsed from `Scraped Items`.
+* The table needs a `Date and Time Scheduled` (or `Date and Time`) field in Airtable before a live schedule timestamp can be saved; without it `syncAirtableRecord` fails with an error rather than silently saving status alone.
+
 ---
 
 ## 🚦 Candidate Status Filters (`isCompletedOrDoneStatus`)
