@@ -8,6 +8,7 @@ import {
   getAllConfiguredTables,
 } from "@/lib/tables-config"
 import { extractOutputMedia, deriveForeignKeyId, deriveFixtureFromForeignKeyId } from "@/lib/output-media"
+import { extractCaption } from "@/lib/caption"
 import { AirtableReadError, readAirtableRecords } from "@/server/airtable/records"
 import { ScheduleValidationError, syncAirtableRecord } from "@/server/airtable/write-schedule"
 
@@ -64,25 +65,6 @@ function normalizeStatus(
   if (s.includes("manual") || s.includes("revision") || s === "fm") return "For Manual"
   if (s.includes("discard")) return "Discard"
   return "Completed"
-}
-
-function extractCaption(fields: Record<string, any>): string {
-  for (const [key, val] of Object.entries(fields)) {
-    const lower = key.trim().toLowerCase()
-    if (
-      lower === "generated caption" ||
-      lower === "caption generated" ||
-      lower === "caption" ||
-      lower === "post caption" ||
-      lower === "final caption" ||
-      lower === "copy"
-    ) {
-      if (typeof val === "string" && val.trim()) {
-        return val.trim()
-      }
-    }
-  }
-  return ""
 }
 
 function formatDateDisplay(isoDateString?: string): { date: string; time: string } {

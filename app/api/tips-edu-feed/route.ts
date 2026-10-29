@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
+import { extractCaption } from "@/lib/caption"
 
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || ""
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || "appDM0jUDsaiThtR3"
@@ -181,7 +182,7 @@ export async function GET() {
             if (fields[key]) itemNames.push(String(fields[key]))
           }
 
-          const caption = fields["Caption"] || fields["Generated Caption"] || ""
+          const caption = extractCaption(fields)
 
           allItems.push({
             recordId: rec.id,
