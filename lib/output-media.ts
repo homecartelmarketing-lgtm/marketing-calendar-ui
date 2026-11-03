@@ -112,14 +112,17 @@ export function extractOutputMedia(fields: Record<string, unknown>, category: st
       read("Converted Moodboard")[0] ||
       read("Moodboard #1 Converted")[0] ||
       read("Moodboard 1 Converted")[0]
-    const blendedTagged =
+    const watermarkedMedia =
+      read("Moodboard Added Watermark")[0] ||
+      read("Added Watermark")[0] ||
+      read("Watermarked Moodboard")[0] ||
+      read("Moodboard Watermarked")[0] ||
       read("Blended Image with Name text")[0] ||
       read("Blended Image with Item Name")[0] ||
       read("Blended with Item Name")[0] ||
       read("Blended Image with Name")[0] ||
       read("Blended Image")[0] ||
       read("Blended Image1")[0] ||
-      read("Moodboard Added Watermark")[0] ||
       read("Moodboard V1 Blended")[0] ||
       read("Blended")[0]
     const closeup =
@@ -130,8 +133,8 @@ export function extractOutputMedia(fields: Record<string, unknown>, category: st
       read("Converted Closeup Photo")[0] ||
       read("Closeup Converted")[0]
 
-    if (mb1Converted && blendedTagged && closeup) {
-      selected = [mb1Converted, blendedTagged, closeup]
+    if (mb1Converted && watermarkedMedia && closeup) {
+      selected = [mb1Converted, watermarkedMedia, closeup]
     }
   } else {
     for (const candidate of getFinalOutputCandidates(category, idea)) {

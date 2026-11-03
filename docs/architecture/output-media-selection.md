@@ -15,7 +15,7 @@ All media resolution logic is centralized in [`lib/output-media.ts`](file:///c:/
 
 ### 2. Moodboard #1 Feed (Strict 3-Photo Carousel)
 * **Slide 1**: `Moodboard Converted` (resilient aliases: `Converted Moodboard`, `Moodboard #1 Converted`, `Moodboard 1 Converted`).
-* **Slide 2**: `Blended Image with Name text` (resilient aliases: `Blended Image with Item Name`, `Blended with Item Name`, `Blended Image with Name`; fallback: `Blended Image`, `Moodboard Added Watermark`, `Moodboard V1 Blended`).
+* **Slide 2**: `Moodboard Added Watermark` (resilient aliases: `Added Watermark`, `Watermarked Moodboard`, `Moodboard Watermarked`; fallback: `Blended Image with Name text`, `Blended Image with Item Name`, `Blended with Item Name`, `Blended Image with Name`, `Blended Image`, `Moodboard V1 Blended`).
 * **Slide 3**: `Closeup Photo` (resilient aliases: `Closeup`, `Product Closeup`, `Closeup Photo Converted`, `Converted Closeup Photo`).
 * **Strict Rule**: **All three photos are strictly required**. If any attachment is missing, the media extractor returns empty and the record is excluded from candidates.
 * Validated across 3 Airtable tables: `tbl9u5vjgx8kuE44R` (Chandelier), `tblOvvYdgsNTXh2zK` (Pendant Light), and `tbl6uTmwM23KK9ocO` (Floor Lamp).

@@ -80,6 +80,7 @@ export function getFinalOutputCandidates(category: string, contentType: string):
         "Converted Moodboard",
         "Moodboard #1 Converted",
         "Moodboard 1 Converted",
+        "Moodboard Added Watermark",
         "Blended Image with Name text",
         "Blended Image with Item Name",
         "Blended with Item Name",

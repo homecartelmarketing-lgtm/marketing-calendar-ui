@@ -1,17 +1,17 @@
 # Graph Report - Marketing Output UI  (2026-11-03)
 
 ## Corpus Check
-- 142 files · ~148,620 words
+- 142 files · ~149,022 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 10 file(s) not represented in the graph (top: (none) 4, .bat 3, .example 1)
 
 ## Summary
-- 1182 nodes · 1916 edges · 103 communities (94 shown, 9 thin omitted)
-- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 179 edges (avg confidence: 0.95)
+- 1188 nodes · 1923 edges · 99 communities (92 shown, 7 thin omitted)
+- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 180 edges (avg confidence: 0.95)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c680a1d6`
+- Built from commit: `255c27a3`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -40,7 +40,7 @@
 - dependencies
 - client.ts
 - content.ts
-- 5. Security boundary
+- output-media.ts
 - ContentCalendar
 - Agent steps
 - durable-scheduling.test.ts
@@ -56,8 +56,8 @@
 - Session Log: 2026-10-26 — Content Calendar Persistent Import
 - next-dev-loop
 - Next.js App Router Patterns
-- implementation-progress.md
-- records.ts
+- docs/README.md
+- main
 - button.tsx
 - Architecture: System Blueprint & End-to-End Data Flow
 - HomeCartel Scheduler Repair — revision 3 (historical)
@@ -68,7 +68,7 @@
 - Exploring without a test
 - Cloudflare Quick Tunnel Sharing Guide — Marketing Output UI
 - Architecture: Durable Scheduling Queue
-- getFinalOutputCandidates
+- Session Log: 2026-11-03 — Moodboard #1 Feed Slide 2 Field Priority Fix (`Moodboard Added Watermark`)
 - Auto-caption for every Feed and Reel (no fallback template)
 - ADR: <Title of Decision>
 - 🚨 Error Catalog & Diagnostics
@@ -80,18 +80,18 @@
 - Driving the app over MCP
 - 🧭 Navigation & Maps of Content
 - Session Log: 2026-10-22 — Supabase Scheduler Queue Health & Audit
-- Automation Stabilization Implementation Plan
+- Review Focus
 - Session Log: YYYY-MM-DD — <Title>
 - 🚨 Error Catalog
 - oct-calendar_01f93b95.md
 - scripts
 - layout.tsx
 - Architecture: Graphify Knowledge Graph & Obsidian Integration
-- docs/README.md
+- queue-status/route.ts
 - Session Log: 2026-10-07 — House Tour Reel Table Integration
 - Session Log: 2026-10-12 — This Mood Every Night Reel Table Integration
 - Session Log: 2026-10-15 — Day & Night Story Tagged Item Name Thumbnail Extraction
-- schedules/route.ts
+- scheduler-debug/route.ts
 - Session Log: 2026-10-27 — Moodboard Story Tagged Blended Image Media Selection
 - 4. Root files and ownership
 - Troubleshooting: <Error or Issue Name>
@@ -99,22 +99,18 @@
 - Troubleshooting: Cloudflare Tunnel & Local Proxy
 - Content-Calendar-b79912_f0c79065.md
 - vitest
-- Obsidian Vault Setup & User Guide
 - 🚨 Error Catalog & Diagnostics
-- Implemented locally
+- Session Log: 2026-09-16 — Durable Queue Stabilization & Production Deployment
 - Session Log: 2026-09-18 — Obsidian Memory Vault Integration & System Blueprint
 - Session Log: 2026-11-03 — Airtable Schedule & Status Sync Resilience (HTTP 422 Root Cause Resolution)
-- Repository Organization Implementation Plan
 - 15. Testing strategy
 - 6. Git workflow
 - Session Log: 2026-09-18 — Day & Night Story Table Configuration & Foreign Key Display Fix
-- Architecture
 - 6. Content-output fetching
 - vercel.json
 - Session Log: 2026-11-03 — Moodboard #1 Feed 3-Photo Carousel Media Selection & Graphify Integration
 - next.config.mjs
 - postcss.config.mjs
-- Content Calendar Persistence Implementation Plan
 
 ## God Nodes (most connected - your core abstractions)
 1. `main()` - 27 edges
@@ -143,11 +139,11 @@
 ## Import Cycles
 - 1-file cycle: `lib/content.ts -> lib/content.ts`
 
-## Communities (103 total, 9 thin omitted)
+## Communities (99 total, 7 thin omitted)
 
 ### Community 0 - "store.ts"
 Cohesion: 0.06
-Nodes (53): dynamic, failure(), GET(), MAX_UPLOAD_BYTES, POST(), revalidate, 🐞 Errors Encountered & Fixed, 📁 Files Touched (+45 more)
+Nodes (54): dynamic, failure(), GET(), MAX_UPLOAD_BYTES, POST(), revalidate, 🐞 Errors Encountered & Fixed, 📁 Files Touched (+46 more)
 
 ### Community 1 - "extractCaption"
 Cohesion: 0.14
@@ -158,24 +154,24 @@ Cohesion: 0.07
 Nodes (27): Cloudflare Workers, Fake timers, For a Hono API route (e.g. `src/routes/health.ts`):, For a React component (e.g. `src/components/Button.tsx`):, For a utility function (e.g. `src/utils/format.ts`):, Global stubs, Jest Migration, Mocking Reference (+19 more)
 
 ### Community 3 - "day-detail-modal.tsx"
-Cohesion: 0.15
-Nodes (23): buildSelectionsFromSchedules(), ContentRow(), DayDetailModal(), Dropdown(), DropdownOption, FlatRow, isNonFixtureIdea(), normalizeIdea() (+15 more)
+Cohesion: 0.16
+Nodes (20): buildSelectionsFromSchedules(), ContentRow(), DayDetailModal(), Dropdown(), DropdownOption, FlatRow, isNonFixtureIdea(), normalizeIdea() (+12 more)
 
 ### Community 4 - "syncAirtableRecord"
-Cohesion: 0.11
-Nodes (21): 1. Moodboard #2 Feed (Strict 2-Photo Carousel), 2. Moodboard #1 Feed (Strict 3-Photo Carousel), 3. Day & Night Story, 4. Day & Night Feed, 5. Style Reel Slideshow, 6. One Light at a Time Reel, 7. House Tour Reel, 8. This Mood Every Night Reel (+13 more)
+Cohesion: 0.14
+Nodes (14): 1. Moodboard #2 Feed (Strict 2-Photo Carousel), 2. Moodboard #1 Feed (Strict 3-Photo Carousel), 3. Day & Night Story, 4. Day & Night Feed, 5. Style Reel Slideshow, 6. One Light at a Time Reel, 7. House Tour Reel, 8. This Mood Every Night Reel (+6 more)
 
 ### Community 5 - "extractOutputMedia"
-Cohesion: 0.16
-Nodes (16): Adding a pipeline table, Airtable output mapping, Common failures, Non-negotiable rules, Red flags, Tests, When to use, isCompletedOrDoneStatus() (+8 more)
+Cohesion: 0.20
+Nodes (15): Adding a pipeline table, Airtable output mapping, Common failures, Non-negotiable rules, Red flags, Tests, When to use, isCompletedOrDoneStatus() (+7 more)
 
 ### Community 6 - "launch_ui_cloudflare.py"
 Cohesion: 0.11
-Nodes (9): Backtracking a release, GitHub workflow and backtracking, Remote settings still to verify, cleanup(), copy_to_clipboard(), ensure_cloudflared_binary(), is_server_healthy(), main() (+1 more)
+Nodes (4): cleanup(), copy_to_clipboard(), ensure_cloudflared_binary(), start_nextjs_server()
 
 ### Community 7 - "jobs.ts"
-Cohesion: 0.23
-Nodes (14): Non-negotiable rules, dynamic, isAuthorized(), maxDuration, POST(), normalizePhtTime(), phtScheduleTimestamp(), ScheduleValidationError (+6 more)
+Cohesion: 0.29
+Nodes (10): dynamic, isAuthorized(), maxDuration, POST(), Task 2: Implement "Done" Status Fallback and Date-Clearing Resilience in `server/airtable/write-schedule.ts`, normalizePhtTime(), phtScheduleTimestamp(), ScheduleValidationError (+2 more)
 
 ### Community 8 - "content-calendar.tsx"
 Cohesion: 0.22
@@ -186,44 +182,44 @@ Cohesion: 0.11
 Nodes (17): 🐞 Errors Encountered & Fixed, 🐞 Errors Encountered & Fixed, 📁 Files Touched, 📁 Files Touched, 🎯 Goals & Objectives, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, 🔮 Next Steps & Action Items (+9 more)
 
 ### Community 10 - "Marketing Automation Stabilization Design"
-Cohesion: 0.12
-Nodes (17): 10. Persistent automation runs, 11. Retry and recovery, 12. Vercel Pro Cron migration, 13. Scheduler efficiency, 14. Existing UI preservation and internal refactoring, 16. Observability, 17. Delivery workstreams, 18. Completion criteria (+9 more)
+Cohesion: 0.11
+Nodes (19): 10. Persistent automation runs, 11. Retry and recovery, 12. Vercel Pro Cron migration, 13. Scheduler efficiency, 14. Existing UI preservation and internal refactoring, 16. Observability, 18. Completion criteria, 19. Explicit exclusions (+11 more)
 
 ### Community 11 - "compilerOptions"
 Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+10 more)
 
 ### Community 12 - "meta-post/route.ts"
-Cohesion: 0.15
-Nodes (16): Failure catalog, Instagram publishing (Meta Graph API), Non-negotiable rules, Publish flows, Red flags, Tests before claiming a fix, When to use, Where to change what (+8 more)
+Cohesion: 0.14
+Nodes (20): Failure catalog, Instagram publishing (Meta Graph API), Non-negotiable rules, Publish flows, Red flags, Tests before claiming a fix, When to use, Where to change what (+12 more)
 
 ### Community 13 - "components.json"
 Cohesion: 0.11
 Nodes (17): aliases, components, hooks, lib, ui, utils, iconLibrary, rsc (+9 more)
 
 ### Community 14 - "ContentPreviewModal"
-Cohesion: 0.12
-Nodes (18): ContentPreviewModal(), cancelSchedule(), confirmStatusChange(), schedulePost(), untagAsScheduled(), DetailRow(), getTodayPht(), normalizePhtTime() (+10 more)
+Cohesion: 0.11
+Nodes (19): ContentPreviewModal(), cancelSchedule(), confirmStatusChange(), schedulePost(), untagAsScheduled(), DetailRow(), getTodayPht(), normalizePhtTime() (+11 more)
 
 ### Community 15 - "universal-content-gallery.tsx"
 Cohesion: 0.14
 Nodes (7): OutputItem, ContentCard(), STATUS_BADGE_STYLES, STATUS_OPTIONS, StatusFilter, UniversalContentGallery(), VideoPlayer()
 
 ### Community 16 - "Content Calendar Persistence — Design"
-Cohesion: 0.17
-Nodes (12): Content Calendar Persistence — Design, Data flow, Decisions, Definition of done, Edge cases, Goal, Non-goals, Problem (+4 more)
+Cohesion: 0.12
+Nodes (17): 1. Database table, 3. API — `app/api/calendar/route.ts`, 4. Client — `components/content-calendar.tsx`, 5. Seed script — `scripts/parse-calendar.mjs`, Architecture, Content Calendar Persistence — Design, Data flow, Decisions (+9 more)
 
 ### Community 17 - "package.json"
 Cohesion: 0.12
 Nodes (16): name, private, version, jsdom, postcss, react-dom, shadcn, tailwindcss (+8 more)
 
 ### Community 18 - "discard-archive/route.ts"
-Cohesion: 0.16
-Nodes (12): DiscardArchiveRequestBody, dynamic, fetchMediaBuffer(), getOrCreateZohoFolder(), getZohoAccessToken(), maxDuration, POST(), dynamic (+4 more)
+Cohesion: 0.13
+Nodes (16): DiscardArchiveRequestBody, dynamic, fetchMediaBuffer(), getOrCreateZohoFolder(), getZohoAccessToken(), maxDuration, POST(), dynamic (+8 more)
 
 ### Community 19 - "schedules.ts"
-Cohesion: 0.16
-Nodes (19): dynamic, GET(), maxDuration, revalidate, settleWithin(), GET(), Phase 3 — Finish what landed halfway · DO NOW, Phase 6 — Housekeeping · WHENEVER (+11 more)
+Cohesion: 0.15
+Nodes (16): GET(), Phase 3 — Finish what landed halfway · DO NOW, Phase 6 — Housekeeping · WHENEVER, clearSchedulesCache(), getLockedForeignKeys(), parsePhtDateAndTime(), pullAirtableSchedules(), pullAirtableSchedulesWithDiagnostics() (+8 more)
 
 ### Community 20 - "Writing tests"
 Cohesion: 0.12
@@ -234,16 +230,16 @@ Cohesion: 0.13
 Nodes (15): dependencies, @base-ui/react, class-variance-authority, clsx, lucide-react, @neondatabase/serverless, next, postgres (+7 more)
 
 ### Community 22 - "client.ts"
-Cohesion: 0.16
-Nodes (16): dynamic, isAuthorized(), maxDuration, POST(), dynamic, GET(), isAuthorized(), maxDuration (+8 more)
+Cohesion: 0.11
+Nodes (21): Diagnostic runbook, Durable scheduler and queue, Key files and responsibilities, Red flags, Tests, When to use, dynamic, isAuthorized() (+13 more)
 
 ### Community 23 - "content.ts"
-Cohesion: 0.18
-Nodes (13): CalendarGrid(), buildMonthCells(), CalendarCell, CID_CODES, CONTENT_DAYS, CONTENT_MONTHS, ContentData, data (+5 more)
+Cohesion: 0.17
+Nodes (14): CalendarGrid(), buildMonthCells(), CalendarCell, CATEGORY_DOT_STYLES, CID_CODES, CONTENT_TYPES, ContentData, data (+6 more)
 
-### Community 24 - "5. Security boundary"
-Cohesion: 0.50
-Nodes (4): 5.1 User-facing and debug APIs, 5.2 Cron authorization, 5.3 Environment isolation, 5. Security boundary
+### Community 24 - "output-media.ts"
+Cohesion: 0.28
+Nodes (6): 🛠️ Work Done & Changes, Attachment, attachmentType(), getFixtureCode(), getForeignKeyPrefix(), OutputMedia
 
 ### Community 25 - "ContentCalendar"
 Cohesion: 0.19
@@ -254,8 +250,8 @@ Cohesion: 0.14
 Nodes (14): act: one goal, Agent steps, assert, waitFor, extract: one question, Beyond the built-in agent, Budgets and cost, Choose an agent, Configure a model, Contents (+6 more)
 
 ### Community 28 - "durable-scheduling.test.ts"
-Cohesion: 0.19
-Nodes (15): dynamic, GET(), isAuthorized(), isKillSwitchActive(), isLivePublishAllowed(), maxDuration, POST(), dynamic (+7 more)
+Cohesion: 0.24
+Nodes (17): Non-negotiable rules, DELETE(), dynamic, POST(), revalidate, cancelScheduledJob(), claimDueJobs(), computeMediaVersion() (+9 more)
 
 ### Community 29 - "Session Log: 2026-10-21 — Meta Graph API Token Health Audit & Refresh Runbook"
 Cohesion: 0.15
@@ -305,13 +301,13 @@ Nodes (10): after the edit — verify, before the edit — narrow the scope, got
 Cohesion: 0.18
 Nodes (10): 1. Rendering Modes, 2. File Conventions, Best Practices, Core Concepts, Detailed patterns and worked examples, Do's, Don'ts, Next.js App Router Patterns (+2 more)
 
-### Community 41 - "implementation-progress.md"
-Cohesion: 0.20
-Nodes (5): HomeCartel project rules, This is NOT the Next.js you know, Current implementation, HomeCartel Marketing Output UI, Local development
+### Community 41 - "docs/README.md"
+Cohesion: 0.05
+Nodes (34): HomeCartel project rules, This is NOT the Next.js you know, 🤖 How AI Assistants (Antigravity & Claude) Use This Memory, 🗺️ How the Vault is Structured, Obsidian Vault Setup & User Guide, 🚀 Quickstart: Opening in Obsidian (1 Minute), ⚙️ Recommended Obsidian Settings, 🔒 Security & Git Hygiene (+26 more)
 
-### Community 42 - "records.ts"
-Cohesion: 0.31
-Nodes (7): AirtableReadError, AirtableRecord, paceRead(), readAirtableRecordById(), readAirtableRecords(), readQueues, options
+### Community 42 - "main"
+Cohesion: 0.32
+Nodes (7): Backtracking a release, GitHub workflow and backtracking, Remote settings still to verify, 17. Delivery workstreams, 2. Non-negotiable constraints, is_server_healthy(), main()
 
 ### Community 43 - "button.tsx"
 Cohesion: 0.31
@@ -322,12 +318,12 @@ Cohesion: 0.22
 Nodes (9): 1. Candidate Content Discovery (`GET /api/content-outputs`), 2. Post Scheduling (`POST /api/schedules`), 3. Queue Execution Runner (`POST /api/schedules/runner`), Architecture: System Blueprint & End-to-End Data Flow, Content Calendar import (`/api/calendar`), 🔄 Core End-to-End Workflows, 🔑 Environment Variables & Services, 🔗 Related Notes (+1 more)
 
 ### Community 45 - "HomeCartel Scheduler Repair — revision 3 (historical)"
-Cohesion: 0.13
-Nodes (15): 1. What is verified and working, 2. Changelog audit — three claims the code does not support, 3. Regressions still open in the publishing path, 4. The work — six phases, in order, 5. Verification — five tests, in this order, 6. Hosting — stay on Vercel, 7. Where to start, A. The calendar page publishes to Instagram (+7 more)
+Cohesion: 0.12
+Nodes (16): 1. What is verified and working, 2. Changelog audit — three claims the code does not support, 3. Regressions still open in the publishing path, 4. The work — six phases, in order, 5. Verification — five tests, in this order, 6. Hosting — stay on Vercel, 7. Where to start, A. The calendar page publishes to Instagram (+8 more)
 
 ### Community 46 - "content-outputs/route.ts"
-Cohesion: 0.17
-Nodes (12): dynamic, formatDateDisplay(), GET(), getTableTargetsForPipeline(), normalizeStatus(), PATCH(), revalidate, TableTarget (+4 more)
+Cohesion: 0.24
+Nodes (16): dynamic, formatDateDisplay(), GET(), getTableIdsForPipeline(), getTableTargetsForPipeline(), matchIdeaTarget(), normalizeIdeaForMatching(), normalizeStatus() (+8 more)
 
 ### Community 47 - "Running a bug bash"
 Cohesion: 0.20
@@ -353,9 +349,9 @@ Nodes (7): 1. Quickstart (How to Share with Coworkers), 2. Coworker Capabilities
 Cohesion: 0.25
 Nodes (8): 1. Atomic Locking (`FOR UPDATE SKIP LOCKED`), 2. Media Tampering Detection (`media_hash`), 3. Idempotent Publication ID Recording, Architecture: Durable Scheduling Queue, 🔒 Concurrency & Race Condition Safeguards, 💾 Database Schema (`server/db/schema.sql`), 🔗 Related Notes, 🔁 Retry Backoff Policy
 
-### Community 53 - "getFinalOutputCandidates"
-Cohesion: 0.36
-Nodes (9): getTableIdsForPipeline(), matchIdeaTarget(), normalizeIdeaForMatching(), matchesFixture(), 🛠️ Work Done & Changes, 🛠️ Work Done & Changes, 🛠️ Work Done & Changes, getFinalOutputCandidates() (+1 more)
+### Community 53 - "Session Log: 2026-11-03 — Moodboard #1 Feed Slide 2 Field Priority Fix (`Moodboard Added Watermark`)"
+Cohesion: 0.33
+Nodes (6): 🐞 Errors Encountered & Fixed, 📁 Files Touched, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, Session Log: 2026-11-03 — Moodboard #1 Feed Slide 2 Field Priority Fix (`Moodboard Added Watermark`), 🛠️ Work Done & Changes
 
 ### Community 54 - "Auto-caption for every Feed and Reel (no fallback template)"
 Cohesion: 0.25
@@ -378,8 +374,8 @@ Cohesion: 0.25
 Nodes (7): Commands, Contents, Continuous integration, Exit codes, Output, Running tests, The replay cache
 
 ### Community 60 - "modal-mutations.test.tsx"
-Cohesion: 0.16
-Nodes (9): CandidateFixture, ScheduledItem, SystemDiagnostics, ScheduledPostsModal(), CATEGORY_DOT_STYLES, ScheduledEntry, lucide-react, @testing-library/react (+1 more)
+Cohesion: 0.17
+Nodes (8): CandidateFixture, ScheduledItem, SystemDiagnostics, ScheduledPostsModal(), ScheduledEntry, lucide-react, @testing-library/react, testScheduledEntry
 
 ### Community 61 - "e2e: agentic end-to-end tests"
 Cohesion: 0.25
@@ -397,9 +393,9 @@ Nodes (7): 1. 📅 Daily Session Logs (Work History & Context), 2. 🛠️ Troub
 Cohesion: 0.29
 Nodes (6): 🐞 Errors Encountered & Fixed, 📁 Files Touched, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, Session Log: 2026-10-22 — Supabase Scheduler Queue Health & Audit, 🛠️ Work Done & Changes
 
-### Community 66 - "Automation Stabilization Implementation Plan"
-Cohesion: 0.22
-Nodes (9): 1. Output fetching and regression harness, 2. Security and environment boundaries, 3. Mapping and media correctness, 4. Shared publishing and durable state, 5. Existing diagnostics and UI regression, 6. CI, Cron migration, and operational verification, Automation Stabilization Implementation Plan, Constraints and evidence rules (+1 more)
+### Community 66 - "Review Focus"
+Cohesion: 0.33
+Nodes (5): Airtable Schedule and Status Resilience Implementation Plan, Global Constraints, Review Focus, Task 1: Add Unit Tests for "Done" Status Fallback and Non-Date Fallback for Date Clearing, Task 3: Full Verification and Documentation
 
 ### Community 67 - "Session Log: YYYY-MM-DD — <Title>"
 Cohesion: 0.29
@@ -425,6 +421,10 @@ Nodes (3): metadata, viewport, @vercel/analytics
 Cohesion: 0.50
 Nodes (4): Architecture: Graphify Knowledge Graph & Obsidian Integration, 🗺️ Artifacts Generated, 🔗 Related Notes, ⚡ Useful CLI Commands
 
+### Community 73 - "queue-status/route.ts"
+Cohesion: 0.50
+Nodes (4): dynamic, GET(), isAuthorized(), maxDuration
+
 ### Community 74 - "Session Log: 2026-10-07 — House Tour Reel Table Integration"
 Cohesion: 0.33
 Nodes (5): 🐞 Errors Encountered & Fixed, 📁 Files Touched, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, Session Log: 2026-10-07 — House Tour Reel Table Integration
@@ -434,16 +434,16 @@ Cohesion: 0.33
 Nodes (5): 🐞 Errors Encountered & Fixed, 📁 Files Touched, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, Session Log: 2026-10-12 — This Mood Every Night Reel Table Integration
 
 ### Community 76 - "Session Log: 2026-10-15 — Day & Night Story Tagged Item Name Thumbnail Extraction"
-Cohesion: 0.29
-Nodes (6): 🐞 Errors Encountered & Fixed, 📁 Files Touched, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, Session Log: 2026-10-15 — Day & Night Story Tagged Item Name Thumbnail Extraction, 🛠️ Work Done & Changes
+Cohesion: 0.33
+Nodes (5): 🐞 Errors Encountered & Fixed, 📁 Files Touched, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, Session Log: 2026-10-15 — Day & Night Story Tagged Item Name Thumbnail Extraction
 
-### Community 77 - "schedules/route.ts"
-Cohesion: 0.38
-Nodes (6): POST(), DELETE(), dynamic, POST(), revalidate, cancelScheduledJob()
+### Community 77 - "scheduler-debug/route.ts"
+Cohesion: 0.19
+Nodes (12): dynamic, GET(), maxDuration, POST(), revalidate, settleWithin(), ContainerStatusResult, getMetaConfig() (+4 more)
 
 ### Community 78 - "Session Log: 2026-10-27 — Moodboard Story Tagged Blended Image Media Selection"
-Cohesion: 0.29
-Nodes (6): 🐞 Errors Encountered & Fixed, 📁 Files Touched, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, Session Log: 2026-10-27 — Moodboard Story Tagged Blended Image Media Selection, 🛠️ Work Done & Changes
+Cohesion: 0.33
+Nodes (5): 🐞 Errors Encountered & Fixed, 📁 Files Touched, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, Session Log: 2026-10-27 — Moodboard Story Tagged Blended Image Media Selection
 
 ### Community 79 - "4. Root files and ownership"
 Cohesion: 0.33
@@ -454,8 +454,8 @@ Cohesion: 0.33
 Nodes (6): 🛡️ Prevention & Regression Testing, 🔗 Related Notes, 🔍 Root Cause, 🛠️ Step-by-Step Resolution, 🚨 Symptom, Troubleshooting: <Error or Issue Name>
 
 ### Community 81 - "Session Log: 2026-10-29 — Feed & Reel Universal Caption Mapping & Implementation Plan"
-Cohesion: 0.29
-Nodes (6): 🐞 Errors Encountered & Fixed, 📁 Files Touched, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, Session Log: 2026-10-29 — Feed & Reel Universal Caption Mapping & Implementation Plan, 🛠️ Work Done & Changes
+Cohesion: 0.21
+Nodes (9): 🐞 Errors Encountered & Fixed, 📁 Files Touched, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, Session Log: 2026-10-29 — Feed & Reel Universal Caption Mapping & Implementation Plan, 🛠️ Work Done & Changes, CAPTION_PRIORITY_KEYS, extractCaption() (+1 more)
 
 ### Community 82 - "Troubleshooting: Cloudflare Tunnel & Local Proxy"
 Cohesion: 0.33
@@ -465,17 +465,17 @@ Nodes (6): 1. Tunnel URL Disconnected / 502 Bad Gateway, 2. Tunnel Token Configu
 Cohesion: 0.33
 Nodes (5): Sheet: August, Sheet: Auto Compute, Sheet: Caption, Sheet: July, Sheet: September
 
-### Community 85 - "Obsidian Vault Setup & User Guide"
-Cohesion: 0.29
-Nodes (6): 🤖 How AI Assistants (Antigravity & Claude) Use This Memory, 🗺️ How the Vault is Structured, Obsidian Vault Setup & User Guide, 🚀 Quickstart: Opening in Obsidian (1 Minute), ⚙️ Recommended Obsidian Settings, 🔒 Security & Git Hygiene
+### Community 84 - "vitest"
+Cohesion: 0.18
+Nodes (3): PATCH(), vitest, { targets }
 
 ### Community 86 - "🚨 Error Catalog & Diagnostics"
 Cohesion: 0.29
 Nodes (7): 1. Missing Records Beyond First 100 Rows, 2. Status Update Fails on Date Format (`422 Unprocessable Entity`), 3. Discarded and Manual Items Appearing in Feed, 4. Non-Fixture Pipeline Locked Out on "Select Fixture first", 🚨 Error Catalog & Diagnostics, 🔗 Related Notes, Troubleshooting: Airtable Sync Issues
 
-### Community 87 - "Implemented locally"
-Cohesion: 0.12
-Nodes (19): Diagnostic runbook, Durable scheduler and queue, Key files and responsibilities, Red flags, Tests, When to use, postNowToMeta(), 📁 Files Touched (+11 more)
+### Community 87 - "Session Log: 2026-09-16 — Durable Queue Stabilization & Production Deployment"
+Cohesion: 0.40
+Nodes (5): 📁 Files Touched, 🎯 Goals & Objectives, 🔗 Related Notes, Session Log: 2026-09-16 — Durable Queue Stabilization & Production Deployment, 🛠️ Work Done & Changes
 
 ### Community 88 - "Session Log: 2026-09-18 — Obsidian Memory Vault Integration & System Blueprint"
 Cohesion: 0.40
@@ -484,10 +484,6 @@ Nodes (5): 📁 Files Modified / Added, 🎯 Goals & Objectives, 🔮 Next Steps
 ### Community 89 - "Session Log: 2026-11-03 — Airtable Schedule & Status Sync Resilience (HTTP 422 Root Cause Resolution)"
 Cohesion: 0.33
 Nodes (6): 🐞 Errors Encountered & Fixed, 📁 Files Touched, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, Session Log: 2026-11-03 — Airtable Schedule & Status Sync Resilience (HTTP 422 Root Cause Resolution), 🛠️ Work Done & Changes
-
-### Community 90 - "Repository Organization Implementation Plan"
-Cohesion: 0.33
-Nodes (6): 1. Entry points and AI instructions, 2. Consolidate existing material, 3. Developer and operator references, 4. GitHub and documentation gates, Completion evidence, Repository Organization Implementation Plan
 
 ### Community 91 - "15. Testing strategy"
 Cohesion: 0.40
@@ -501,10 +497,6 @@ Nodes (5): 6.1 Branch model, 6.2 Required sequence, 6.3 Commit convention, 6.4 P
 Cohesion: 0.40
 Nodes (5): 📁 Files Modified, 🎯 Goals & Objectives, 🔮 Next Steps & Recommendations, Session Log: 2026-09-18 — Day & Night Story Table Configuration & Foreign Key Display Fix, 🛠️ Work Done & Changes
 
-### Community 94 - "Architecture"
-Cohesion: 0.40
-Nodes (5): 1. Database table, 3. API — `app/api/calendar/route.ts`, 4. Client — `components/content-calendar.tsx`, 5. Seed script — `scripts/parse-calendar.mjs`, Architecture
-
 ### Community 95 - "6. Content-output fetching"
 Cohesion: 0.50
 Nodes (4): 6.1 Required corrections, 6.2 Normalized contract, 6.3 Target server modules, 6. Content-output fetching
@@ -514,31 +506,27 @@ Cohesion: 0.50
 Nodes (3): crons, framework, $schema
 
 ### Community 98 - "Session Log: 2026-11-03 — Moodboard #1 Feed 3-Photo Carousel Media Selection & Graphify Integration"
-Cohesion: 0.33
-Nodes (6): 🐞 Errors Encountered & Fixed, 📁 Files Touched, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, Session Log: 2026-11-03 — Moodboard #1 Feed 3-Photo Carousel Media Selection & Graphify Integration, 🛠️ Work Done & Changes
-
-### Community 101 - "Content Calendar Persistence Implementation Plan"
-Cohesion: 0.67
-Nodes (3): Content Calendar Persistence Implementation Plan, Global Constraints, Self-Review Against the Spec
+Cohesion: 0.40
+Nodes (5): 🐞 Errors Encountered & Fixed, 📁 Files Touched, 🎯 Goals & Objectives, 🔮 Next Steps & Action Items, Session Log: 2026-11-03 — Moodboard #1 Feed 3-Photo Carousel Media Selection & Graphify Integration
 
 ## Knowledge Gaps
 - **14 isolated node(s):** `data`, `react-dom`, `shadcn`, `tw-animate-css`, `@tailwindcss/postcss` (+9 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 665 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 669 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `main()` connect `launch_ui_cloudflare.py` to `store.ts`, `Repository and Documentation Organization Design`, `Marketing Automation Stabilization Design`, `Ship the Marketing Output UI`, `Writing tests`, `Auto-caption for every Feed and Reel (no fallback template)`, `Implemented locally`, `6. Git workflow`?**
-  _High betweenness centrality (0.142) - this node is a cross-community bridge._
+- **Why does `main()` connect `main` to `store.ts`, `Repository and Documentation Organization Design`, `launch_ui_cloudflare.py`, `Marketing Automation Stabilization Design`, `Ship the Marketing Output UI`, `Writing tests`, `client.ts`, `Session Log: 2026-09-16 — Durable Queue Stabilization & Production Deployment`, `Auto-caption for every Feed and Reel (no fallback template)`, `6. Git workflow`?**
+  _High betweenness centrality (0.150) - this node is a cross-community bridge._
 - **Are the 17 inferred relationships involving `main()` (e.g. with `Locators` and `Non-negotiable rules`) actually correct?**
   _`main()` has 17 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `data`, `react-dom`, `shadcn` to the rest of the system?**
   _14 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `store.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.06153846153846154 - nodes in this community are weakly interconnected._
-- **Why does `Implemented locally` connect `Implemented locally` to `store.ts`, `extractOutputMedia`, `launch_ui_cloudflare.py`, `jobs.ts`, `records.ts`, `meta-post/route.ts`, `ContentPreviewModal`, `client.ts`?**
-  _High betweenness centrality (0.130) - this node is a cross-community bridge._
+  _Cohesion score 0.05970149253731343 - nodes in this community are weakly interconnected._
+- **Why does `Implemented locally` connect `client.ts` to `store.ts`, `extractOutputMedia`, `docs/README.md`, `main`, `meta-post/route.ts`, `ContentPreviewModal`, `durable-scheduling.test.ts`?**
+  _High betweenness centrality (0.132) - this node is a cross-community bridge._
 - **Are the 11 inferred relationships involving `syncAirtableRecord()` (e.g. with `Common failures` and `Non-negotiable rules`) actually correct?**
   _`syncAirtableRecord()` has 11 INFERRED edges - model-reasoned connections that need verification._
 - **Should `extractCaption` be split into smaller, more focused modules?**

@@ -228,15 +228,15 @@
     "semantic_hash": ""
   },
   "lib/output-mapping.ts": {
-    "mtime": 1793681515.0658827,
-    "seen": 1793682045.41722,
-    "ast_hash": "fdca5307fb4d3137ac0cdd44a2c45533",
+    "mtime": 1793691345.741865,
+    "seen": 1793691464.1331565,
+    "ast_hash": "680a7a1058cb23265658fd7319fb1c20",
     "semantic_hash": ""
   },
   "lib/output-media.ts": {
-    "mtime": 1793681548.11258,
-    "seen": 1793682045.41722,
-    "ast_hash": "8173f8afa971ec36363c4c0982a1b022",
+    "mtime": 1793691333.750947,
+    "seen": 1793691464.1331565,
+    "ast_hash": "22b1f5a963f9946af3dd9fb630b5d13d",
     "semantic_hash": ""
   },
   "lib/schedules.ts": {
@@ -396,9 +396,9 @@
     "semantic_hash": ""
   },
   "tests/output-media.test.ts": {
-    "mtime": 1793681936.3521621,
-    "seen": 1793682045.4198809,
-    "ast_hash": "42206298f9d26457e4d1d0c5f214f88b",
+    "mtime": 1793691301.9759974,
+    "seen": 1793691464.1353004,
+    "ast_hash": "07364bec9f2cee8204700de159040810",
     "semantic_hash": ""
   },
   "tests/schedule-reads.test.ts": {
@@ -720,9 +720,9 @@
     "semantic_hash": ""
   },
   "docs/architecture/output-media-selection.md": {
-    "mtime": 1793684732.0682461,
-    "seen": 1793684763.2717936,
-    "ast_hash": "8b9b233dd7684ecbc64415b683533ff1",
+    "mtime": 1793691420.911047,
+    "seen": 1793691464.1423004,
+    "ast_hash": "df9719432485bd742c8e36777353b4c3",
     "semantic_hash": ""
   },
   "docs/architecture/system-blueprint.md": {
@@ -810,9 +810,9 @@
     "semantic_hash": ""
   },
   "docs/daily-logs/2026-11-03.md": {
-    "mtime": 1793684750.5574012,
-    "seen": 1793684763.2734153,
-    "ast_hash": "1e35d4b395822e52eb396857646393aa",
+    "mtime": 1793691437.9865444,
+    "seen": 1793691464.1455464,
+    "ast_hash": "fe7ff509b3a65e589b64bfa6d0721c92",
     "semantic_hash": ""
   },
   "docs/development/git-workflow.md": {
@@ -960,9 +960,9 @@
     "semantic_hash": ""
   },
   "docs/superpowers/plans/2026-11-03-airtable-schedule-and-status-resilience.md": {
-    "mtime": 1793684582.619459,
-    "seen": 1793684763.2740123,
-    "ast_hash": "6505037f2c9e721fbc2f97d71f9adc9f",
+    "mtime": 1793684809.0845463,
+    "seen": 1793691464.1476564,
+    "ast_hash": "77ded8acdf4d4f081acb46237b5677e0",
     "semantic_hash": ""
   }
 }

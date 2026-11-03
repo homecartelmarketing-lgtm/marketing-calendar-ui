@@ -122,12 +122,12 @@ describe("scheduler final media selection", () => {
       ).slides
     ).toEqual([])
   })
-  it("extracts Moodboard #1 feed slides as 3-photo carousel (Moodboard Converted, Blended Image with Name text, Closeup Photo)", () => {
+  it("extracts Moodboard #1 feed slides as 3-photo carousel (Moodboard Converted, Moodboard Added Watermark, Closeup Photo)", () => {
     expect(
       extractMediaFromRecord(
         {
           "Closeup Photo": img("https://media.example/closeup.jpg"),
-          "Blended Image with Name text": img("https://media.example/blended-named.jpg"),
+          "Moodboard Added Watermark": img("https://media.example/watermarked.jpg"),
           "Moodboard Converted": img("https://media.example/mb-converted.jpg"),
         },
         "Feeds",
@@ -135,16 +135,34 @@ describe("scheduler final media selection", () => {
       ).slides
     ).toEqual([
       "https://media.example/mb-converted.jpg",
-      "https://media.example/blended-named.jpg",
+      "https://media.example/watermarked.jpg",
       "https://media.example/closeup.jpg",
     ])
 
-    // Prioritizes tagged blended image over plain blended image
+    // Prioritizes Moodboard Added Watermark over Blended Image with Name text and plain blended
     expect(
       extractMediaFromRecord(
         {
           "Moodboard Converted": img("https://media.example/mb-converted.jpg"),
           "Blended Image": img("https://media.example/untagged.jpg"),
+          "Blended Image with Name text": img("https://media.example/tagged.jpg"),
+          "Moodboard Added Watermark": img("https://media.example/watermarked.jpg"),
+          "Closeup Photo": img("https://media.example/closeup.jpg"),
+        },
+        "Feeds",
+        "Moodboard #1"
+      ).slides
+    ).toEqual([
+      "https://media.example/mb-converted.jpg",
+      "https://media.example/watermarked.jpg",
+      "https://media.example/closeup.jpg",
+    ])
+
+    // Falls back to Blended Image with Name text when Moodboard Added Watermark is absent
+    expect(
+      extractMediaFromRecord(
+        {
+          "Moodboard Converted": img("https://media.example/mb-converted.jpg"),
           "Blended Image with Name text": img("https://media.example/tagged.jpg"),
           "Closeup Photo": img("https://media.example/closeup.jpg"),
         },
