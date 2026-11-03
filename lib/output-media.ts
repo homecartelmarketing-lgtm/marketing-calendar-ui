@@ -30,7 +30,19 @@ export function extractOutputMedia(fields: Record<string, unknown>, category: st
   const type = idea.toLowerCase()
   let selected: Attachment[] = []
   if (cat === "stories" && type.includes("moodboard")) {
-    selected = [...read("Moodboard Converted"), ...read("Blended Image")]
+    const mbConverted =
+      read("Moodboard Converted")[0] ||
+      read("Converted Moodboard")[0]
+    const blendedTagged =
+      read("Blended Image with Name text")[0] ||
+      read("Blended Image with Item Name")[0] ||
+      read("Blended with Item Name")[0] ||
+      read("Blended Image with Name")[0] ||
+      read("Blended Image")[0]
+
+    if (mbConverted && blendedTagged) {
+      selected = [mbConverted, blendedTagged]
+    }
   } else if (cat === "stories" && ((type.includes("day") && type.includes("night")) || type.includes("d&n") || type.includes("day (") || type.includes("night ("))) {
     const tagged =
       read("Blended Image with Name text").length ? read("Blended Image with Name text") :
@@ -93,6 +105,33 @@ export function extractOutputMedia(fields: Record<string, unknown>, category: st
 
     if (mb2Converted && blended) {
       selected = [mb2Converted, blended]
+    }
+  } else if (cat === "feeds" && (type.includes("moodboard #1") || type.includes("moodboard 1") || (type.includes("moodboard") && !type.includes("moodboard #2") && !type.includes("moodboard 2")))) {
+    const mb1Converted =
+      read("Moodboard Converted")[0] ||
+      read("Converted Moodboard")[0] ||
+      read("Moodboard #1 Converted")[0] ||
+      read("Moodboard 1 Converted")[0]
+    const blendedTagged =
+      read("Blended Image with Name text")[0] ||
+      read("Blended Image with Item Name")[0] ||
+      read("Blended with Item Name")[0] ||
+      read("Blended Image with Name")[0] ||
+      read("Blended Image")[0] ||
+      read("Blended Image1")[0] ||
+      read("Moodboard Added Watermark")[0] ||
+      read("Moodboard V1 Blended")[0] ||
+      read("Blended")[0]
+    const closeup =
+      read("Closeup Photo")[0] ||
+      read("Closeup")[0] ||
+      read("Product Closeup")[0] ||
+      read("Closeup Photo Converted")[0] ||
+      read("Converted Closeup Photo")[0] ||
+      read("Closeup Converted")[0]
+
+    if (mb1Converted && blendedTagged && closeup) {
+      selected = [mb1Converted, blendedTagged, closeup]
     }
   } else {
     for (const candidate of getFinalOutputCandidates(category, idea)) {
@@ -309,4 +348,6 @@ export function deriveForeignKeyId(
   // Never fall back to a raw Airtable record ID (rec...)
   return `${prefix}-1`
 }
+
+export { extractCaption as extractOutputCaption } from "@/lib/caption"
 
