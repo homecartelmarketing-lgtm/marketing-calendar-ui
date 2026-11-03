@@ -66,6 +66,16 @@ All media resolution logic is centralized in [`lib/output-media.ts`](file:///c:/
 * Item names are extracted from `Item Name1..20` or parsed from `Scraped Items`.
 * The table needs a `Date and Time Scheduled` (or `Date and Time`) field in Airtable before a live schedule timestamp can be saved; without it `syncAirtableRecord` fails with an error rather than silently saving status alone.
 
+### 10. Virtual Staging Reel (Non-Fixture Single Pipeline)
+* Airtable table `tblPYG5Ed4XURecu6` ("Virtual Staging Reel", view `viwrnlnwammnCQCLd`); override with `AIRTABLE_TABLE_ID_VIRTUAL_STAGING_REEL`.
+* Video candidate fields (in order): `Final Video`, `Raw Video`, `REEL - Virtual Staging`, `Virtual Staging Reel`.
+* Foreign Key ID format: `VST-REEL-SET-<ID>` (e.g. `VST-REEL-SET-4`, `VST-REEL-SET-9`). Code `SET` represents the global scene setup.
+* Captions are extracted from the `Caption Generated` field.
+* **Non-Fixture UI Behavior**: In the Marketing AI Content Automation dashboard and Day Detail Modal, Virtual Staging is a single continuous pipeline without lighting fixture variants (no Chandelier, Pendant Light, etc.).
+  * `isNonFixtureIdea()` identifies Virtual Staging and removes the `[Fixture]` dropdown in `DayDetailModal`.
+  * The Content ID dropdown spans the full available width (`col-span-2`), directly listing all available CIDs without requiring fixture pre-selection.
+  * Auto-selection automatically picks the first available completed record (`pool[0]`) rather than waiting for fixture matching.
+
 ---
 
 ## 🚦 Candidate Status Filters (`isCompletedOrDoneStatus`)

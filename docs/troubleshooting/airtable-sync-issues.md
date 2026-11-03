@@ -29,6 +29,14 @@ This guide documents common issues encountered when reading or writing marketing
   - Apply `isCompletedOrDoneStatus` strictly requiring `Completed`, `Complete`, or `Done` (case-insensitive).
   - Explicitly exclude `For Manual` and `Discard`.
 
+### 4. Non-Fixture Pipeline Locked Out on "Select Fixture first"
+* **Symptom**: When opening Day Detail Modal for pipelines that do not use lighting fixture categories (e.g., Virtual Staging, House Tour, This Mood Every Night, One Part Per Room), all fixtures in the Fixture dropdown show `(0)` and the Content ID dropdown remains disabled with `"Please select a Fixture first"`.
+* **Root Cause**: The modal previously assumed every pipeline maps to lighting fixture variants (Chandelier, Pendant Light, etc.). For single pipelines with a global scene (`fixtureType: "SET"`), no records match individual lighting fixture codes, locking out selection.
+* **Solution**:
+  - Use `isNonFixtureIdea(idea, category)` in `components/day-detail-modal.tsx`.
+  - For non-fixture pipelines, omit the `[Fixture]` dropdown completely and span the Content ID dropdown across the full available space (`col-span-2 sm:col-span-2`).
+  - Auto-select `pool[0]` directly without waiting for a lighting fixture match.
+
 ---
 
 ## 🔗 Related Notes

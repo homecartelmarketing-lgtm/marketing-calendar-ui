@@ -43,10 +43,21 @@ type FlatRow = {
   typeRowCount: number
 }
 
-type SelectionState = {
+export type SelectionState = {
   fixture?: string
   cid?: string
   outputItem?: OutputItem
+}
+
+export function isNonFixtureIdea(idea?: string, category?: string): boolean {
+  if (!idea) return false
+  const norm = idea.toLowerCase().trim()
+  if (norm.includes("virtual staging") || norm.includes("vst")) return true
+  if (norm.includes("house tour") || norm.includes("htr")) return true
+  if (norm.includes("this mood every night") || norm.includes("tmen")) return true
+  if (norm.includes("one part per room") || norm.includes("oppr")) return true
+  if (norm.includes("one light") || norm.includes("one at a time") || norm.includes("oatl")) return true
+  return false
 }
 
 function normalizeIdea(str?: string | null): string {
@@ -96,7 +107,8 @@ function buildSelectionsFromSchedules(
 
     if (matched) {
       claimed.add(matched.recordId)
-      const resolvedFixture = matched.fixture || deriveFixtureFromForeignKeyId(matched.foreignKeyId)
+      const isNonFx = isNonFixtureIdea(r.entry.idea, r.type)
+      const resolvedFixture = matched.fixture || deriveFixtureFromForeignKeyId(matched.foreignKeyId) || (isNonFx ? "SET" : undefined)
       init[r.key] = {
         fixture: resolvedFixture,
         cid: matched.foreignKeyId,
@@ -155,6 +167,7 @@ export function DayDetailModal({
       }
 
       ofType.forEach((entry, i) => {
+        const isNonFx = isNonFixtureIdea(entry.idea, type)
         const matchingSchedules = schedOfType.filter((s) => {
           if (claimedSchedIds.has(s.recordId)) return false
           if (
@@ -166,7 +179,7 @@ export function DayDetailModal({
             return true
           }
           if (
-            !entry.fixture &&
+            (!entry.fixture || isNonFx) &&
             !entry.cid &&
             normalizeIdea(s.idea) === normalizeIdea(entry.idea)
           ) {
@@ -185,7 +198,7 @@ export function DayDetailModal({
           }
         })
 
-        const resolvedFixture = matched?.fixture || entry.fixture || deriveFixtureFromForeignKeyId(matched?.foreignKeyId || entry.cid)
+        const resolvedFixture = matched?.fixture || entry.fixture || deriveFixtureFromForeignKeyId(matched?.foreignKeyId || entry.cid) || (isNonFx ? "SET" : undefined)
 
         rowList.push({
           key: `${type}-${i}`,
@@ -344,10 +357,11 @@ export function DayDetailModal({
         if (userModifiedKeys.current.has(r.key)) continue
 
         const curSel = next[r.key] ?? {}
-        const curFixture = curSel.fixture ?? r.entry.fixture
+        const isNonFixture = isNonFixtureIdea(r.entry.idea, r.type)
+        const curFixture = curSel.fixture ?? r.entry.fixture ?? (isNonFixture ? "SET" : undefined)
         const curCid = curSel.cid ?? r.entry.cid
 
-        if (!curFixture || !curCid) {
+        if (isNonFixture) {
           const pairKey = `${r.type}::${r.entry.idea}`
           const items = outputsMap[pairKey] || []
           const validItems = items.filter(
@@ -355,30 +369,60 @@ export function DayDetailModal({
           )
           const pool = validItems.filter((it) => it.status === "Completed")
 
-            if (pool.length > 0) {
-              const candidate = curCid
-                ? pool.find((it) => it.foreignKeyId === curCid) || (curFixture ? pool.find((it) => matchesFixture(it.fixtureType, curFixture)) : pool[0])
-                : curFixture
-                  ? pool.find((it) => matchesFixture(it.fixtureType, curFixture))
-                  : pool[0]
+          if (!curCid && pool.length > 0) {
+            const candidate = pool[0]
+            if (candidate && candidate.foreignKeyId !== curSel.cid) {
+              next[r.key] = {
+                ...curSel,
+                fixture: candidate.fixtureType || "SET",
+                cid: candidate.foreignKeyId,
+                outputItem: candidate,
+              }
+              changed = true
+            }
+          } else if (curCid && !curSel.outputItem && items.length > 0) {
+            const candidate = items.find((it) => it.foreignKeyId === curCid)
+            if (candidate) {
+              next[r.key] = {
+                ...curSel,
+                fixture: candidate.fixtureType || curFixture || "SET",
+                outputItem: candidate,
+              }
+              changed = true
+            }
+          }
+        } else if (!curFixture || !curCid) {
+          const pairKey = `${r.type}::${r.entry.idea}`
+          const items = outputsMap[pairKey] || []
+          const validItems = items.filter(
+            (it) => it.status !== "For Manual" && it.status !== "Discard"
+          )
+          const pool = validItems.filter((it) => it.status === "Completed")
 
-              if (candidate) {
-                const newFixture = curFixture || candidate.fixtureType || deriveFixtureFromForeignKeyId(candidate.foreignKeyId) || undefined
-                const newCid = curCid || candidate.foreignKeyId
+          if (pool.length > 0) {
+            const candidate = curCid
+              ? pool.find((it) => it.foreignKeyId === curCid) || (curFixture ? pool.find((it) => matchesFixture(it.fixtureType, curFixture)) : pool[0])
+              : curFixture
+                ? pool.find((it) => matchesFixture(it.fixtureType, curFixture))
+                : pool[0]
 
-                if (newFixture !== curSel.fixture || newCid !== curSel.cid) {
-                  next[r.key] = {
-                    ...curSel,
-                    fixture: newFixture,
-                    cid: newCid,
-                    outputItem: candidate,
-                  }
-                  changed = true
+            if (candidate) {
+              const newFixture = curFixture || candidate.fixtureType || deriveFixtureFromForeignKeyId(candidate.foreignKeyId) || undefined
+              const newCid = curCid || candidate.foreignKeyId
+
+              if (newFixture !== curSel.fixture || newCid !== curSel.cid) {
+                next[r.key] = {
+                  ...curSel,
+                  fixture: newFixture,
+                  cid: newCid,
+                  outputItem: candidate,
                 }
+                changed = true
               }
             }
           }
         }
+      }
 
       return changed ? next : prev
     })
@@ -401,12 +445,14 @@ export function DayDetailModal({
           return normalizeIdea(s.idea) === normalizeIdea(r.entry?.idea)
         })
 
+        const isNonFixture = isNonFixtureIdea(r.entry!.idea, r.type)
+
         return {
           key: r.key,
           type: r.type,
           idea: r.entry!.idea,
           time: r.entry!.time,
-          fixture: sel.fixture ?? matchedItem?.fixtureType ?? r.entry!.fixture,
+          fixture: sel.fixture ?? matchedItem?.fixtureType ?? r.entry!.fixture ?? (isNonFixture ? "SET" : undefined),
           cid: currentCid,
           outputItem: matchedItem,
           previousRecordId: originalScheduled?.recordId,
@@ -706,16 +752,48 @@ function ContentRow({
   }
 
   const cid = selection.cid !== undefined ? selection.cid : entry.cid
-  const fixture = selection.fixture ?? entry.fixture ?? deriveFixtureFromForeignKeyId(cid)
+  const isNonFixture = isNonFixtureIdea(entry.idea, row.type)
+  const fixture = selection.fixture ?? entry.fixture ?? (isNonFixture ? "SET" : deriveFixtureFromForeignKeyId(cid))
 
   const pairKey = `${row.type}::${entry.idea}`
   const items = outputsMap[pairKey] || []
   const isLoading = loadingMap[pairKey] || false
 
-  // Generate dynamic CID dropdown options strictly according to lighting fixture results
+  // Generate dynamic CID dropdown options
   let cidOptions: DropdownOption[] = []
 
-  if (!fixture) {
+  if (isNonFixture) {
+    if (isLoading) {
+      cidOptions = [{ label: "Loading Foreign Keys...", disabled: true }]
+    } else {
+      const matching = items.filter(
+        (it) =>
+          it.status !== "For Manual" &&
+          it.status !== "Discard" &&
+          (it.status === "Completed" || (Boolean(cid) && it.foreignKeyId === cid))
+      )
+
+      if (matching.length > 0) {
+        cidOptions = matching.map((it) => {
+          const lockedInfo = lockedForeignKeys[it.foreignKeyId]
+          const isLockedOnOtherDate = Boolean(lockedInfo && lockedInfo.isoDate !== iso)
+          return {
+            label: it.foreignKeyId,
+            subLabel: isLockedOnOtherDate
+              ? `(Already scheduled on ${formatLongDate(lockedInfo.isoDate)})`
+              : (it.itemNames?.[0] || it.fixtureType || it.contentType),
+            value: it.foreignKeyId,
+            disabled: isLockedOnOtherDate,
+            className: isLockedOnOtherDate
+              ? "text-neutral-400 bg-neutral-100/80 cursor-not-allowed line-through"
+              : "text-neutral-800",
+          }
+        })
+      } else {
+        cidOptions = [{ label: "No Available CIDs (0)", disabled: true }]
+      }
+    }
+  } else if (!fixture) {
     cidOptions = [{ label: "Please select a Fixture first", disabled: true }]
   } else if (isLoading) {
     cidOptions = [{ label: "Loading Foreign Keys...", disabled: true }]
@@ -782,37 +860,57 @@ function ContentRow({
         {entry.time ?? "—"}
       </div>
 
-      <Dropdown
-        placeholder="Fixture"
-        value={fixture}
-        options={fixtureOptions}
-        isOpen={openDropdown?.key === row.key && openDropdown.kind === "fixture"}
-        onToggle={(open) => setOpenDropdown(open ? { key: row.key, kind: "fixture" } : null)}
-        onPick={(v) => {
-          const matchingItems = items.filter(
-            (it) =>
-              matchesFixture(it.fixtureType, v) &&
-              it.status !== "For Manual" &&
-              it.status !== "Discard"
-          )
-          const firstMatch = matchingItems.find((it) => it.status === "Completed")
-          onSelectFixture(v, firstMatch?.foreignKeyId, firstMatch)
-          setOpenDropdown(null)
-        }}
-      />
-      <Dropdown
-        placeholder={fixture ? "CID" : "Select Fixture first"}
-        value={cid}
-        options={cidOptions}
-        isOpen={openDropdown?.key === row.key && openDropdown.kind === "cid"}
-        onToggle={(open) => setOpenDropdown(open ? { key: row.key, kind: "cid" } : null)}
-        onPick={(v) => {
-          const matched = items.find((it) => it.foreignKeyId === v)
-          const derived = deriveFixtureFromForeignKeyId(v)
-          onSelectCid(v, matched, fixture || derived)
-          setOpenDropdown(null)
-        }}
-      />
+      {isNonFixture ? (
+        <div className="col-span-2 sm:col-span-2">
+          <Dropdown
+            placeholder={isLoading ? "Loading Foreign Keys..." : "Select Content ID"}
+            value={cid}
+            options={cidOptions}
+            isOpen={openDropdown?.key === row.key && openDropdown.kind === "cid"}
+            onToggle={(open) => setOpenDropdown(open ? { key: row.key, kind: "cid" } : null)}
+            onPick={(v) => {
+              const matched = items.find((it) => it.foreignKeyId === v)
+              const derived = deriveFixtureFromForeignKeyId(v) || "SET"
+              onSelectCid(v, matched, fixture || derived)
+              setOpenDropdown(null)
+            }}
+          />
+        </div>
+      ) : (
+        <>
+          <Dropdown
+            placeholder="Fixture"
+            value={fixture}
+            options={fixtureOptions}
+            isOpen={openDropdown?.key === row.key && openDropdown.kind === "fixture"}
+            onToggle={(open) => setOpenDropdown(open ? { key: row.key, kind: "fixture" } : null)}
+            onPick={(v) => {
+              const matchingItems = items.filter(
+                (it) =>
+                  matchesFixture(it.fixtureType, v) &&
+                  it.status !== "For Manual" &&
+                  it.status !== "Discard"
+              )
+              const firstMatch = matchingItems.find((it) => it.status === "Completed")
+              onSelectFixture(v, firstMatch?.foreignKeyId, firstMatch)
+              setOpenDropdown(null)
+            }}
+          />
+          <Dropdown
+            placeholder={fixture ? "CID" : "Select Fixture first"}
+            value={cid}
+            options={cidOptions}
+            isOpen={openDropdown?.key === row.key && openDropdown.kind === "cid"}
+            onToggle={(open) => setOpenDropdown(open ? { key: row.key, kind: "cid" } : null)}
+            onPick={(v) => {
+              const matched = items.find((it) => it.foreignKeyId === v)
+              const derived = deriveFixtureFromForeignKeyId(v)
+              onSelectCid(v, matched, fixture || derived)
+              setOpenDropdown(null)
+            }}
+          />
+        </>
+      )}
     </div>
   )
 }
