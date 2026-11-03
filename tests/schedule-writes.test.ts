@@ -62,3 +62,38 @@ it("cancels schedules with the legacy date column without leaving the old timest
   await syncAirtableRecord("tblTest", "recTest", "Completed")
   expect(saved).toEqual({ Status: "Completed", "Date and Time": null })
 })
+
+it("falls back to 'Done' when table rejects 'Completed' with INVALID_MULTIPLE_CHOICE_OPTIONS", async () => {
+  const attemptedStatuses: string[] = []
+  let saved: unknown
+  vi.stubGlobal("fetch", vi.fn(async (_url: string, init: RequestInit) => {
+    const { fields } = JSON.parse(init.body as string)
+    attemptedStatuses.push(fields.Status)
+    if (fields.Status === "Completed") {
+      return Response.json({ error: { type: "INVALID_MULTIPLE_CHOICE_OPTIONS" } }, { status: 422 })
+    }
+    saved = fields
+    return Response.json({ id: "recTest", fields })
+  }))
+  await syncAirtableRecord("tblTest", "recTest", "Completed")
+  expect(attemptedStatuses).toEqual(["Completed", "Done"])
+  expect(saved).toMatchObject({ Status: "Done" })
+})
+
+it("clears date gracefully by falling back to status-only when table lacks date fields for 'For Manual'", async () => {
+  const writes: Record<string, unknown>[] = []
+  vi.stubGlobal("fetch", vi.fn(async (_url: string, init: RequestInit) => {
+    const { fields } = JSON.parse(init.body as string)
+    writes.push(fields)
+    if ("Date and Time Scheduled" in fields || "Date and Time" in fields) {
+      return Response.json({ error: { type: "UNKNOWN_FIELD_NAME" } }, { status: 422 })
+    }
+    return Response.json({ id: "recTest", fields })
+  }))
+  await syncAirtableRecord("tblTest", "recTest", "For Manual")
+  expect(writes).toEqual([
+    { Status: "For Manual", "Date and Time Scheduled": null },
+    { Status: "For Manual", "Date and Time": null },
+    { Status: "For Manual" },
+  ])
+})

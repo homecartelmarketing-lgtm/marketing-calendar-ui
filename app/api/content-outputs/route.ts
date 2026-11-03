@@ -382,9 +382,23 @@ export async function GET(request: NextRequest) {
           const fkId = deriveForeignKeyId(fields, category, contentType, fixtureType, rec.id, recIndex + 1)
 
           const itemNames: string[] = []
-          for (let i = 1; i <= 20; i++) {
-            const val = fields[`Item Name${i}`] || (i === 1 ? fields["Item Name"] : undefined)
-            if (val) itemNames.push(String(val))
+          for (let i = 1; i <= 25; i++) {
+            const val =
+              fields[`Item Name${i}`] ||
+              fields[`Item Name ${i}`] ||
+              (i === 1 ? (fields["Item Name"] || fields["Item Names"]) : undefined)
+            if (val) {
+              if (Array.isArray(val)) {
+                for (const v of val) {
+                  if (v) itemNames.push(String(v).trim())
+                }
+              } else if (typeof val === "string") {
+                const trimmed = val.trim()
+                if (trimmed) itemNames.push(trimmed)
+              } else {
+                itemNames.push(String(val).trim())
+              }
+            }
           }
           if (itemNames.length === 0 && typeof fields["Scraped Items"] === "string") {
             const lines = fields["Scraped Items"].split("\n")

@@ -44,8 +44,12 @@ export async function syncAirtableRecord(
   const scheduledAt = !clearDate && (normalizedStatus === "Scheduled" || isoDate)
     ? phtScheduleTimestamp(isoDate, time)
     : undefined
-  const statuses = normalizedStatus === "Completed" ? ["Completed", "Complete"] : [normalizedStatus]
-  const dateFields = clearDate || scheduledAt ? ["Date and Time Scheduled", "Date and Time"] : [undefined]
+  const statuses = normalizedStatus === "Completed" ? ["Completed", "Done", "Complete"] : [normalizedStatus]
+  const dateFields = scheduledAt
+    ? ["Date and Time Scheduled", "Date and Time"]
+    : clearDate
+      ? ["Date and Time Scheduled", "Date and Time", undefined]
+      : [undefined]
   let lastStatus = 422
 
   for (const dateField of dateFields) {

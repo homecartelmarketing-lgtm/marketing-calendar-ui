@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "app/api/content-outputs/route.ts": {
-    "mtime": 1793681502.237167,
-    "seen": 1793682045.4134536,
-    "ast_hash": "888983ac33d1a708167f5c49ec7779ca",
+    "mtime": 1793683707.5733702,
+    "seen": 1793683933.9034116,
+    "ast_hash": "c07635ae73f48bc40997ba0537cb2f58",
     "semantic_hash": ""
   },
   "app/api/discard-archive/route.ts": {
@@ -144,15 +144,15 @@
     "semantic_hash": ""
   },
   "components/content-preview-modal.tsx": {
-    "mtime": 1789696529.8236184,
-    "seen": 1793679744.1488771,
-    "ast_hash": "a70ba85aa5dac97c9929a1ea48f9a6d8",
+    "mtime": 1793683668.7447553,
+    "seen": 1793683933.9071145,
+    "ast_hash": "e4df2c78c014d99f112d4a86eb17186c",
     "semantic_hash": ""
   },
   "components/day-detail-modal.tsx": {
-    "mtime": 1793681929.8724554,
-    "seen": 1793682045.415621,
-    "ast_hash": "25aa34a7a2800a236ccb120e2b0b3c0e",
+    "mtime": 1793683690.6248467,
+    "seen": 1793683933.9071145,
+    "ast_hash": "892f2802446accde0157dd10ec0c2668",
     "semantic_hash": ""
   },
   "components/scheduled-posts-modal.tsx": {
@@ -240,9 +240,9 @@
     "semantic_hash": ""
   },
   "lib/schedules.ts": {
-    "mtime": 1793235576.4365602,
-    "seen": 1793679744.1488771,
-    "ast_hash": "dab5ac8ff835c3de599c2cea79d62191",
+    "mtime": 1793683715.2964473,
+    "seen": 1793683933.9087286,
+    "ast_hash": "4db711becdac6b99c9f227f4742c3c43",
     "semantic_hash": ""
   },
   "lib/tables-config.ts": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "server/airtable/write-schedule.ts": {
-    "mtime": 1789545314.0880835,
-    "seen": 1793679744.1488771,
-    "ast_hash": "318b3e9197382d54f03ece1b6e4976af",
+    "mtime": 1793684666.2313175,
+    "seen": 1793684763.2659054,
+    "ast_hash": "e512910671293728087bb0020b8da8d6",
     "semantic_hash": ""
   },
   "server/automation/jobs.ts": {
@@ -366,9 +366,9 @@
     "semantic_hash": ""
   },
   "tests/content-outputs.test.ts": {
-    "mtime": 1793003046.8883548,
-    "seen": 1793679744.1488771,
-    "ast_hash": "d28e1792c331f59fbf0d1c25641c7163",
+    "mtime": 1793683733.3427763,
+    "seen": 1793683933.9103634,
+    "ast_hash": "a47825e55874a3ed64dc40e20b39b4c3",
     "semantic_hash": ""
   },
   "tests/durable-scheduling.test.ts": {
@@ -384,9 +384,9 @@
     "semantic_hash": ""
   },
   "tests/modal-mutations.test.tsx": {
-    "mtime": 1789696529.8281584,
-    "seen": 1793679744.1488771,
-    "ast_hash": "b7ad6406cdf58f0baec2c5536b2c5e22",
+    "mtime": 1793683829.672433,
+    "seen": 1793683933.9103634,
+    "ast_hash": "913090fe479bfc7645ed3a6a05ed541c",
     "semantic_hash": ""
   },
   "tests/output-gallery.test.tsx": {
@@ -408,9 +408,9 @@
     "semantic_hash": ""
   },
   "tests/schedule-writes.test.ts": {
-    "mtime": 1789545314.0907755,
-    "seen": 1793679744.1488771,
-    "ast_hash": "c1faa17d4a9ec317253462f15d7152c2",
+    "mtime": 1793684626.8665638,
+    "seen": 1793684763.268026,
+    "ast_hash": "010b8662f6f31ac51443551ab6133f5f",
     "semantic_hash": ""
   },
   "tests/scheduler-debug-page.test.tsx": {
@@ -720,9 +720,9 @@
     "semantic_hash": ""
   },
   "docs/architecture/output-media-selection.md": {
-    "mtime": 1793682007.3091688,
-    "seen": 1793682045.4246852,
-    "ast_hash": "02548405409ca1ce7315a482cfc25521",
+    "mtime": 1793684732.0682461,
+    "seen": 1793684763.2717936,
+    "ast_hash": "8b9b233dd7684ecbc64415b683533ff1",
     "semantic_hash": ""
   },
   "docs/architecture/system-blueprint.md": {
@@ -810,9 +810,9 @@
     "semantic_hash": ""
   },
   "docs/daily-logs/2026-11-03.md": {
-    "mtime": 1793682151.1694252,
-    "seen": 1793682162.7904704,
-    "ast_hash": "23990e6b5d2a05b739ce0f78c1b42ebd",
+    "mtime": 1793684750.5574012,
+    "seen": 1793684763.2734153,
+    "ast_hash": "1e35d4b395822e52eb396857646393aa",
     "semantic_hash": ""
   },
   "docs/development/git-workflow.md": {
@@ -957,6 +957,12 @@
     "mtime": 1793679788.088629,
     "seen": 1793682045.4246852,
     "ast_hash": "96033cbcaf8d7f0f39f36d2c9400804f",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-11-03-airtable-schedule-and-status-resilience.md": {
+    "mtime": 1793684582.619459,
+    "seen": 1793684763.2740123,
+    "ast_hash": "6505037f2c9e721fbc2f97d71f9adc9f",
     "semantic_hash": ""
   }
 }

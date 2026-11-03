@@ -777,11 +777,16 @@ function ContentRow({
         cidOptions = matching.map((it) => {
           const lockedInfo = lockedForeignKeys[it.foreignKeyId]
           const isLockedOnOtherDate = Boolean(lockedInfo && lockedInfo.isoDate !== iso)
+          const itemsSummary = it.itemNames && it.itemNames.length > 0
+            ? it.itemNames.length > 1
+              ? `${it.itemNames[0]} (+${it.itemNames.length - 1} more items)`
+              : it.itemNames[0]
+            : (it.fixtureType || it.contentType)
           return {
             label: it.foreignKeyId,
             subLabel: isLockedOnOtherDate
               ? `(Already scheduled on ${formatLongDate(lockedInfo.isoDate)})`
-              : (it.itemNames?.[0] || it.fixtureType || it.contentType),
+              : itemsSummary,
             value: it.foreignKeyId,
             disabled: isLockedOnOtherDate,
             className: isLockedOnOtherDate
@@ -811,11 +816,16 @@ function ContentRow({
       cidOptions = matching.map((it) => {
         const lockedInfo = lockedForeignKeys[it.foreignKeyId]
         const isLockedOnOtherDate = Boolean(lockedInfo && lockedInfo.isoDate !== iso)
+        const itemsSummary = it.itemNames && it.itemNames.length > 0
+          ? it.itemNames.length > 1
+            ? `${it.itemNames[0]} (+${it.itemNames.length - 1} more items)`
+            : it.itemNames[0]
+          : it.fixtureType
         return {
           label: it.foreignKeyId,
           subLabel: isLockedOnOtherDate
             ? `(Already scheduled on ${formatLongDate(lockedInfo.isoDate)})`
-            : (it.itemNames?.[0] || it.fixtureType),
+            : itemsSummary,
           value: it.foreignKeyId,
           disabled: isLockedOnOtherDate,
           className: isLockedOnOtherDate

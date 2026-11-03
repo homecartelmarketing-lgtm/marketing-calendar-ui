@@ -754,7 +754,11 @@ export function ContentPreviewModal({
                 />
                 <DetailRow label="Content Name" value={item.idea} />
                 {out?.itemNames && out.itemNames.length > 0 && (
-                  <DetailRow label="Item Name" value={out.itemNames.join(", ")} />
+                  <DetailRow
+                    label={out.itemNames.length > 1 ? `Item Names (${out.itemNames.length})` : "Item Name"}
+                    value={out.itemNames.join(", ")}
+                    items={out.itemNames}
+                  />
                 )}
                 <DetailRow label="Content Type" value={TYPE_LABELS[item.type]} />
                 <DetailRow
@@ -1146,7 +1150,41 @@ export function ContentPreviewModal({
   )
 }
 
-function DetailRow({ label, value, muted = false }: { label: string; value: string; muted?: boolean }) {
+function DetailRow({
+  label,
+  value,
+  muted = false,
+  items,
+}: {
+  label: string
+  value?: string
+  muted?: boolean
+  items?: string[]
+}) {
+  if (items && items.length > 1) {
+    return (
+      <div className="flex items-stretch gap-2">
+        <dt className="flex w-40 shrink-0 items-center justify-center rounded-lg bg-white px-2 py-2.5 text-center text-sm font-semibold text-black">
+          {label}
+        </dt>
+        <dd
+          className={`flex min-w-0 flex-1 flex-col justify-center rounded-lg px-3 py-2 text-sm font-medium ${
+            muted ? "bg-neutral-200 text-neutral-600" : "bg-white text-black"
+          }`}
+        >
+          <div className="flex max-h-36 flex-col gap-1 overflow-y-auto pr-1 text-xs">
+            {items.map((it, idx) => (
+              <div key={idx} className="flex items-start gap-1.5 leading-snug">
+                <span className="shrink-0 font-bold text-neutral-400">{idx + 1}.</span>
+                <span className="break-words text-neutral-900">{it}</span>
+              </div>
+            ))}
+          </div>
+        </dd>
+      </div>
+    )
+  }
+
   return (
     <div className="flex items-stretch gap-2">
       <dt className="flex w-40 shrink-0 items-center justify-center rounded-lg bg-white px-2 py-2.5 text-center text-sm font-semibold text-black">

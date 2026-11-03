@@ -49,7 +49,8 @@ All media resolution logic is centralized in [`lib/output-media.ts`](file:///c:/
 * Airtable table `tblqXkdDw4O7hxJS4` ("House Tour Reel"); override with `AIRTABLE_TABLE_ID_HOUSE_TOUR_REEL`.
 * Video candidates (in order): `Final Video`, `Raw Video`, `REEL - House Tour`, `House Tour Reel`.
 * Foreign Key ID prefix `HTR-REEL-<fixture code>-<ID>`; code `SET` maps to `House Tour` fixture.
-* Item names are extracted from `Item Name1..11` (covering up to 11 rooms/furniture slots).
+* Item names are extracted from `Item Name1..11` (and spaced aliases `Item Name 1..11`, covering up to 11 rooms/furniture slots).
+* **Multi-Item UI Presentation**: In `ContentPreviewModal`, when `itemNames.length > 1`, the field dynamically displays `Item Names (N)` with a scrollable numbered list (`max-h-36 overflow-y-auto`) so all 11 room items are visible without single-line ellipsis truncation. The calendar CID dropdown subLabel displays `(+N more items)` to signify multi-item records.
 * The table needs a `Date and Time Scheduled` (or `Date and Time`) field in Airtable before a live schedule timestamp can be saved; without it `syncAirtableRecord` fails with an error rather than silently saving status alone.
 
 ### 8. This Mood Every Night Reel
@@ -64,6 +65,9 @@ All media resolution logic is centralized in [`lib/output-media.ts`](file:///c:/
 * Video candidate strictly: `Final Video` (records without a valid video in `Final Video` are excluded from candidates).
 * Foreign Key ID prefix `OPPR-REEL-<fixture code>-<ID>`; code `SET` maps to `One Part Per Room` fixture.
 * Item names are extracted from `Item Name1..20` or parsed from `Scraped Items`.
+* **Airtable Schema Requirements**:
+  * Must have `Date and Time Scheduled` (or `Date and Time`) date field enabled with time.
+  * `Status` singleSelect choices must include `Scheduled`, `Complete` / `Done`, `For Manual`, `Posted`. Without `Scheduled` choice, scheduling fails with HTTP 422 `INVALID_MULTIPLE_CHOICE_OPTIONS`.
 * The table needs a `Date and Time Scheduled` (or `Date and Time`) field in Airtable before a live schedule timestamp can be saved; without it `syncAirtableRecord` fails with an error rather than silently saving status alone.
 
 ### 10. Virtual Staging Reel (Non-Fixture Single Pipeline)
@@ -78,12 +82,17 @@ All media resolution logic is centralized in [`lib/output-media.ts`](file:///c:/
 
 ---
 
-## 🚦 Candidate Status Filters (`isCompletedOrDoneStatus`)
+## 🚦 Candidate Status Filters (`isCompletedOrDoneStatus`) & Schedule Sync Resilience
 
 To prevent unfinished creative drafts from leaking into the scheduler:
 - **Eligible Statuses**: `Completed`, `Complete`, `Done` (case-insensitive).
 - **Strictly Excluded**: `For Manual`, `Discard`, `In Progress`, `Draft`, `Needs Review`.
 - Records marked `Posted` in historical tables are treated as completed references or suppressed from active candidate selection dropdowns.
+
+### Schedule Sync & Status Resilience (`server/airtable/write-schedule.ts`)
+- **Status Fallback**: When reverting or updating status to `Completed`, `syncAirtableRecord` attempts `["Completed", "Done", "Complete"]` to support tables whose singleSelect choices only include `Done`.
+- **Date Clearing Resilience**: When changing status to `For Manual`, `Discard`, or `Completed`, `syncAirtableRecord` attempts clearing `Date and Time Scheduled` and `Date and Time`. If both columns return `UNKNOWN_FIELD_NAME` (because the table lacks date columns), it gracefully falls back to updating the status field alone without throwing an error.
+- **Strict Schedule Safety**: For `Scheduled`, writing a timestamp to a valid date field is non-negotiable. If both date fields fail, the schedule write is rejected to prevent orphaned headless schedule entries.
 
 ---
 

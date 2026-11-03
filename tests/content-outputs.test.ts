@@ -400,6 +400,37 @@ describe("output data completeness", () => {
     expect(body.items[0].itemNames[10]).toBe("Natasha | Pendant Light")
   })
 
+  it("extracts House Tour Reel records with spaced Item Name fields and trims cleanly", async () => {
+    targets.mockReturnValue([
+      { tableId: "tblqXkdDw4O7hxJS4", category: "Reels", idea: "House Tour", fixtureType: "House Tour" },
+    ])
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      records: [{
+        id: "recSpacedHTR",
+        fields: {
+          ID: 15,
+          "Foreign Key ID": "HTR-REEL-SET-15",
+          Status: "Done",
+          "Item Name 1": "Oxenfurt | Brass with Frosted Spheres Floor Lamp",
+          "Item Name 2": "Gladion | Wall Light",
+          "Item Name 3": "Aesir | Modern Pendant Light",
+          "Final Video": [
+            { id: "attVideoHTR", url: "https://media.example/house_tour_15.mp4", type: "video/mp4" },
+          ],
+        },
+      }],
+    })))
+
+    const res = await GET(new NextRequest("http://localhost/api/content-outputs?category=Reels&type=House%20Tour"))
+    const body = await res.json()
+    expect(res.status).toBe(200)
+    expect(body.items[0].itemNames).toEqual([
+      "Oxenfurt | Brass with Frosted Spheres Floor Lamp",
+      "Gladion | Wall Light",
+      "Aesir | Modern Pendant Light",
+    ])
+  })
+
   it("extracts This Mood Every Night Reel records with all item names, This Mood Every Night fixture, and Final Video", async () => {
     targets.mockReturnValue([
       { tableId: "tblDa5UOTUTlU1Xxy", category: "Reels", idea: "This Mood Every Night", fixtureType: "This Mood Every Night" },

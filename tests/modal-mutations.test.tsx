@@ -552,4 +552,59 @@ describe("DayDetailModal Day & Night output handling", () => {
     expect(screen.getByText("13:43")).toBeDefined()
     expect(screen.getByText("CTA-STORY-CH-12")).toBeDefined()
   })
+
+  it("renders Item Names (11) with scrollable numbered list in ContentPreviewModal for multi-item reels", async () => {
+    const { ContentPreviewModal } = await import("@/components/content-preview-modal")
+    const mockPreviewItem = {
+      key: "Reels-0",
+      type: "Reels" as const,
+      idea: "House Tour",
+      time: "18:00",
+      cid: "HTR-REEL-SET-15",
+      fixture: "House Tour",
+      outputItem: {
+        recordId: "recHTR15",
+        tableId: "tblqXkdDw4O7hxJS4",
+        category: "Reels",
+        contentType: "House Tour",
+        foreignKeyId: "HTR-REEL-SET-15",
+        status: "Completed" as const,
+        rawStatus: "Done",
+        date: "2026-11-04",
+        time: "18:00",
+        mediaType: "video" as const,
+        slides: [],
+        videoUrl: "https://media.example/htr.mp4",
+        airtableUrl: "https://airtable.com/appDM0jUDsaiThtR3/tblqXkdDw4O7hxJS4/recHTR15",
+        caption: "House Tour caption",
+        itemNames: [
+          "Oxenfurt | Brass with Frosted Spheres Floor Lamp",
+          "Gladion | Wall Light",
+          "Aesir | Modern Pendant Light",
+          "Olaf | Wall Light",
+          "Bloor Deux | Modern Floor Lamp",
+          "Quintina | Modern Wall Light",
+          "Bennar | Modern Wall Light",
+          "Signy | Modern Shade with Marble Base Floor Lamp",
+          "Vancho | Wall Lamp",
+          "Bilisi | Table Lamp",
+          "Sami | Modern Wall Light",
+        ],
+      },
+    }
+
+    render(
+      <ContentPreviewModal
+        iso="2026-11-04"
+        items={[mockPreviewItem]}
+        index={0}
+        onIndexChange={() => {}}
+        onClose={() => {}}
+      />
+    )
+
+    expect(screen.getByText("Item Names (11)")).toBeDefined()
+    expect(screen.getByText("Oxenfurt | Brass with Frosted Spheres Floor Lamp")).toBeDefined()
+    expect(screen.getByText("Sami | Modern Wall Light")).toBeDefined()
+  })
 })
