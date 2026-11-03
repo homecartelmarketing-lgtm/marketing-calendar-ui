@@ -30,6 +30,7 @@ catalyst-debug.log*
 .vercel
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo
 
@@ -42,3 +43,9 @@ Thumbs.db
 .obsidian/workspace-mobile.json
 .obsidian/graph.json
 .obsidian/cache/
+
+# Graphify local caches & exported vaults
+graphify-out/cache/
+graphify-out/converted/
+graphify-out/obsidian/
+graphify-out/.graphify_*

@@ -4,9 +4,62 @@ import { deriveForeignKeyId, deriveFixtureFromForeignKeyId, getFixtureCode } fro
 
 const img = (url: string) => [{ url, type: "image/jpeg", filename: "image.jpg" }]
 describe("scheduler final media selection", () => {
-  it("includes both moodboard slides in declared order regardless of field order", () => {
+  it("includes both moodboard slides in declared order regardless of field order, falling back to plain Blended Image", () => {
     expect(extractMediaFromRecord({ "Blended Image": img("https://media.example/second"), "Moodboard Converted": img("https://media.example/first") }, "Stories", "Moodboard Story").slides)
       .toEqual(["https://media.example/first", "https://media.example/second"])
+  })
+  it("prioritizes Blended Image with Name text over plain Blended Image for Moodboard Story", () => {
+    expect(
+      extractMediaFromRecord(
+        {
+          "Blended Image": img("https://media.example/untagged"),
+          "Blended Image with Name text": img("https://media.example/tagged-with-name"),
+          "Moodboard Converted": img("https://media.example/first"),
+        },
+        "Stories",
+        "Moodboard Story",
+      ).slides,
+    ).toEqual(["https://media.example/first", "https://media.example/tagged-with-name"])
+  })
+  it("supports resilient aliases for Moodboard Story slides", () => {
+    expect(
+      extractMediaFromRecord(
+        {
+          "Blended Image with Item Name": img("https://media.example/item-name-tagged"),
+          "Converted Moodboard": img("https://media.example/converted-alias"),
+        },
+        "Stories",
+        "Moodboard Story",
+      ).slides,
+    ).toEqual(["https://media.example/converted-alias", "https://media.example/item-name-tagged"])
+
+    expect(
+      extractMediaFromRecord(
+        {
+          "Blended with Item Name": img("https://media.example/blended-with-item-name"),
+          "Moodboard Converted": img("https://media.example/mb-card"),
+        },
+        "Stories",
+        "Moodboard Story",
+      ).slides,
+    ).toEqual(["https://media.example/mb-card", "https://media.example/blended-with-item-name"])
+  })
+  it("strictly requires both slides for Moodboard Story and returns empty if either is missing", () => {
+    expect(
+      extractMediaFromRecord(
+        { "Blended Image with Name text": img("https://media.example/tagged") },
+        "Stories",
+        "Moodboard Story",
+      ).slides,
+    ).toEqual([])
+
+    expect(
+      extractMediaFromRecord(
+        { "Moodboard Converted": img("https://media.example/mb-only") },
+        "Stories",
+        "Moodboard Story",
+      ).slides,
+    ).toEqual([])
   })
   it("includes both day and night feed slides instead of publishing only daytime", () => {
     expect(extractMediaFromRecord({ "Night Image": img("https://media.example/night"), "Day Image": img("https://media.example/day") }, "Feeds", "Day & Night").slides)
@@ -65,6 +118,92 @@ describe("scheduler final media selection", () => {
         { "Blended Image": img("https://media.example/blended-only.jpg") },
         "Feeds",
         "Moodboard #2"
+      ).slides
+    ).toEqual([])
+  })
+  it("extracts Moodboard #1 feed slides as 3-photo carousel (Moodboard Converted, Blended Image with Name text, Closeup Photo)", () => {
+    expect(
+      extractMediaFromRecord(
+        {
+          "Closeup Photo": img("https://media.example/closeup.jpg"),
+          "Blended Image with Name text": img("https://media.example/blended-named.jpg"),
+          "Moodboard Converted": img("https://media.example/mb-converted.jpg"),
+        },
+        "Feeds",
+        "Moodboard #1"
+      ).slides
+    ).toEqual([
+      "https://media.example/mb-converted.jpg",
+      "https://media.example/blended-named.jpg",
+      "https://media.example/closeup.jpg",
+    ])
+
+    // Prioritizes tagged blended image over plain blended image
+    expect(
+      extractMediaFromRecord(
+        {
+          "Moodboard Converted": img("https://media.example/mb-converted.jpg"),
+          "Blended Image": img("https://media.example/untagged.jpg"),
+          "Blended Image with Name text": img("https://media.example/tagged.jpg"),
+          "Closeup Photo": img("https://media.example/closeup.jpg"),
+        },
+        "Feeds",
+        "Moodboard #1"
+      ).slides
+    ).toEqual([
+      "https://media.example/mb-converted.jpg",
+      "https://media.example/tagged.jpg",
+      "https://media.example/closeup.jpg",
+    ])
+
+    // Resilient aliases across all 3 slides
+    expect(
+      extractMediaFromRecord(
+        {
+          "Converted Moodboard": img("https://media.example/alias-mb.jpg"),
+          "Blended with Item Name": img("https://media.example/alias-blended.jpg"),
+          "Product Closeup": img("https://media.example/alias-closeup.jpg"),
+        },
+        "Feeds",
+        "Moodboard #1"
+      ).slides
+    ).toEqual([
+      "https://media.example/alias-mb.jpg",
+      "https://media.example/alias-blended.jpg",
+      "https://media.example/alias-closeup.jpg",
+    ])
+
+    // Strict requirement: returns empty slides if ANY of the 3 photos is missing
+    expect(
+      extractMediaFromRecord(
+        {
+          "Blended Image with Name text": img("https://media.example/blended.jpg"),
+          "Closeup Photo": img("https://media.example/closeup.jpg"),
+        },
+        "Feeds",
+        "Moodboard #1"
+      ).slides
+    ).toEqual([])
+
+    expect(
+      extractMediaFromRecord(
+        {
+          "Moodboard Converted": img("https://media.example/mb.jpg"),
+          "Closeup Photo": img("https://media.example/closeup.jpg"),
+        },
+        "Feeds",
+        "Moodboard #1"
+      ).slides
+    ).toEqual([])
+
+    expect(
+      extractMediaFromRecord(
+        {
+          "Moodboard Converted": img("https://media.example/mb.jpg"),
+          "Blended Image with Name text": img("https://media.example/blended.jpg"),
+        },
+        "Feeds",
+        "Moodboard #1"
       ).slides
     ).toEqual([])
   })

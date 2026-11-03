@@ -18,7 +18,17 @@ export function getFinalOutputCandidates(category: string, contentType: string):
         "STORY - Day & Night (2)",
       ]
     }
-    if (type.includes("moodboard")) return ["Moodboard Converted", "Blended Image"]
+    if (type.includes("moodboard")) {
+      return [
+        "Moodboard Converted",
+        "Converted Moodboard",
+        "Blended Image with Name text",
+        "Blended Image with Item Name",
+        "Blended with Item Name",
+        "Blended Image with Name",
+        "Blended Image",
+      ]
+    }
     if (type.includes("spec")) return ["PCS Story"]
     if (type.includes("style this")) return ["STORY - Style This? (4)"]
     if (type.includes("this or that")) return ["Story This or That (1)", "STORY - This or That (1)", "This or That Converted"]
@@ -64,14 +74,23 @@ export function getFinalOutputCandidates(category: string, contentType: string):
         "Moodboard Converted",
       ]
     }
-    if (type.includes("moodboard #1") || type.includes("moodboard 1") || type.includes("moodboard")) {
+    if (type.includes("moodboard #1") || type.includes("moodboard 1") || (type.includes("moodboard") && !type.includes("moodboard #2") && !type.includes("moodboard 2"))) {
       return [
+        "Moodboard Converted",
+        "Converted Moodboard",
+        "Moodboard #1 Converted",
+        "Moodboard 1 Converted",
+        "Blended Image with Name text",
+        "Blended Image with Item Name",
+        "Blended with Item Name",
+        "Blended Image with Name",
+        "Blended Image",
+        "Closeup Photo",
+        "Closeup",
+        "Product Closeup",
         "FEED - Moodboard #1 Feed (3)",
         "FEED - Moodboard #1 (3)",
         "Moodboard #1 Feed (3)",
-        "Converted Moodboard",
-        "Moodboard Converted",
-        "Blended Image",
       ]
     }
     if (type.includes("product showcase") || type.includes("showcase")) return ["FEED - Product Showcase Feed"]

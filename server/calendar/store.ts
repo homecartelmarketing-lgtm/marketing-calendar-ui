@@ -114,7 +114,7 @@ export async function loadCalendar(): Promise<CalendarSnapshot> {
       days,
       imports: rows
         .map(({ monthKey, sourceFile, importedAt }) => ({ monthKey, sourceFile, importedAt }))
-        .sort((a, b) => b.importedAt.localeCompare(a.importedAt)),
+        .sort((a, b) => b.importedAt.localeCompare(a.importedAt) || b.monthKey.localeCompare(a.monthKey)),
     }
   }
 
@@ -142,7 +142,7 @@ export async function loadCalendar(): Promise<CalendarSnapshot> {
         sourceFile: row.source_file,
         importedAt: new Date(row.imported_at).toISOString(),
       }))
-      .sort((a, b) => b.importedAt.localeCompare(a.importedAt)),
+      .sort((a, b) => b.importedAt.localeCompare(a.importedAt) || b.monthKey.localeCompare(a.monthKey)),
   }
 }
 

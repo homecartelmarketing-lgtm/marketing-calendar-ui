@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "e2e": {
+      "source": "tester-army/e2e",
+      "sourceType": "github",
+      "skillPath": "skills/e2e/SKILL.md",
+      "computedHash": "75ddb14e4b8ddb8b32184a5581b2d1a4ec33d320656c7eda891cb425ccb6e8b0"
+    },
+    "next-dev-loop": {
+      "source": "vercel/next.js",
+      "sourceType": "github",
+      "skillPath": "skills/next-dev-loop/SKILL.md",
+      "computedHash": "8ea79dc762e3915e411a33ab3ec74ee25fdce52bc458be4dbfc43cf9616542da"
+    },
+    "nextjs-app-router-patterns": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/frontend-mobile-development/skills/nextjs-app-router-patterns/SKILL.md",
+      "computedHash": "3a46e9093baecb3a85819529ce05006f817663f48d9e872868c32ae6049c0d5c"
+    },
+    "vitest": {
+      "source": "jezweb/claude-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/dev-tools/skills/vitest/SKILL.md",
+      "computedHash": "e5348139f537b6cfdfb68de2fa45a2c361b295be193ceb1c357f0e096632f0d9"
+    }
+  }
+}

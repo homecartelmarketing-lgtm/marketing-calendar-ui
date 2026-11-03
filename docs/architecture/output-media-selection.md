@@ -13,9 +13,12 @@ All media resolution logic is centralized in [`lib/output-media.ts`](file:///c:/
 * **Slide 2**: `Blended Image` (resilient aliases: `Blended`, `Slide 2`).
 * **Strict Rule**: **Both photos are strictly required**. If either photo attachment is missing, the media extractor returns empty and the record is excluded from candidates.
 
-### 2. Moodboard #1 Feed
-* Single final moodboard image attachment.
-* Excludes draft attachments, work-in-progress renders, and temporary files.
+### 2. Moodboard #1 Feed (Strict 3-Photo Carousel)
+* **Slide 1**: `Moodboard Converted` (resilient aliases: `Converted Moodboard`, `Moodboard #1 Converted`, `Moodboard 1 Converted`).
+* **Slide 2**: `Blended Image with Name text` (resilient aliases: `Blended Image with Item Name`, `Blended with Item Name`, `Blended Image with Name`; fallback: `Blended Image`, `Moodboard Added Watermark`, `Moodboard V1 Blended`).
+* **Slide 3**: `Closeup Photo` (resilient aliases: `Closeup`, `Product Closeup`, `Closeup Photo Converted`, `Converted Closeup Photo`).
+* **Strict Rule**: **All three photos are strictly required**. If any attachment is missing, the media extractor returns empty and the record is excluded from candidates.
+* Validated across 3 Airtable tables: `tbl9u5vjgx8kuE44R` (Chandelier), `tblOvvYdgsNTXh2zK` (Pendant Light), and `tbl6uTmwM23KK9ocO` (Floor Lamp).
 
 ### 3. Day & Night Story
 * **Tagged Item Name Attachment**: Evaluates `Blended Image with Name text` (resilient aliases: `Blended Image with Item Name`, `Blended with Item Name`, `Blended Image with Name`).

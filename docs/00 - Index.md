@@ -21,6 +21,9 @@ Welcome to the central memory index for **HomeCartel Marketing Output UI**. This
 
 ### 1. 📅 Daily Session Logs (Work History & Context)
 *Keep track of session progress, files modified, and next steps so any developer or AI can resume instantly.*
+- [[daily-logs/2026-11-03|2026-11-03 — Moodboard #1 Feed 3-Photo Carousel & Graphify Integration]]
+- [[daily-logs/2026-10-29|2026-10-29 — Feed & Reel Universal Caption Mapping]]
+- [[daily-logs/2026-10-27|2026-10-27 — Moodboard Story Tagged Blended Image Media Selection]]
 - [[daily-logs/2026-10-26|2026-10-26 — Calendar Persistent Import & One Part Per Room Reel Integration]]
 - [[superpowers/plans/2026-10-27-one-part-per-room-reel-timing-and-tagging|Active Plan: One Part Per Room Reel 2.0s Timing & Hybrid Item Tagging (Scheduled for 2026-10-27)]]
 - [[daily-logs/2026-10-22|2026-10-22 — Supabase Scheduler Queue Health & Audit]]
@@ -49,6 +52,7 @@ Welcome to the central memory index for **HomeCartel Marketing Output UI**. This
 - [[architecture/system-blueprint|System Blueprint & End-to-End Data Flow]]
 - [[architecture/durable-scheduling-queue|Durable Scheduling Queue (Postgres DDL, Worker Locking, Retries)]]
 - [[architecture/output-media-selection|Output Media Selection Rules (Moodboards, Day & Night, Style Reels)]]
+- [[architecture/knowledge-graph-graphify|Graphify Knowledge Graph & Obsidian Integration]]
 - [[development/git-workflow|Git Workflow & Release Backtracking]]
 
 ---
