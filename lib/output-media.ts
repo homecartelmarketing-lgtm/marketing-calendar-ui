@@ -156,7 +156,7 @@ export function getFixtureCode(fixtureType?: string): string {
   if (norm.includes("cluster")) return "CL"
   if (norm.includes("linear")) return "LC"
   if (norm.includes("ceiling")) return "CM"
-  if (norm.includes("house") || norm.includes("tour") || norm.includes("set") || norm.includes("this mood") || norm.includes("mood every night") || norm.includes("one part") || norm.includes("per room")) return "SET"
+  if (norm.includes("house") || norm.includes("tour") || norm.includes("set") || norm.includes("this mood") || norm.includes("mood every night") || norm.includes("one part") || norm.includes("per room") || norm.includes("virtual") || norm.includes("staging")) return "SET"
   if (norm.includes("living") || norm.includes("bedroom") || norm.includes("room")) return "LR"
   return fixtureType.slice(0, 2).toUpperCase() || "FX"
 }
@@ -167,6 +167,7 @@ export function deriveFixtureFromForeignKeyId(foreignKeyId?: string): string | u
   if (upper.startsWith("HTR-")) return "House Tour"
   if (upper.startsWith("TMEN-")) return "This Mood Every Night"
   if (upper.startsWith("OPPR-") || upper.startsWith("OPR-")) return "One Part Per Room"
+  if (upper.startsWith("VST-")) return "SET"
   const parts = upper.split("-")
   for (const part of parts) {
     if (part === "CH") return "Chandelier"
@@ -204,6 +205,9 @@ export function getForeignKeyPrefix(
     }
     if (type.includes("one part") || type.includes("oppr") || (type.includes("part") && type.includes("room"))) {
       return `OPPR-REEL-${fxCode}`
+    }
+    if (type.includes("virtual staging") || type.includes("vst")) {
+      return `VST-REEL-${fxCode}`
     }
     if (type.includes("one light") || type.includes("one at a time") || type.includes("oatl")) {
       return `OATL-REEL-${fxCode}`

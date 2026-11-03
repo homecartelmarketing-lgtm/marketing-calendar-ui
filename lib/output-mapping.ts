@@ -117,6 +117,9 @@ export function getFinalOutputCandidates(category: string, contentType: string):
     if (type.includes("one part") || type.includes("oppr")) {
       return ["Final Video"]
     }
+    if (type.includes("virtual staging") || type.includes("vst")) {
+      return ["Final Video", "Raw Video", "REEL - Virtual Staging", "Virtual Staging Reel"]
+    }
     if (type.includes("closeup")) return ["Final Video", "REEL - Product Closeup", "Product Closeup Reel"]
   }
 

@@ -233,6 +233,8 @@ function getTableIdsForPipeline(category: string, type: string, autoEnv: Record<
       ids.push(autoEnv.AIRTABLE_TABLE_ID_THIS_MOOD_EVERY_NIGHT_REEL || "tblDa5UOTUTlU1Xxy")
     } else if (t.includes("one part") || t.includes("oppr") || (t.includes("part") && t.includes("room"))) {
       ids.push(autoEnv.AIRTABLE_TABLE_ID_ONE_PART_PER_ROOM_REEL || "tbldk5nac1UeYHd77")
+    } else if (t.includes("virtual staging") || t.includes("vst")) {
+      ids.push(autoEnv.AIRTABLE_TABLE_ID_VIRTUAL_STAGING_REEL || "tblPYG5Ed4XURecu6")
     }
   }
 

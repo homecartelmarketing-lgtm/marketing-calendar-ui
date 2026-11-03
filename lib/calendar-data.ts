@@ -35,6 +35,7 @@ export const NAV_MENUS: Record<NavKey, string[]> = {
     "Style Reel Slideshow",
     "This Mood Every Night",
     "UGC",
+    "Virtual Staging",
   ],
 }
 

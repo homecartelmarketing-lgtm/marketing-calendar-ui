@@ -219,6 +219,14 @@ export function getAllConfiguredTables(): TableTarget[] {
       idea: "One Part Per Room",
       fixtureType: "One Part Per Room",
     },
+
+    // Virtual Staging Reel
+    {
+      tableId: env.AIRTABLE_TABLE_ID_VIRTUAL_STAGING_REEL || "tblPYG5Ed4XURecu6",
+      category: "Reels",
+      idea: "Virtual Staging",
+      fixtureType: "SET",
+    },
   ]
 
   // Filter out any entries that do not have a valid tableId starting with 'tbl'

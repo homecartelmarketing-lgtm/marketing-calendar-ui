@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { extractMediaFromRecord } from "@/lib/schedules"
 import { deriveForeignKeyId, deriveFixtureFromForeignKeyId, getFixtureCode } from "@/lib/output-media"
+import { isNonFixtureIdea } from "@/components/day-detail-modal"
 
 const img = (url: string) => [{ url, type: "image/jpeg", filename: "image.jpg" }]
 describe("scheduler final media selection", () => {
@@ -429,6 +430,23 @@ describe("canonical Foreign Key ID derivation", () => {
       slides: [],
     })
   })
+  it("extracts Final Video for Virtual Staging reels", () => {
+    expect(
+      extractMediaFromRecord(
+        { "Final Video": [{ url: "https://media.example/vst.mp4", type: "video/mp4" }] },
+        "Reels",
+        "Virtual Staging"
+      )
+    ).toEqual({
+      mediaUrl: "https://media.example/vst.mp4",
+      mediaType: "video",
+      slides: ["https://media.example/vst.mp4"],
+    })
+  })
+  it("derives VST-REEL-SET prefix for Virtual Staging reels", () => {
+    expect(deriveForeignKeyId({ ID: 4 }, "Reels", "Virtual Staging")).toBe("VST-REEL-SET-4")
+    expect(deriveForeignKeyId({ "Foreign Key ID": "VST-REEL-SET-9" }, "Reels", "Virtual Staging")).toBe("VST-REEL-SET-9")
+  })
 })
 
 describe("deriveFixtureFromForeignKeyId", () => {
@@ -445,8 +463,28 @@ describe("deriveFixtureFromForeignKeyId", () => {
     expect(deriveFixtureFromForeignKeyId("HTR-REEL-SET-8")).toBe("House Tour")
     expect(deriveFixtureFromForeignKeyId("TMEN-REEL-SET-1")).toBe("This Mood Every Night")
     expect(deriveFixtureFromForeignKeyId("OPPR-REEL-SET-1")).toBe("One Part Per Room")
+    expect(deriveFixtureFromForeignKeyId("VST-REEL-SET-4")).toBe("SET")
     expect(deriveFixtureFromForeignKeyId("UNKNOWN-ID")).toBeUndefined()
     expect(deriveFixtureFromForeignKeyId("")).toBeUndefined()
     expect(deriveFixtureFromForeignKeyId(undefined)).toBeUndefined()
+  })
+})
+
+describe("isNonFixtureIdea", () => {
+  it("identifies non-fixture pipelines that do not have lighting fixture dropdowns", () => {
+    expect(isNonFixtureIdea("Virtual Staging", "Reels")).toBe(true)
+    expect(isNonFixtureIdea("House Tour", "Reels")).toBe(true)
+    expect(isNonFixtureIdea("This Mood Every Night", "Reels")).toBe(true)
+    expect(isNonFixtureIdea("One Part Per Room", "Reels")).toBe(true)
+    expect(isNonFixtureIdea("One Light at a Time", "Reels")).toBe(true)
+  })
+  it("returns false for fixture-dependent pipelines", () => {
+    expect(isNonFixtureIdea("Styled Reel Slideshow", "Reels")).toBe(false)
+    expect(isNonFixtureIdea("Moodboard #1", "Feeds")).toBe(false)
+    expect(isNonFixtureIdea("CTA Story", "Stories")).toBe(false)
+    expect(isNonFixtureIdea("1 Product, 3 Styles", "Reels")).toBe(false)
+    expect(isNonFixtureIdea("Day & Night", "Reels")).toBe(false)
+    expect(isNonFixtureIdea("", "Reels")).toBe(false)
+    expect(isNonFixtureIdea(undefined)).toBe(false)
   })
 })
